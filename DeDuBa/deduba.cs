@@ -79,10 +79,15 @@ internal partial class Program
     private static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
     {
         var msg = $"*** {file}: {op}: {new Win32Exception().Message}\n";
-        if (TESTING) Console.Write($"\n{lineNumber} {DateTime.Now.ToString()} {msg}");
+        if (TESTING) ConWrite(msg, lineNumber);
         if (LOG != null) LOG.Write(msg);
         else
             throw new Exception(msg);
+    }
+
+    private static void ConWrite(string msg, int explicitLineNumber = 0, [CallerLineNumber] int lineNumber = 0)
+    {
+        Console.Write($"\n{(explicitLineNumber != 0 ? explicitLineNumber : (lineNumber))} {DateTime.Now.ToString()} {msg}");
     }
 
     // ############################################################################
@@ -94,13 +99,13 @@ internal partial class Program
         {
             if (entry == dataPath)
             {
-                if (TESTING) Console.Write($"\n+ {entry}");
+                if (TESTING) ConWrite($"+ {entry}");
                 try
                 {
                     var dirEntries = Directory.GetFileSystemEntries(entry);// Assuming no . ..
                     if (TESTING) Console.Write($"\t{dirEntries.Length} entries");
                     mkarlist(dirEntries);
-                    if (TESTING) Console.Write($"\tdone {entry}\n");
+                    if (TESTING) Console.WriteLine($"\tdone {entry}");
                 }
                 catch (Exception ex)
                 {
@@ -113,43 +118,44 @@ internal partial class Program
             var match = Regex.Match(entry, $"^{Regex.Escape(dataPath)}/?(.*)/([^/]+)$");
             var prefix = match.Groups[1].Value;
             var file = match.Groups[2].Value;
+            if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
             {
-
-                if (MyRegex1().IsMatch(file))
+                if (TESTING) ConWrite($"+ {entry}:{prefix}:{file}");
+                preflist.TryAdd(prefix, "");
+                preflist[prefix] += $"{file}/\0";
+                try
                 {
-                    if (TESTING) Console.WriteLine($"\n+ {entry}:{prefix}:{file}");
-                    preflist.TryAdd(prefix, "");
-                    preflist[prefix] += $"{file}/\0";
-
-                    try
-                    {
-                        var dirEntries = Directory.GetFileSystemEntries(entry);
-                        if (TESTING) Console.WriteLine($"\t{dirEntries.Length} entries");
-                        mkarlist(dirEntries.Where(e => !Regex.IsMatch(e, @"^\.\.?$")).ToArray());
-                        if (TESTING) Console.WriteLine($"\tdone {entry}\n");
-                    }
-                    catch (Exception ex)
-                    {
-                        Error(entry, ex.Message);
-                    }
+                    var dirEntries = Directory.GetFileSystemEntries(entry);// Assuming no . ..
+                    if (TESTING) Console.Write($"\t{dirEntries.Length} entries");
+                    mkarlist(dirEntries);
+                    if (TESTING) Console.WriteLine($"\tdone {entry}");
                 }
-                else if (MyRegex().IsMatch(file))
+                catch (Exception ex)
                 {
-                    arlist[file] = prefix;
-                    preflist.TryAdd(prefix, "");
-                    preflist[prefix] += $"{file}\0";
-                }
-                else
-                {
-                    Console.WriteLine($"Bad entry in archive: {entry}");
+                    Error(entry, ex.Message);
                 }
             }
+            else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
+            {
+                arlist[file] = prefix;
+                preflist.TryAdd(prefix, "");
+                preflist[prefix] += $"{file}\0";
+            }
+            else
+            {
+                ConWrite($"Bad entry in archive: {entry}");
+            }
+
         }
     }
 
-    private static string? Hash2Fn(string hash)
+
+    // ############################################################################
+    // find place for hashed file, or note we already have it
+
+    private static string? hash2fn(string hash)
     {
-        if (TESTING) Console.WriteLine($"\n{hash}");
+        if (TESTING) ConWrite($"{hash}");
 
         if (arlist.TryGetValue(hash, out var value))
         {
@@ -174,7 +180,7 @@ internal partial class Program
 
         if (nlist > 255)
         {
-            if (TESTING) Console.WriteLine($"\n*** reorganizing '{prefix}' [{nlist} entries]\n");
+            if (TESTING) ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
 
             var depth = prefixList.Count;
             var plen = 2 * depth;
@@ -230,7 +236,7 @@ internal partial class Program
         }
         else
         {
-            if (TESTING) Console.WriteLine($"\n+++ not too large: '{prefix}' entries = {list.Count}\n");
+            if (TESTING) ConWrite($"+++ not too large: '{prefix}' entries = {list.Count}\n");
         }
 
         arlist[hash] = prefix;
@@ -244,7 +250,7 @@ internal partial class Program
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var type = value.GetType();
-        Console.WriteLine($"{DateTime.Now}: {name}: {type}, {value}");
+        ConWrite($"{name}: {type}, {value}");
 
         switch (type.Name)
         {
@@ -319,19 +325,19 @@ internal partial class Program
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {outFile}, bzip2 failed: {e.Message}");
+                Error($"Error: {outFile}, bzip2 failed: {e.Message}", "bzip2");
                 packsum += new FileInfo(outFile).Length;
                 return hash;
             }
 
             packsum += new FileInfo(outFile).Length;
-            if (TESTING) Console.WriteLine($"{DateTime.Now}: {hash}");
+            if (TESTING) ConWrite($"{hash}");
         }
         else
         {
             bstats["duplicate_blocks"]++;
             bstats["duplicate_bytes"] += data.Length;
-            if (TESTING) Console.WriteLine($"{DateTime.Now}: {hash} already exists");
+            if (TESTING) ConWrite($"{hash} already exists");
         }
 
         return hash;
@@ -353,7 +359,7 @@ internal partial class Program
             ds += bytesRead;
         }
 
-        if (TESTING) Console.WriteLine($"{DateTime.Now}: eof: {string.Join(", ", hashes)}");
+        if (TESTING) ConWrite($"eof: {string.Join(", ", hashes)}");
         return hashes;
     }
 
@@ -496,20 +502,17 @@ internal partial class Program
     {
         if (TESTING)
         {
-            Console.WriteLine($"{DateTime.Now}: {message}");
+            ConWrite($"{message}");
             LOG.WriteLine($"{DateTime.Now}: {message}");
         }
     }
 
     private static void LogError(string entry, string message)
     {
-        Console.WriteLine($"Error: {entry} - {message}");
+        Error($"Error: {entry} - {message}", "?");
         LOG.WriteLine($"Error: {entry} - {message}");
     }
 
-    [GeneratedRegex("^[0-9a-f]+$")]
-    private static partial Regex MyRegex();
 
-    [GeneratedRegex("^[0-9a-f][0-9a-f]$")]
-    private static partial Regex MyRegex1();
+
 }
