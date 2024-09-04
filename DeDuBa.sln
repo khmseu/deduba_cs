@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeDuBa", "DeDuBa\DeDuBa.csproj", "{0FC5ACCC-0906-4ABD-A8F7-14A778503740}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeDuBa.Test", "DeDuBa.Test\DeDuBa.Test.csproj", "{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FC5ACCC-0906-4ABD-A8F7-14A778503740}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FC5ACCC-0906-4ABD-A8F7-14A778503740}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FC5ACCC-0906-4ABD-A8F7-14A778503740}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FC5ACCC-0906-4ABD-A8F7-14A778503740}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
