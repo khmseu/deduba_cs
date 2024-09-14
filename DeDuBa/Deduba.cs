@@ -864,51 +864,66 @@ public partial class DedubaClass
     }
 
 
-    private struct passwdEntry
+    private readonly struct passwdEntry
     {
-        public string pw_name;
-        public string pw_passwd;
+        public readonly string pw_name = "";
+        public readonly string pw_passwd = "";
+        public readonly uint pw_uid = new();
+        public readonly uint pw_gid = new();
+        public readonly string pw_gecos = "";
+        public readonly string pw_dir = "";
+        public readonly string pw_shell = "";
 
-        public uint pw_uid;
-        public uint pw_gid;
-        public string pw_gecos;
-        public string pw_dir;
-        public string pw_shell;
+        public passwdEntry()
+        {
+        }
     }
 
-    private struct groupEntry
+    private readonly struct groupEntry
     {
-        public string gr_name;
-        public string gr_passwd;
-        public uint gr_gid;
-        public string[] gr_mem;
+        public readonly string gr_name = "";
+        public readonly string gr_passwd = "";
+        public readonly uint gr_gid = new();
+        public readonly string[] gr_mem = new string[0];
+
+        public groupEntry()
+        {
+        }
     }
 
 
-    private struct timeSpec
+    private readonly struct timeSpec
     {
-        public long tv_sec;
-        public long tv_nsec;
+        public readonly long tv_sec = new();
+        public readonly long tv_nsec = new();
+
+        public timeSpec()
+        {
+        }
     }
 
-    private struct statInfo
+    private readonly struct statInfo
     {
-        public ulong st_dev;
-        public ulong st_ino;
-        public ulong st_nlink;
-        public uint st_mode;
-        public uint st_uid;
-        public uint st_gid;
-        private int __pad0;
-        public ulong st_rdev;
-        public long st_size;
-        public long st_blksize;
-        public long st_blocks;
-        public timeSpec st_atim;
-        public timeSpec st_mtim;
-        public timeSpec st_ctim;
-        private long __glibc_reserved1;
-        private long __glibc_reserved2;
-        private long __glibc_reserved3;
+        public readonly ulong st_dev = new();
+        public readonly ulong st_ino = new();
+        public readonly ulong st_nlink = new();
+        public readonly uint st_mode = new();
+        public readonly uint st_uid = new();
+        public readonly uint st_gid = new();
+        private readonly int __pad0 = new();
+        public readonly ulong st_rdev = new();
+        public readonly long st_size = new();
+        public readonly long st_blksize = new();
+        public readonly long st_blocks = new();
+        public readonly timeSpec st_atim = new();
+        public readonly timeSpec st_mtim = new();
+        public readonly timeSpec st_ctim = new();
+        private readonly long __glibc_reserved1 = new();
+        private readonly long __glibc_reserved2 = new();
+        private readonly long __glibc_reserved3 = new();
+
+        public statInfo()
+        {
+        }
     }
 }
