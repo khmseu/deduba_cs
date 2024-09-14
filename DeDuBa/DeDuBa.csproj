@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="bzip2.net" Version="1.0.0" />
+    <PackageReference Include="ZoneTree" Version="1.8.2" />
+  </ItemGroup>
+
 </Project>
