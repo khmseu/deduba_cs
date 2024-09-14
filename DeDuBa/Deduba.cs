@@ -510,9 +510,9 @@ public partial class DedubaClass
                 bzip2OutputStream.Write(data.Select(x => (byte)x).ToArray());
                 bzip2OutputStream.Close();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                error(outFile, nameof(BZip2OutputStream), e);
+                error(outFile, nameof(BZip2OutputStream), ex);
                 packsum += new FileInfo(outFile).Length;
                 return hash; // ???
             }
@@ -548,9 +548,9 @@ public partial class DedubaClass
                 size -= n12;
                 ds += n12;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                error(tag, nameof(Stream.Read), e);
+                error(tag, nameof(Stream.Read), ex);
             }
 
         if (TESTING) ConWrite($"eof: {Dumper(D(size), D(hashes))}");
@@ -676,9 +676,9 @@ public partial class DedubaClass
                 start = DateTime.Now;
                 if (TESTING) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                error(entry, nameof(lstat), e);
+                error(entry, nameof(lstat), ex);
             }
 
             if (TESTING) ConWrite(Dumper(D(statBuf[0])));
