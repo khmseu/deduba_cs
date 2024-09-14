@@ -139,7 +139,8 @@ public partial class DedubaClass
     }
 
     private static KeyValuePair<string, object?> D(object? value,
-        [CallerArgumentExpression(nameof(value))] string name = "")
+        [CallerArgumentExpression(nameof(value))]
+        string name = "")
     {
         return new KeyValuePair<string, object?>(name, value);
     }
@@ -462,12 +463,12 @@ public partial class DedubaClass
     [LibraryImport("libc.so.6")]
     private static partial IntPtr getpwuid(uint __uid);
 
-    private static passwd GetPasswd(uint uid)
+    private static passwdEntry GetPasswd(uint uid)
     {
         var pwPtr = getpwuid(uid);
         if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
 
-        return Marshal.PtrToStructure<passwd>(pwPtr);
+        return Marshal.PtrToStructure<passwdEntry>(pwPtr);
     }
 
 
@@ -479,12 +480,12 @@ public partial class DedubaClass
     [LibraryImport("libc.so.6")]
     private static partial IntPtr getgrgid(uint __gid);
 
-    private static group GetGroup(uint gid)
+    private static groupEntry GetGroup(uint gid)
     {
         var grPtr = getgrgid(gid);
         if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
 
-        return Marshal.PtrToStructure<group>(grPtr);
+        return Marshal.PtrToStructure<groupEntry>(grPtr);
     }
 
     public static object[] grp(int gid)
@@ -558,15 +559,15 @@ public partial class DedubaClass
     }
 
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
-    private static partial int lstat([MarshalAs(UnmanagedType.LPStr)] string __file, ref stat __buf);
+    private static partial int lstat([MarshalAs(UnmanagedType.LPStr)] string __file, ref statInfo __buf);
 
     private static object[] lstat(string filename)
     {
-        var buf = new stat();
+        var buf = new statInfo();
         var ret = lstat(filename, ref buf);
         if (ret != 0) throw new Win32Exception();
 
-        double t2d(timespec t)
+        double t2d(timeSpec t)
         {
             return t.tv_sec + (double)t.tv_nsec / (1000 * 1000 * 1000);
         }
@@ -594,7 +595,7 @@ public partial class DedubaClass
         return (m & 0170000) == 0040000;
     }
 
-    private static bool S_ISDIR(stat s)
+    private static bool S_ISDIR(statInfo s)
     {
         return S_ISDIR(s.st_mode);
     }
@@ -609,7 +610,7 @@ public partial class DedubaClass
         return (m & 0170000) == 0100000;
     }
 
-    private static bool S_ISREG(stat s)
+    private static bool S_ISREG(statInfo s)
     {
         return S_ISREG(s.st_mode);
     }
@@ -624,7 +625,7 @@ public partial class DedubaClass
         return (m & 0170000) == 0120000;
     }
 
-    private static bool S_ISLNK(stat s)
+    private static bool S_ISLNK(statInfo s)
     {
         return S_ISLNK(s.st_mode);
     }
@@ -864,7 +865,7 @@ public partial class DedubaClass
     }
 
 
-    private struct passwd
+    private struct passwdEntry
     {
         public string pw_name;
         public string pw_passwd;
@@ -876,7 +877,7 @@ public partial class DedubaClass
         public string pw_shell;
     }
 
-    private struct group
+    private struct groupEntry
     {
         public string gr_name;
         public string gr_passwd;
@@ -885,13 +886,13 @@ public partial class DedubaClass
     }
 
 
-    private struct timespec
+    private struct timeSpec
     {
         public long tv_sec;
         public long tv_nsec;
     }
 
-    private struct stat
+    private struct statInfo
     {
         public ulong st_dev;
         public ulong st_ino;
@@ -904,9 +905,9 @@ public partial class DedubaClass
         public long st_size;
         public long st_blksize;
         public long st_blocks;
-        public timespec st_atim;
-        public timespec st_mtim;
-        public timespec st_ctim;
+        public timeSpec st_atim;
+        public timeSpec st_mtim;
+        public timeSpec st_ctim;
         private long __glibc_reserved1;
         private long __glibc_reserved2;
         private long __glibc_reserved3;
