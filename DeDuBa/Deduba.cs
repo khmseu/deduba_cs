@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bzip2;
-using DeDuBa.Extensions;
 
 namespace DeDuBa;
 
@@ -490,7 +489,7 @@ public partial class DedubaClass
 
     public static object[] grp(int gid)
     {
-        return new object[] { gid, GetGroup((uint)gid).gr_name };
+        return [gid, GetGroup((uint)gid).gr_name];
     }
 
     private static string save_data(string data)
@@ -838,14 +837,14 @@ public partial class DedubaClass
                     dirtmp[dir].Add(new object?[] { name, fs2inoValue });
                 LOG?.Write(
                     $"{BitConverter.ToString(Encoding.UTF8.GetBytes(fs2ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n");
-                if (TESTING) ConWrite($"{new string('_', 80)}\n");
+                if (TESTING) ConWrite($"{"_".Repeat(80)}\n");
             }
             else
             {
                 error(entry, "pruning");
             }
 
-            if (TESTING) ConWrite($"{new string('_', 80)}\n");
+            if (TESTING) ConWrite($"{"_".Repeat(80)}\n");
         }
     }
 
