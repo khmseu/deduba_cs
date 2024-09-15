@@ -7,62 +7,70 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bzip2;
+using DeDuBa.LibCalls;
+
 
 namespace DeDuBa;
 
-public partial class DedubaClass
-{
-    private const long CHUNKSIZE = 1024 * 1024 * 1024;
 
-    private const bool TESTING = true;
+
+
+
+
+
+public class DedubaClass
+{
+    private const long Chunksize = 1024 * 1024 * 1024;
+
+    private const bool Testing = true;
     private static string? START_TIMESTAMP;
     private static string? archive;
-    private static string data_path = "";
-    private static string? tmpp;
+    private static string _dataPath = "";
+    private static string? _tmpp;
 
-    private static readonly Dictionary<string, string> settings = new();
-    private static long ds;
-    private static readonly Dictionary<string, List<object>> dirtmp = [];
-    private static readonly Dictionary<string, long> bstats = [];
-    private static readonly Dictionary<ulong, int> devices = [];
-    private static readonly Dictionary<string, string?> fs2ino = [];
-    private static long packsum;
+    private static readonly Dictionary<string, string> Settings = new();
+    private static long _ds;
+    private static readonly Dictionary<string, List<object>> Dirtmp = [];
+    private static readonly Dictionary<string, long> Bstats = [];
+    private static readonly Dictionary<ulong, int> Devices = [];
+    private static readonly Dictionary<string, string?> Fs2Ino = [];
+    private static long _packsum;
 
-    private static StreamWriter? LOG;
+    private static StreamWriter? _log;
 
     // ############################################################################
     // Temporary on-disk hashes for backup data management
     // ############################################################################
     // arlist: hash -> part of filename between $data_path and actual file
-    private static readonly Dictionary<string, string> arlist = [];
+    private static readonly Dictionary<string, string> Arlist = [];
 
     // preflist: list of files and directories under a given prefix
     // (as \0-separated list)
-    private static readonly Dictionary<string, string> preflist = [];
-    private static readonly JsonSerializerOptions serializerOptions = new() { WriteIndented = true };
-    private static byte[] buf = new byte[1];
+    private static readonly Dictionary<string, string> Preflist = [];
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
+    private static byte[] _buf = new byte[1];
 
 
-    private static void Main(string[] ARGV)
+    private static void Main(string[] argv)
     {
         var START_TIMESTAMP = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
-        var archive = TESTING ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
-        data_path = Path.Combine(archive, "DATA");
-        tmpp = Path.Combine(archive, $"tmp.{Process.GetCurrentProcess().Id}");
+        var archive = Testing ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
+        _dataPath = Path.Combine(archive, "DATA");
+        _tmpp = Path.Combine(archive, $"tmp.{Process.GetCurrentProcess().Id}");
 
-        _ = Directory.CreateDirectory(data_path);
+        _ = Directory.CreateDirectory(_dataPath);
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            var dirInfo = new DirectoryInfo(data_path);
+            var dirInfo = new DirectoryInfo(_dataPath);
             dirInfo.UnixFileMode = (UnixFileMode)0711;
         }
 
         var logname = Path.Combine(archive, "log_" + START_TIMESTAMP);
-        LOG = new StreamWriter(logname);
+        _log = new StreamWriter(logname);
         // STDOUT->autoflush(1);
         // STDERR->autoflush(1);
-        LOG.AutoFlush = true;
+        _log.AutoFlush = true;
 
 
         //#############################################################################
@@ -72,68 +80,68 @@ public partial class DedubaClass
         try
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
-            ARGV = ARGV.Select(Path.GetFullPath).ToArray();
+            argv = argv.Select(Path.GetFullPath).ToArray();
 
-            foreach (var root in ARGV)
+            foreach (var root in argv)
             {
-                var st = lstat(root);
-                if (st != null) devices[(ulong)st[0]] = 1;
+                var st = Lstat(root);
+                if (st != null) Devices[(ulong)st[0]] = 1;
             }
 
-            ConWrite(Dumper(D(devices)));
+            ConWrite(Dumper(D(Devices)));
 
             // ############################################################################
 
             // tie % arlist,   'DB_File', undef;    #, "$tmpp.arlist";
             // tie % preflist, 'DB_File', undef;    #, "$tmpp.preflist";
-            preflist[""] = "";
+            Preflist[""] = "";
 
             ConWrite("Getting archive state\n");
 
-            mkarlist(data_path);
+            Mkarlist(_dataPath);
 
-            if (TESTING)
+            if (Testing)
             {
                 ConWrite("Before backup:\n");
-                foreach (var kvp in arlist)
-                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(arlist)}[{kvp.Key}]", kvp.Value)));
+                foreach (var kvp in Arlist)
+                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Arlist)}[{kvp.Key}]", kvp.Value)));
 
                 // Iterate over preflist
-                foreach (var kvp in preflist)
-                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(preflist)}[{kvp.Key}]", kvp.Value)));
+                foreach (var kvp in Preflist)
+                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Preflist)}[{kvp.Key}]", kvp.Value)));
             }
 
             // ##############################################################################
 
             ConWrite("Backup starting\n");
 
-            backup_worker(ARGV);
+            backup_worker(argv);
 
             // ##############################################################################
 
             // # my $status = unxz $input => $output [,OPTS] or print "\n", __LINE__, ' ', scalar localtime, ' ',  "\n", __ "unxz failed: $UnXzError\n" if TESTING;
 
-            if (TESTING) ConWrite(Dumper(D(dirtmp)));
+            if (Testing) ConWrite(Dumper(D(Dirtmp)));
 
-            if (TESTING) ConWrite(Dumper(D(devices)));
+            if (Testing) ConWrite(Dumper(D(Devices)));
 
-            ConWrite(Dumper(D(bstats)));
+            ConWrite(Dumper(D(Bstats)));
 
             // untie %arlist;
             // untie %preflist;
             // unlink "$tmpp.arlist", "$tmpp.preflist";
 
-            LOG.Close();
+            _log.Close();
 
             ConWrite("Backup done\n");
         }
         catch (Exception ex)
         {
-            error(logname, nameof(LOG.Close), ex);
+            Error(logname, nameof(_log.Close), ex);
         }
         finally
         {
-            LOG.Close();
+            _log.Close();
         }
     }
 
@@ -149,7 +157,7 @@ public partial class DedubaClass
         string[] ret = [];
         foreach (var kvp in values)
         {
-            var jsonOutput = JsonSerializer.Serialize(kvp.Value, serializerOptions);
+            var jsonOutput = JsonSerializer.Serialize(kvp.Value, SerializerOptions);
             ret = ret.Append($"{kvp.Key} = {jsonOutput}\n")
                 .ToArray();
         }
@@ -164,21 +172,21 @@ public partial class DedubaClass
     // ############################################################################
     // errors
 
-    private static void error(string file, string op, [CallerLineNumber] int lineNumber = 0)
+    private static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
     {
-        error(file, op, new Win32Exception(), lineNumber);
+        Error(file, op, new Win32Exception(), lineNumber);
     }
 
-    private static void error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
+    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n";
-        if (TESTING) ConWrite(msg, lineNumber);
-        if (LOG != null) LOG.Write(msg);
+        if (Testing) ConWrite(msg, lineNumber);
+        if (_log != null) _log.Write(msg);
         else
             throw new Exception(msg);
     }
 
-    private static void warn(string msg, [CallerLineNumber] int lineNumber = 0)
+    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0)
     {
         ConWrite($"WARN: {msg}\n", lineNumber);
     }
@@ -192,57 +200,57 @@ public partial class DedubaClass
     // ############################################################################
     // build arlist/preflist
 
-    private static void mkarlist(params string[] entries_)
+    private static void Mkarlist(params string[] filePaths)
     {
-        foreach (var entry in entries_.OrderBy(e => e))
+        foreach (var entry in filePaths.OrderBy(e => e))
         {
-            if (entry == data_path)
+            if (entry == _dataPath)
             {
-                if (TESTING) ConWrite($"+ {entry}");
+                if (Testing) ConWrite($"+ {entry}");
                 try
                 {
                     var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (TESTING) Console.Write($"\t{entries.Length} entries");
-                    mkarlist(entries);
-                    if (TESTING) Console.WriteLine($"\tdone {entry}");
+                    if (Testing) Console.Write($"\t{entries.Length} entries");
+                    Mkarlist(entries);
+                    if (Testing) Console.WriteLine($"\tdone {entry}");
                 }
                 catch (Exception ex)
                 {
-                    error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                    Error(entry, nameof(Directory.GetFileSystemEntries), ex);
                 }
 
                 continue;
             }
 
-            var match = Regex.Match(entry, $"^{Regex.Escape(data_path)}/?(.*)/([^/]+)$");
+            var match = Regex.Match(entry, $"^{Regex.Escape(_dataPath)}/?(.*)/([^/]+)$");
             var prefix = match.Groups[1].Value;
             var file = match.Groups[2].Value;
             if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
             {
-                if (TESTING) ConWrite($"+ {entry}:{prefix}:{file}");
-                preflist.TryAdd(prefix, "");
-                preflist[prefix] += $"{file}/\0";
+                if (Testing) ConWrite($"+ {entry}:{prefix}:{file}");
+                Preflist.TryAdd(prefix, "");
+                Preflist[prefix] += $"{file}/\0";
                 try
                 {
                     var dirEntries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (TESTING) Console.Write($"\t{dirEntries.Length} entries");
-                    mkarlist(dirEntries);
-                    if (TESTING) Console.WriteLine($"\tdone {entry}");
+                    if (Testing) Console.Write($"\t{dirEntries.Length} entries");
+                    Mkarlist(dirEntries);
+                    if (Testing) Console.WriteLine($"\tdone {entry}");
                 }
                 catch (Exception ex)
                 {
-                    error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                    Error(entry, nameof(Directory.GetFileSystemEntries), ex);
                 }
             }
             else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
             {
-                arlist[file] = prefix;
-                preflist.TryAdd(prefix, "");
-                preflist[prefix] += $"{file}\0";
+                Arlist[file] = prefix;
+                Preflist.TryAdd(prefix, "");
+                Preflist[prefix] += $"{file}\0";
             }
             else
             {
-                warn($"Bad entry in archive: {entry}");
+                Warn($"Bad entry in archive: {entry}");
             }
         }
     }
@@ -250,13 +258,13 @@ public partial class DedubaClass
     // ############################################################################
     // find place for hashed file, or note we already have it
 
-    private static string? hash2fn(string hash)
+    private static string? Hash2Fn(string hash)
     {
-        if (TESTING) ConWrite(Dumper(D(hash)));
+        if (Testing) ConWrite(Dumper(D(hash)));
 
-        if (arlist.TryGetValue(hash, out var value))
+        if (Arlist.TryGetValue(hash, out var value))
         {
-            packsum += new FileInfo(Path.Combine(data_path, value, hash)).Length;
+            _packsum += new FileInfo(Path.Combine(_dataPath, value, hash)).Length;
             return null;
         }
 
@@ -267,19 +275,19 @@ public partial class DedubaClass
         while (prefixList.Count > 0)
         {
             prefix = string.Join("/", prefixList);
-            if (preflist.ContainsKey(prefix)) break;
+            if (Preflist.ContainsKey(prefix)) break;
             prefixList.RemoveAt(prefixList.Count - 1);
         }
 
         if (prefixList.Count == 0) prefix = string.Join("/", prefixList);
-        var list = preflist[prefix].Split('\0').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        var list = Preflist[prefix].Split('\0').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
         var nlist = list.Count;
 
         if (nlist > 255)
         {
             // dir becoming too large, move files into subdirs
             ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
-            if (TESTING) ConWrite($"{Dumper(D(list))}\n");
+            if (Testing) ConWrite($"{Dumper(D(list))}\n");
 
             var depth = prefixList.Count;
             var plen = 2 * depth;
@@ -295,9 +303,9 @@ public partial class DedubaClass
                 var de = $"{dir}/";
                 if (!newDirs.Contains(de))
                 {
-                    Directory.CreateDirectory(Path.Combine(data_path, prefix, dir));
+                    Directory.CreateDirectory(Path.Combine(_dataPath, prefix, dir));
                     newDirs.Add(de);
-                    preflist[$"{prefix}/{dir}"] = "";
+                    Preflist[$"{prefix}/{dir}"] = "";
                 }
             }
 
@@ -308,29 +316,29 @@ public partial class DedubaClass
                     var de = $"{dir}/";
                     if (!newDirs.Contains(de))
                     {
-                        Directory.CreateDirectory(Path.Combine(data_path, prefix, dir));
+                        Directory.CreateDirectory(Path.Combine(_dataPath, prefix, dir));
                         newDirs.Add(de);
                     }
 
-                    var from = Path.Combine(data_path, prefix, f);
-                    var to = Path.Combine(data_path, prefix, dir, f);
+                    var from = Path.Combine(_dataPath, prefix, f);
+                    var to = Path.Combine(_dataPath, prefix, dir, f);
                     try
                     {
                         File.Move(from, to);
                     }
                     catch (Exception ex)
                     {
-                        error($"{from} -> {to}", nameof(File.Move), ex);
+                        Error($"{from} -> {to}", nameof(File.Move), ex);
                         continue;
                     }
 
                     var newpfx = $"{prefix}/{dir}";
-                    arlist[f] = newpfx;
-                    preflist.TryAdd(newpfx, "");
-                    preflist[newpfx] += $"{f}\0";
+                    Arlist[f] = newpfx;
+                    Preflist.TryAdd(newpfx, "");
+                    Preflist[newpfx] += $"{f}\0";
                 }
 
-            preflist[prefix] = string.Join("\0", newDirs) + "\0";
+            Preflist[prefix] = string.Join("\0", newDirs) + "\0";
             var dir2 = hash.Substring(plen, 2);
             prefix = $"{prefix}/{dir2}";
 
@@ -345,13 +353,13 @@ public partial class DedubaClass
         }
         else
         {
-            if (TESTING) ConWrite($"+++ not too large: '{prefix}' entries = {list.Count}\n");
+            if (Testing) ConWrite($"+++ not too large: '{prefix}' entries = {list.Count}\n");
         }
 
-        arlist[hash] = prefix;
-        preflist.TryAdd(prefix, "");
-        preflist[prefix] += $"{hash}\0";
-        return Path.Combine(data_path, prefix, hash);
+        Arlist[hash] = prefix;
+        Preflist.TryAdd(prefix, "");
+        Preflist[prefix] += $"{hash}\0";
+        return Path.Combine(_dataPath, prefix, hash);
     }
 
     public static string pack_w(ulong value)
@@ -400,12 +408,12 @@ public partial class DedubaClass
     // packed: w/a strings, w/w unsigned numbers, w/(a) lists
     // 
 
-    public static string sdpack(object? v, string name)
+    public static string Sdpack(object? v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (v == null) return "u";
         var t = v.GetType();
-        if (name.Length > 0 && TESTING) ConWrite($"{name}: {Dumper(D(t), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t), D(v))}");
 
         switch (t.Name)
         {
@@ -420,14 +428,14 @@ public partial class DedubaClass
             case "Array":
                 var array = (Array)v;
                 var ary = new List<string>();
-                foreach (var item in array) ary.Add(sdpack(item, ""));
+                foreach (var item in array) ary.Add(Sdpack(item, ""));
                 return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
             default:
                 throw new InvalidOperationException("unexpected type " + t.Name);
         }
     }
 
-    public static object? sdunpack(string value)
+    public static object? Sdunpack(string value)
     {
         var p = value.Substring(0, 1);
         var d = value.Substring(1);
@@ -448,60 +456,56 @@ public partial class DedubaClass
                 while (n-- >= 0)
                 {
                     var il = unpack_w(d, ref s);
-                    unpackedList.Add(sdunpack(d.Substring(s, (int)il)));
+                    unpackedList.Add(Sdunpack(d.Substring(s, (int)il)));
                 }
 
                 if (s < d.Length)
-                    throw new InvalidOperationException("Junk after compressed integer in " + nameof(sdunpack));
+                    throw new InvalidOperationException("Junk after compressed integer in " + nameof(Sdunpack));
                 return unpackedList.ToArray();
             default:
                 throw new InvalidOperationException("unexpected type " + p);
         }
     }
 
-    [LibraryImport("libc.so.6")]
-    private static partial IntPtr getpwuid(uint __uid);
 
-    private static passwdEntry GetPasswd(uint uid)
+
+    private static PasswdEntry GetPasswd(uint uid)
     {
-        var pwPtr = getpwuid(uid);
+        var pwPtr = LibCalls.LibCalls.getpwuid(uid);
         if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
 
-        return Marshal.PtrToStructure<passwdEntry>(pwPtr);
+        return Marshal.PtrToStructure<PasswdEntry>(pwPtr);
     }
 
 
-    public static object[] usr(int uid)
+    public static object[] Usr(int uid)
     {
-        return [uid, GetPasswd((uint)uid).pw_passwd];
+        return [uid, GetPasswd((uint)uid).PwPasswd];
     }
 
-    [LibraryImport("libc.so.6")]
-    private static partial IntPtr getgrgid(uint __gid);
-
-    private static groupEntry GetGroup(uint gid)
+    private static GroupEntry GetGroup(uint gid)
     {
-        var grPtr = getgrgid(gid);
+        var grPtr = LibCalls.LibCalls.getgrgid(gid);
         if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
 
-        return Marshal.PtrToStructure<groupEntry>(grPtr);
+        return Marshal.PtrToStructure<GroupEntry>(grPtr);
     }
 
-    public static object[] grp(int gid)
+    public static object[] Grp(int gid)
     {
-        return [gid, GetGroup((uint)gid).gr_name];
+        return [gid, GetGroup((uint)gid).GrName];
     }
 
     private static string save_data(string data)
     {
         var hashBytes = SHA512.HashData(data.ToArray().Select(x => (byte)x).ToArray());
         var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-        var outFile = hash2fn(hash);
+        var outFile = Hash2Fn(hash);
 
         if (outFile != null)
         {
-            bstats["saved_blocks"]++;
-            bstats["saved_bytes"] += data.Length;
+            Bstats["saved_blocks"]++;
+            Bstats["saved_bytes"] += data.Length;
 
             try
             {
@@ -512,19 +516,19 @@ public partial class DedubaClass
             }
             catch (Exception ex)
             {
-                error(outFile, nameof(BZip2OutputStream), ex);
-                packsum += new FileInfo(outFile).Length;
+                Error(outFile, nameof(BZip2OutputStream), ex);
+                _packsum += new FileInfo(outFile).Length;
                 return hash; // ???
             }
 
-            packsum += new FileInfo(outFile).Length;
-            if (TESTING) ConWrite(hash);
+            _packsum += new FileInfo(outFile).Length;
+            if (Testing) ConWrite(hash);
         }
         else
         {
-            bstats["duplicate_blocks"]++;
-            bstats["duplicate_bytes"] += data.Length;
-            if (TESTING) ConWrite($"{hash} already exists");
+            Bstats["duplicate_blocks"]++;
+            Bstats["duplicate_bytes"] += data.Length;
+            if (Testing) ConWrite($"{hash} already exists");
         }
 
         return hash;
@@ -539,151 +543,99 @@ public partial class DedubaClass
         while (size > 0)
             try
             {
-                var data = new byte[CHUNKSIZE];
-                var n12 = fileStream.Read(data, 0, (int)Math.Min(CHUNKSIZE, size));
-                if (TESTING) ConWrite($"chunk: {Dumper(D(size), D(n12))}");
+                var data = new byte[Chunksize];
+                var n12 = fileStream.Read(data, 0, (int)Math.Min(Chunksize, size));
+                if (Testing) ConWrite($"chunk: {Dumper(D(size), D(n12))}");
                 if (n12 == 0) break;
 
                 hashes.Add(save_data(new string(data.AsSpan(0, n12).ToArray().Select(x => (char)x).ToArray())));
                 size -= n12;
-                ds += n12;
+                _ds += n12;
             }
             catch (Exception ex)
             {
-                error(tag, nameof(Stream.Read), ex);
+                Error(tag, nameof(Stream.Read), ex);
             }
 
-        if (TESTING) ConWrite($"eof: {Dumper(D(size), D(hashes))}");
+        if (Testing) ConWrite($"eof: {Dumper(D(size), D(hashes))}");
         return hashes;
     }
 
-    [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
-    private static partial int lstat([MarshalAs(UnmanagedType.LPStr)] string __file, ref statInfo __buf);
-
-    private static object[] lstat(string filename)
+    private static object[] Lstat(string filename)
     {
-        var buf = new statInfo();
-        var ret = lstat(filename, ref buf);
+        var buf = new LibCalls.LibCalls.StatInfo();
+        var ret = LibCalls.LibCalls.lstat(filename, ref buf);
         if (ret != 0) throw new Win32Exception();
 
-        double t2d(timeSpec t)
+        double T2d(LibCalls.LibCalls.TimeSpec t)
         {
-            return t.tv_sec + (double)t.tv_nsec / (1000 * 1000 * 1000);
+            return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
         }
 
         return
         [
-            buf.st_dev,
-            buf.st_ino,
-            buf.st_mode,
-            buf.st_nlink,
-            buf.st_uid,
-            buf.st_gid,
-            buf.st_rdev,
-            buf.st_size,
-            t2d(buf.st_atim),
-            t2d(buf.st_mtim),
-            t2d(buf.st_ctim),
-            buf.st_blksize,
-            buf.st_blocks
+            buf.StDev,
+            buf.StIno,
+            buf.StMode,
+            buf.StNlink,
+            buf.StUid,
+            buf.StGid,
+            buf.StRdev,
+            buf.StSize,
+            T2d(buf.StAtim),
+            T2d(buf.StMtim),
+            T2d(buf.StCtim),
+            buf.StBlksize,
+            buf.StBlocks
         ];
     }
 
-    private static bool S_ISDIR(uint m)
+    private static string Readlink(string path)
     {
-        return (m & 0170000) == 0040000;
-    }
-
-    private static bool S_ISDIR(statInfo s)
-    {
-        return S_ISDIR(s.st_mode);
-    }
-
-    private static bool S_ISDIR(object[] s)
-    {
-        return S_ISDIR((uint)s[2]);
-    }
-
-    private static bool S_ISREG(uint m)
-    {
-        return (m & 0170000) == 0100000;
-    }
-
-    private static bool S_ISREG(statInfo s)
-    {
-        return S_ISREG(s.st_mode);
-    }
-
-    private static bool S_ISREG(object[] s)
-    {
-        return S_ISREG((uint)s[2]);
-    }
-
-    private static bool S_ISLNK(uint m)
-    {
-        return (m & 0170000) == 0120000;
-    }
-
-    private static bool S_ISLNK(statInfo s)
-    {
-        return S_ISLNK(s.st_mode);
-    }
-
-    private static bool S_ISLNK(object[] s)
-    {
-        return S_ISLNK((uint)s[2]);
-    }
-
-    [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
-    private static partial long readlink([MarshalAs(UnmanagedType.LPStr)] string path,
-        [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
-
-    private static string readlink(string path)
-    {
-        var sz = readlink(path, buf, (ulong)buf.Length);
+        var sz = LibCalls.LibCalls.readlink(path, _buf, (ulong)_buf.Length);
         do
         {
             if (sz == -1) throw new Win32Exception();
-            if (sz < buf.Length) break;
-            buf = new byte[buf.Length * 2];
+            if (sz < _buf.Length) break;
+            _buf = new byte[_buf.Length * 2];
         } while (true);
 
-        return new string(buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
+        return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
 
 
     // ##############################################################################
-    private static void backup_worker(string[] entries_)
+    private static void backup_worker(string[] filesToBackup)
     {
-        foreach (var entry in entries_.OrderBy(e => e))
+        foreach (var entry in filesToBackup.OrderBy(e => e))
         {
             var volume = Path.GetPathRoot(entry);
             var directories = Path.GetDirectoryName(entry);
             var file = Path.GetFileName(entry);
-            if (TESTING) ConWrite($"{"=".Repeat(80)}\n");
-            if (TESTING) ConWrite($"{Dumper(D(entry), D(volume), D(directories), D(file))}");
+            if (Testing) ConWrite($"{"=".Repeat(80)}\n");
+            if (Testing) ConWrite($"{Dumper(D(entry), D(volume), D(directories), D(file))}");
             var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
             var name = file;
             object[] statBuf = [];
             DateTime? start = null;
             try
             {
-                statBuf = lstat(entry);
+                statBuf = Lstat(entry);
 
                 // $dir is the current directory name,
                 // $name is the current filename within that directory
                 // $entry is the complete pathname to the file.
                 start = DateTime.Now;
-                if (TESTING) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
+                if (Testing) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
             }
             catch (Exception ex)
             {
-                error(entry, nameof(lstat), ex);
+                Error(entry, nameof(LibCalls.LibCalls.lstat), ex);
             }
 
-            if (TESTING) ConWrite(Dumper(D(statBuf[0])));
-            if (devices.ContainsKey((ulong)statBuf[0]) && data_path != null &&
-                Path.GetRelativePath(data_path, entry).StartsWith(".."))
+            if (Testing) ConWrite(Dumper(D(statBuf[0])));
+            if (Devices.ContainsKey((ulong)statBuf[0]) && _dataPath != null &&
+                Path.GetRelativePath(_dataPath, entry).StartsWith(".."))
             {
                 ConWrite($"stat: {Dumper(D(statBuf))}");
 
@@ -700,40 +652,40 @@ public partial class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
-                var old = fs2ino.ContainsKey(fsfid);
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
                 {
-                    fs2ino[fsfid] = sdpack(null, "");
-                    if (S_ISDIR(statBuf))
+                    Fs2Ino[fsfid] = Sdpack(null, "");
+                    if (LibCalls.LibCalls.S_ISDIR(statBuf))
                         while (true)
                             try
                             {
                                 var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                                if (TESTING) Console.Write($"\t{entries.Length} entries");
+                                if (Testing) Console.Write($"\t{entries.Length} entries");
                                 backup_worker(entries.Where(x => !x.StartsWith(".."))
                                     .Select(x => Path.Combine(entry, x)).ToArray());
-                                if (TESTING) Console.WriteLine($"\tdone {entry}");
+                                if (Testing) Console.WriteLine($"\tdone {entry}");
                             }
                             catch (Exception ex)
                             {
-                                error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                                Error(entry, nameof(Directory.GetFileSystemEntries), ex);
                             }
 
-                    packsum = 0;
+                    _packsum = 0;
                     // lstat(entry);
                     var inode = new List<object[]>
                     {
                         new[] { statBuf[2], statBuf[3] },
-                        usr((int)statBuf[4]),
-                        grp((int)statBuf[5]),
+                        Usr((int)statBuf[4]),
+                        Grp((int)statBuf[5]),
                         new[] { statBuf[6], statBuf[7], statBuf[9], statBuf[10] }
                     }.ToArray();
                     string? data;
                     string[] hashes = [];
-                    ds = 0;
-                    if (S_ISREG(statBuf))
+                    _ds = 0;
+                    if (LibCalls.LibCalls.S_ISREG(statBuf))
                     {
                         var size = (long)statBuf[7];
                         if (size != 0)
@@ -744,24 +696,24 @@ public partial class DedubaClass
                             }
                             catch (Exception ex)
                             {
-                                error(entry, nameof(File.OpenRead), ex);
+                                Error(entry, nameof(File.OpenRead), ex);
                                 continue;
                             }
                     }
-                    else if (S_ISLNK(statBuf))
+                    else if (LibCalls.LibCalls.S_ISLNK(statBuf))
                     {
                         try
                         {
-                            data = readlink(entry);
+                            data = Readlink(entry);
                         }
                         catch (Exception ex)
                         {
-                            error(entry, nameof(readlink), ex);
+                            Error(entry, nameof(LibCalls.LibCalls.readlink), ex);
                             continue;
                         }
 
                         var size = data.Length;
-                        if (TESTING) ConWrite(Dumper(D(data)));
+                        if (Testing) ConWrite(Dumper(D(data)));
                         MemoryStream? mem1 = null;
                         try
                         {
@@ -770,20 +722,20 @@ public partial class DedubaClass
                         }
                         catch (Exception ex)
                         {
-                            error(entry, nameof(MemoryStream), ex);
+                            Error(entry, nameof(MemoryStream), ex);
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
-                        ds = data.Length;
+                        _ds = data.Length;
                         data = null;
                     }
-                    else if (S_ISDIR(statBuf))
+                    else if (LibCalls.LibCalls.S_ISDIR(statBuf))
                     {
-                        var data2 = sdpack(dirtmp[entry] ?? [], "dir");
-                        dirtmp.Remove(entry);
+                        var data2 = Sdpack(Dirtmp[entry] ?? [], "dir");
+                        Dirtmp.Remove(entry);
                         var size = data2.Length;
-                        if (TESTING) ConWrite(Dumper(D(data2)));
+                        if (Testing) ConWrite(Dumper(D(data2)));
                         MemoryStream? mem2 = null;
                         try
                         {
@@ -792,20 +744,20 @@ public partial class DedubaClass
                         }
                         catch (Exception ex)
                         {
-                            error(entry, nameof(MemoryStream), ex);
+                            Error(entry, nameof(MemoryStream), ex);
                             continue;
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
                         hashes = save_file(mem2!, size, $"{entry} $data $dirtmp").ToArray();
-                        ds = data2.Length;
+                        _ds = data2.Length;
                         data2 = null;
                     }
 
-                    if (TESTING) ConWrite($"data: {Dumper(D(hashes))}");
+                    if (Testing) ConWrite($"data: {Dumper(D(hashes))}");
                     inode = inode.Append(hashes).ToArray();
-                    data = sdpack(inode, "inode");
-                    if (TESTING) ConWrite(Dumper(D(data)));
+                    data = Sdpack(inode, "inode");
+                    if (Testing) ConWrite(Dumper(D(data)));
                     MemoryStream? mem = null;
                     try
                     {
@@ -814,116 +766,82 @@ public partial class DedubaClass
                     }
                     catch (Exception ex)
                     {
-                        error(entry, nameof(MemoryStream), ex);
+                        Error(entry, nameof(MemoryStream), ex);
                         continue;
                     }
 
                     // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
                     hashes = save_file(mem!, data.Length, $"{entry} $data @inode").ToArray();
-                    var ino = sdpack(hashes.ToArray(), "fileid");
-                    fs2ino[fsfid] = ino;
+                    var ino = Sdpack(hashes.ToArray(), "fileid");
+                    Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = start == null ? null : DateTime.Now.Subtract((DateTime)start);
-                    var speed = needed?.TotalSeconds > 0 ? (double?)ds / needed.Value.TotalSeconds : null;
-                    if (TESTING) ConWrite($"timing: {Dumper(D(ds), D(needed), D(speed))}");
-                    report = $"[{statBuf[7]:d} -> {packsum:d}: {needed:d}s]";
+                    var speed = needed?.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
+                    if (Testing) ConWrite($"timing: {Dumper(D(_ds), D(needed), D(speed))}");
+                    report = $"[{statBuf[7]:d} -> {_packsum:d}: {needed:d}s]";
                 }
                 else
                 {
                     report = $"[{statBuf[7]:d} -> duplicate]";
                 }
 
-                if (!dirtmp.ContainsKey(dir)) dirtmp[dir] = new List<object>();
-                if (fs2ino.TryGetValue(fsfid, out var fs2inoValue))
-                    dirtmp[dir].Add(new object?[] { name, fs2inoValue });
-                LOG?.Write(
-                    $"{BitConverter.ToString(Encoding.UTF8.GetBytes(fs2ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n");
-                if (TESTING) ConWrite($"{"_".Repeat(80)}\n");
+                if (!Dirtmp.ContainsKey(dir)) Dirtmp[dir] = new List<object>();
+                if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
+                    Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
+                _log?.Write(
+                    $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n");
+                if (Testing) ConWrite($"{"_".Repeat(80)}\n");
             }
             else
             {
-                error(entry, "pruning");
+                Error(entry, "pruning");
             }
 
-            if (TESTING) ConWrite($"{"_".Repeat(80)}\n");
+            if (Testing) ConWrite($"{"_".Repeat(80)}\n");
         }
     }
 
     private static void LogLine(string message)
     {
-        if (TESTING)
+        if (Testing)
         {
             ConWrite(message);
-            LOG?.WriteLine($"{DateTime.Now}: {message}");
+            _log?.WriteLine($"{DateTime.Now}: {message}");
         }
     }
 
     private static void LogError(string entry, string message)
     {
-        error($"Error: {entry} - {message}", "?");
-        LOG?.WriteLine($"Error: {entry} - {message}");
+        Error($"Error: {entry} - {message}", "?");
+        _log?.WriteLine($"Error: {entry} - {message}");
     }
 
 
-    private readonly struct passwdEntry
+    private readonly struct PasswdEntry
     {
         public readonly string pw_name = "";
-        public readonly string pw_passwd = "";
+        public readonly string PwPasswd = "";
         public readonly uint pw_uid = new();
         public readonly uint pw_gid = new();
         public readonly string pw_gecos = "";
         public readonly string pw_dir = "";
         public readonly string pw_shell = "";
 
-        public passwdEntry()
+        public PasswdEntry()
         {
         }
     }
 
-    private readonly struct groupEntry
+    private readonly struct GroupEntry
     {
-        public readonly string gr_name = "";
+        public readonly string GrName = "";
         public readonly string gr_passwd = "";
         public readonly uint gr_gid = new();
-        public readonly string[] gr_mem = new string[0];
+        public readonly string[] GrMem = new string[0];
 
-        public groupEntry()
+        public GroupEntry()
         {
         }
     }
 
 
-    private readonly struct timeSpec
-    {
-        public readonly long tv_sec = new();
-        public readonly long tv_nsec = new();
-
-        public timeSpec()
-        {
-        }
-    }
-
-    private readonly struct statInfo
-    {
-        public readonly ulong st_dev = new();
-        public readonly ulong st_ino = new();
-        public readonly ulong st_nlink = new();
-        public readonly uint st_mode = new();
-        public readonly uint st_uid = new();
-        public readonly uint st_gid = new();
-        private readonly int __pad0 = new();
-        public readonly ulong st_rdev = new();
-        public readonly long st_size = new();
-        public readonly long st_blksize = new();
-        public readonly long st_blocks = new();
-        public readonly timeSpec st_atim = new();
-        public readonly timeSpec st_mtim = new();
-        public readonly timeSpec st_ctim = new();
-        private readonly long __glibc_reserved1 = new();
-        private readonly long __glibc_reserved2 = new();
-        private readonly long __glibc_reserved3 = new();
-
-        public statInfo()
-        {
-        }
-    }
 }
