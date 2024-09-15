@@ -1,12 +1,9 @@
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
-using System.Runtime.CompilerServices;
 
 namespace DeDuBa.LibCalls;
 
 public partial class LibCalls
 {
-
     [LibraryImport("libc.so.6")]
     public static partial IntPtr getpwuid(uint uid);
 
@@ -19,6 +16,7 @@ public partial class LibCalls
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     public static partial long readlink([MarshalAs(UnmanagedType.LPStr)] string path,
         [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
+
     public static bool S_ISDIR(uint m)
     {
         return (m & 0170000) == 0040000;
