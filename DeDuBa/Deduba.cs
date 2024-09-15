@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -14,9 +15,9 @@ public class DedubaClass
 {
     private const long Chunksize = 1024 * 1024 * 1024;
 
-    private const bool Testing = true;
-    private static string? START_TIMESTAMP;
-    private static string? archive;
+    public static bool Testing = true;
+    private static string? _startTimestamp;
+    private static string? _archive;
     private static string _dataPath = "";
     private static string? _tmpp;
 
@@ -43,13 +44,13 @@ public class DedubaClass
     private static byte[] _buf = new byte[1];
 
 
-    private static void Main(string[] argv)
+    public static void Backup(string[] argv)
     {
-        var START_TIMESTAMP = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+        _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
-        var archive = Testing ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
-        _dataPath = Path.Combine(archive, "DATA");
-        _tmpp = Path.Combine(archive, $"tmp.{Process.GetCurrentProcess().Id}");
+        _archive = Testing ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
+        _dataPath = Path.Combine(_archive, "DATA");
+        _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
 
         _ = Directory.CreateDirectory(_dataPath);
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
@@ -58,7 +59,7 @@ public class DedubaClass
             dirInfo.UnixFileMode = (UnixFileMode)0711;
         }
 
-        var logname = Path.Combine(archive, "log_" + START_TIMESTAMP);
+        var logname = Path.Combine(_archive, "log_" + _startTimestamp);
         _log = new StreamWriter(logname);
         // STDOUT->autoflush(1);
         // STDERR->autoflush(1);
@@ -77,7 +78,7 @@ public class DedubaClass
             foreach (var root in argv)
             {
                 var st = Lstat(root);
-                if (st != null) Devices[(ulong)st[0]] = 1;
+                if (st != null && st.Length > 0) Devices[(ulong)st[0]] = 1;
             }
 
             ConWrite(Dumper(D(Devices)));
@@ -354,16 +355,16 @@ public class DedubaClass
         return Path.Combine(_dataPath, prefix, hash);
     }
 
-    public static string pack_w(ulong value)
+    public static string pack_w<NUM>(NUM value) where NUM : INumber<NUM>
     {
-        if (value < 0) throw new InvalidOperationException("Cannot compress negative numbers in " + nameof(pack_w));
-        var buf = new byte[sizeof(ulong) * 8 / 7 + 1];
+        if (NUM.IsNegative(value)) throw new InvalidOperationException("Cannot compress negative numbers in " + nameof(pack_w));
+        var buf = new byte[Marshal.SizeOf(typeof(NUM)) * 8 / 7 + 1];
         var inIndex = buf.Length;
         do
         {
-            buf[--inIndex] = (byte)((value & 0x7F) | 0x80);
-            value >>= 7;
-        } while (value > 0);
+            buf[--inIndex] = (byte)(((dynamic)value & 0x7F) | 0x80);
+            value = (NUM)((dynamic)value >> 7);
+        } while ((dynamic)value > 0);
 
         buf[buf.Length - 1] &= 0x7F; /* clear continue bit */
         return new string(buf.Skip(inIndex).Select(b => (char)b).ToArray());
