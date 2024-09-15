@@ -462,7 +462,7 @@ public class DedubaClass
 
     private static PasswdEntry GetPasswd(uint uid)
     {
-        var pwPtr = LibCalls.LibCalls.getpwuid(uid);
+        var pwPtr = LibCalls.getpwuid(uid);
         if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
 
         return Marshal.PtrToStructure<PasswdEntry>(pwPtr);
@@ -476,7 +476,7 @@ public class DedubaClass
 
     private static GroupEntry GetGroup(uint gid)
     {
-        var grPtr = LibCalls.LibCalls.getgrgid(gid);
+        var grPtr = LibCalls.getgrgid(gid);
         if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
 
         return Marshal.PtrToStructure<GroupEntry>(grPtr);
@@ -554,11 +554,11 @@ public class DedubaClass
 
     private static object[] Lstat(string filename)
     {
-        var buf = new LibCalls.LibCalls.StatInfo();
-        var ret = LibCalls.LibCalls.lstat(filename, ref buf);
+        var buf = new LibCalls.StatInfo();
+        var ret = LibCalls.lstat(filename, ref buf);
         if (ret != 0) throw new Win32Exception();
 
-        double T2d(LibCalls.LibCalls.TimeSpec t)
+        double T2d(LibCalls.TimeSpec t)
         {
             return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
         }
@@ -583,7 +583,7 @@ public class DedubaClass
 
     private static string Readlink(string path)
     {
-        var sz = LibCalls.LibCalls.readlink(path, _buf, (ulong)_buf.Length);
+        var sz = LibCalls.readlink(path, _buf, (ulong)_buf.Length);
         do
         {
             if (sz == -1) throw new Win32Exception();
@@ -621,7 +621,7 @@ public class DedubaClass
             }
             catch (Exception ex)
             {
-                Error(entry, nameof(LibCalls.LibCalls.lstat), ex);
+                Error(entry, nameof(LibCalls.lstat), ex);
             }
 
             if (Testing) ConWrite(Dumper(D(statBuf[0])));
@@ -643,13 +643,13 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (LibCalls.LibCalls.S_ISDIR(statBuf))
+                    if (LibCalls.S_ISDIR(statBuf))
                         while (true)
                             try
                             {
@@ -676,7 +676,7 @@ public class DedubaClass
                     string? data;
                     string[] hashes = [];
                     _ds = 0;
-                    if (LibCalls.LibCalls.S_ISREG(statBuf))
+                    if (LibCalls.S_ISREG(statBuf))
                     {
                         var size = (long)statBuf[7];
                         if (size != 0)
@@ -691,7 +691,7 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if (LibCalls.LibCalls.S_ISLNK(statBuf))
+                    else if (LibCalls.S_ISLNK(statBuf))
                     {
                         try
                         {
@@ -699,7 +699,7 @@ public class DedubaClass
                         }
                         catch (Exception ex)
                         {
-                            Error(entry, nameof(LibCalls.LibCalls.readlink), ex);
+                            Error(entry, nameof(LibCalls.readlink), ex);
                             continue;
                         }
 
@@ -721,7 +721,7 @@ public class DedubaClass
                         _ds = data.Length;
                         data = null;
                     }
-                    else if (LibCalls.LibCalls.S_ISDIR(statBuf))
+                    else if (LibCalls.S_ISDIR(statBuf))
                     {
                         var data2 = Sdpack(Dirtmp[entry] ?? [], "dir");
                         Dirtmp.Remove(entry);

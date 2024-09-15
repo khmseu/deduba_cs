@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace DeDuBa.LibCalls;
+namespace DeDuBa;
 
 public partial class LibCalls
 {
