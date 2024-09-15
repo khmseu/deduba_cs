@@ -41,7 +41,6 @@ public class DedubaClass
     // (as \0-separated list)
     private static readonly Dictionary<string, string> Preflist = [];
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
-    private static byte[] _buf = new byte[1];
 
 
     public static void Backup(string[] argv)
@@ -56,7 +55,7 @@ public class DedubaClass
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             _ = new DirectoryInfo(_dataPath)
             {
-                UnixFileMode = (UnixFileMode)0711
+                UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
             };
 
         var logname = Path.Combine(_archive, "log_" + _startTimestamp);
@@ -77,7 +76,7 @@ public class DedubaClass
 
             foreach (var root in argv)
             {
-                var st = Lstat(root);
+                var st = LibCalls.Lstat(root);
                 if (st.Length > 0) Devices[(ulong)st[0]] = 1;
             }
 
@@ -460,32 +459,14 @@ public class DedubaClass
         }
     }
 
-
-    private static LibCalls.PasswdEntry GetPasswd(uint uid)
-    {
-        var pwPtr = LibCalls.getpwuid(uid);
-        if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
-
-        return Marshal.PtrToStructure<LibCalls.PasswdEntry>(pwPtr);
-    }
-
-
     private static object[] Usr(int uid)
     {
-        return [uid, GetPasswd((uint)uid).PwPasswd];
-    }
-
-    private static LibCalls.GroupEntry GetGroup(uint gid)
-    {
-        var grPtr = LibCalls.getgrgid(gid);
-        if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
-
-        return Marshal.PtrToStructure<LibCalls.GroupEntry>(grPtr);
+        return new object[] { uid, LibCalls.GetPasswd((uint)uid).PwName };
     }
 
     private static object[] Grp(int gid)
     {
-        return [gid, GetGroup((uint)gid).GrName];
+        return new object[] { gid, LibCalls.GetGroup((uint)gid).GrName };
     }
 
     private static string save_data(string data)
@@ -553,49 +534,6 @@ public class DedubaClass
         return hashes;
     }
 
-    private static object[] Lstat(string filename)
-    {
-        var buf = new LibCalls.StatInfo();
-        var ret = LibCalls.lstat(filename, ref buf);
-        if (ret != 0) throw new Win32Exception();
-
-        double T2d(LibCalls.TimeSpec t)
-        {
-            return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
-        }
-
-        return
-        [
-            buf.StDev,
-            buf.StIno,
-            buf.StMode,
-            buf.StNlink,
-            buf.StUid,
-            buf.StGid,
-            buf.StRdev,
-            buf.StSize,
-            T2d(buf.StAtim),
-            T2d(buf.StMtim),
-            T2d(buf.StCtim),
-            buf.StBlksize,
-            buf.StBlocks
-        ];
-    }
-
-    private static string Readlink(string path)
-    {
-        var sz = LibCalls.readlink(path, _buf, (ulong)_buf.Length);
-        do
-        {
-            if (sz == -1) throw new Win32Exception();
-            if (sz < _buf.Length) break;
-            _buf = new byte[_buf.Length * 2];
-        } while (true);
-
-        return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
-    }
-
-
     // ##############################################################################
     private static void backup_worker(string[] filesToBackup)
     {
@@ -612,7 +550,7 @@ public class DedubaClass
             DateTime? start = null;
             try
             {
-                statBuf = Lstat(entry);
+                statBuf = LibCalls.Lstat(entry);
 
                 // $dir is the current directory name,
                 // $name is the current filename within that directory
@@ -622,7 +560,7 @@ public class DedubaClass
             }
             catch (Exception ex)
             {
-                Error(entry, nameof(LibCalls.lstat), ex);
+                Error(entry, nameof(LibCalls.Lstat), ex);
             }
 
             if (Testing) ConWrite(Dumper(D(statBuf[0])));
@@ -644,7 +582,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -697,11 +635,11 @@ public class DedubaClass
                         string? dataIslink;
                         try
                         {
-                            dataIslink = Readlink(entry);
+                            dataIslink = LibCalls.Readlink(entry);
                         }
                         catch (Exception ex)
                         {
-                            Error(entry, nameof(LibCalls.readlink), ex);
+                            Error(entry, nameof(LibCalls.Readlink), ex);
                             continue;
                         }
 

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace DeDuBa;
@@ -5,16 +6,17 @@ namespace DeDuBa;
 public partial class LibCalls
 {
     [LibraryImport("libc.so.6")]
-    public static partial IntPtr getpwuid(uint uid);
+    private static partial IntPtr getpwuid(uint uid);
 
     [LibraryImport("libc.so.6")]
-    public static partial IntPtr getgrgid(uint gid);
-
-    [DllImport("libc.so.6", CharSet = CharSet.Ansi, SetLastError = true)]
-    public static extern int lstat(string file, ref StatInfo buf);
+    private static partial IntPtr getgrgid(uint gid);
 
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
-    public static partial long readlink([MarshalAs(UnmanagedType.LPStr)] string path,
+    private static partial int __lxstat(int __ver, string __filename, ref StatInfo __stat_buf);
+
+
+    [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial long __readlink_alias([MarshalAs(UnmanagedType.LPStr)] string path,
         [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
 
     public static bool S_ISDIR(uint m)
@@ -66,72 +68,38 @@ public partial class LibCalls
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct StatInfo
     {
-        public readonly ulong StDev;
-        public readonly ulong StIno;
-        public readonly ulong StNlink;
-        public readonly uint StMode;
-        public readonly uint StUid;
-        public readonly uint StGid;
-        private readonly int __pad0;
-        public readonly ulong StRdev;
-        public readonly long StSize;
-        public readonly long StBlksize;
-        public readonly long StBlocks;
-        public readonly TimeSpec StAtim;
-        public readonly TimeSpec StMtim;
-        public readonly TimeSpec StCtim;
-        private readonly long __glibc_reserved1;
-        private readonly long __glibc_reserved2;
-        private readonly long __glibc_reserved3;
+        public readonly ulong StDev = new();
+        public readonly ulong StIno = new();
+        public readonly ulong StNlink = new();
+        public readonly uint StMode = new();
+        public readonly uint StUid = new();
+        public readonly uint StGid = new();
+        private readonly int __pad0 = new();
+        public readonly ulong StRdev = new();
+        public readonly long StSize = new();
+        public readonly long StBlksize = new();
+        public readonly long StBlocks = new();
+        public readonly TimeSpec StAtim = new();
+        public readonly TimeSpec StMtim = new();
+        public readonly TimeSpec StCtim = new();
+        private readonly long __glibc_reserved1 = new();
+        private readonly long __glibc_reserved2 = new();
+        private readonly long __glibc_reserved3 = new();
 
-        public StatInfo(
-            ulong stDev,
-            ulong stIno,
-            ulong stNlink,
-            uint stMode,
-            uint stUid,
-            uint stGid,
-            int pad0,
-            ulong stRdev,
-            long stSize,
-            long stBlksize,
-            long stBlocks,
-            TimeSpec stAtim,
-            TimeSpec stMtim,
-            TimeSpec stCtim,
-            long glibcReserved1,
-            long glibcReserved2,
-            long glibcReserved3)
+        public StatInfo()
         {
-            StDev = stDev;
-            StIno = stIno;
-            StNlink = stNlink;
-            StMode = stMode;
-            StUid = stUid;
-            StGid = stGid;
-            __pad0 = pad0;
-            StRdev = stRdev;
-            StSize = stSize;
-            StBlksize = stBlksize;
-            StBlocks = stBlocks;
-            StAtim = stAtim;
-            StMtim = stMtim;
-            StCtim = stCtim;
-            __glibc_reserved1 = glibcReserved1;
-            __glibc_reserved2 = glibcReserved2;
-            __glibc_reserved3 = glibcReserved3;
         }
     }
 
     public readonly struct PasswdEntry
     {
-        public readonly string pw_name = "";
+        public readonly string PwName = "";
         public readonly string PwPasswd = "";
-        public readonly uint pw_uid = new();
-        public readonly uint pw_gid = new();
-        public readonly string pw_gecos = "";
-        public readonly string pw_dir = "";
-        public readonly string pw_shell = "";
+        public readonly uint PwUid = new();
+        public readonly uint PwGid = new();
+        public readonly string PwGecos = "";
+        public readonly string PwDir = "";
+        public readonly string PwShell = "";
 
         public PasswdEntry()
         {
@@ -160,4 +128,72 @@ public partial class LibCalls
         {
         }
     }
+
+    public static LibCalls.PasswdEntry GetPasswd(uint uid)
+    {
+        var pwPtr = LibCalls.getpwuid(uid);
+        if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
+
+        return Marshal.PtrToStructure<LibCalls.PasswdEntry>(pwPtr);
+    }
+
+
+    public static LibCalls.GroupEntry GetGroup(uint gid)
+    {
+        var grPtr = LibCalls.getgrgid(gid);
+        if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
+
+        return Marshal.PtrToStructure<LibCalls.GroupEntry>(grPtr);
+    }
+
+    public static object[] Lstat(string filename)
+    {
+        var buf = new LibCalls.StatInfo();
+        var ret = __lxstat(1, filename, ref buf);
+        if (ret != 0) throw new Win32Exception();
+
+        double T2d(LibCalls.TimeSpec t)
+        {
+            return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
+        }
+
+        return
+        [
+            buf.StDev,
+            buf.StIno,
+            buf.StMode,
+            buf.StNlink,
+            buf.StUid,
+            buf.StGid,
+            buf.StRdev,
+            buf.StSize,
+            T2d(buf.StAtim),
+            T2d(buf.StMtim),
+            T2d(buf.StCtim),
+            buf.StBlksize,
+            buf.StBlocks
+        ];
+    }
+
+    public static string Readlink(string path)
+    {
+        var sz = LibCalls.__readlink_alias(path, _buf, (ulong)_buf.Length);
+        do
+        {
+            if (sz == -1) throw new Win32Exception();
+            if (sz < _buf.Length) break;
+            _buf = new byte[_buf.Length * 2];
+        } while (true);
+
+        return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
+    }
+
+
+
+
+
+
+
+    private static byte[] _buf = new byte[1];
 }
+
