@@ -5,6 +5,8 @@ namespace DeDuBa;
 
 public partial class LibCalls
 {
+    private static byte[] _buf = new byte[1];
+
     [LibraryImport("libc.so.6")]
     private static partial IntPtr getpwuid(uint uid);
 
@@ -62,6 +64,65 @@ public partial class LibCalls
     public static bool S_ISLNK(object[] s)
     {
         return S_ISLNK((uint)s[2]);
+    }
+
+    public static PasswdEntry GetPasswd(uint uid)
+    {
+        var pwPtr = getpwuid(uid);
+        if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
+
+        return Marshal.PtrToStructure<PasswdEntry>(pwPtr);
+    }
+
+
+    public static GroupEntry GetGroup(uint gid)
+    {
+        var grPtr = getgrgid(gid);
+        if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
+
+        return Marshal.PtrToStructure<GroupEntry>(grPtr);
+    }
+
+    public static object[] Lstat(string filename)
+    {
+        var buf = new StatInfo();
+        var ret = __lxstat(1, filename, ref buf);
+        if (ret != 0) throw new Win32Exception();
+
+        double T2d(TimeSpec t)
+        {
+            return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
+        }
+
+        return
+        [
+            buf.StDev,
+            buf.StIno,
+            buf.StMode,
+            buf.StNlink,
+            buf.StUid,
+            buf.StGid,
+            buf.StRdev,
+            buf.StSize,
+            T2d(buf.StAtim),
+            T2d(buf.StMtim),
+            T2d(buf.StCtim),
+            buf.StBlksize,
+            buf.StBlocks
+        ];
+    }
+
+    public static string Readlink(string path)
+    {
+        var sz = __readlink_alias(path, _buf, (ulong)_buf.Length);
+        do
+        {
+            if (sz == -1) throw new Win32Exception();
+            if (sz < _buf.Length) break;
+            _buf = new byte[_buf.Length * 2];
+        } while (true);
+
+        return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
 
 
@@ -128,72 +189,4 @@ public partial class LibCalls
         {
         }
     }
-
-    public static LibCalls.PasswdEntry GetPasswd(uint uid)
-    {
-        var pwPtr = LibCalls.getpwuid(uid);
-        if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
-
-        return Marshal.PtrToStructure<LibCalls.PasswdEntry>(pwPtr);
-    }
-
-
-    public static LibCalls.GroupEntry GetGroup(uint gid)
-    {
-        var grPtr = LibCalls.getgrgid(gid);
-        if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
-
-        return Marshal.PtrToStructure<LibCalls.GroupEntry>(grPtr);
-    }
-
-    public static object[] Lstat(string filename)
-    {
-        var buf = new LibCalls.StatInfo();
-        var ret = __lxstat(1, filename, ref buf);
-        if (ret != 0) throw new Win32Exception();
-
-        double T2d(LibCalls.TimeSpec t)
-        {
-            return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
-        }
-
-        return
-        [
-            buf.StDev,
-            buf.StIno,
-            buf.StMode,
-            buf.StNlink,
-            buf.StUid,
-            buf.StGid,
-            buf.StRdev,
-            buf.StSize,
-            T2d(buf.StAtim),
-            T2d(buf.StMtim),
-            T2d(buf.StCtim),
-            buf.StBlksize,
-            buf.StBlocks
-        ];
-    }
-
-    public static string Readlink(string path)
-    {
-        var sz = LibCalls.__readlink_alias(path, _buf, (ulong)_buf.Length);
-        do
-        {
-            if (sz == -1) throw new Win32Exception();
-            if (sz < _buf.Length) break;
-            _buf = new byte[_buf.Length * 2];
-        } while (true);
-
-        return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
-    }
-
-
-
-
-
-
-
-    private static byte[] _buf = new byte[1];
 }
-
