@@ -55,8 +55,10 @@ public class DedubaClass
         _ = Directory.CreateDirectory(_dataPath);
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            var dirInfo = new DirectoryInfo(_dataPath);
-            dirInfo.UnixFileMode = (UnixFileMode)0711;
+            var dirInfo = new DirectoryInfo(_dataPath)
+            {
+                UnixFileMode = (UnixFileMode)0711
+            };
         }
 
         var logname = Path.Combine(_archive, "log_" + _startTimestamp);
@@ -78,7 +80,7 @@ public class DedubaClass
             foreach (var root in argv)
             {
                 var st = Lstat(root);
-                if (st != null && st.Length > 0) Devices[(ulong)st[0]] = 1;
+                if (st.Length > 0) Devices[(ulong)st[0]] = 1;
             }
 
             ConWrite(Dumper(D(Devices)));
@@ -355,19 +357,19 @@ public class DedubaClass
         return Path.Combine(_dataPath, prefix, hash);
     }
 
-    public static string pack_w<NUM>(NUM value) where NUM : INumber<NUM>
+    public static string pack_w<TNum>(TNum value) where TNum : INumber<TNum>
     {
-        if (NUM.IsNegative(value))
+        if (TNum.IsNegative(value))
             throw new InvalidOperationException("Cannot compress negative numbers in " + nameof(pack_w));
-        var buf = new byte[Marshal.SizeOf(typeof(NUM)) * 8 / 7 + 1];
+        var buf = new byte[Marshal.SizeOf(typeof(TNum)) * 8 / 7 + 1];
         var inIndex = buf.Length;
         do
         {
             buf[--inIndex] = (byte)(((dynamic)value & 0x7F) | 0x80);
-            value = (NUM)((dynamic)value >> 7);
+            value = (TNum)((dynamic)value >> 7);
         } while ((dynamic)value > 0);
 
-        buf[buf.Length - 1] &= 0x7F; /* clear continue bit */
+        buf[^1] &= 0x7F; /* clear continue bit */
         return new string(buf.Skip(inIndex).Select(b => (char)b).ToArray());
     }
 
@@ -376,8 +378,7 @@ public class DedubaClass
         ulong auv = 0;
         while (s < value.Length)
         {
-            byte ch;
-            ch = (byte)value[s++];
+            byte ch = (byte)value[s++];
             auv = (auv << 7) | ((ulong)ch & 0x7f);
             if (ch < 0x80) return auv;
         }
@@ -402,7 +403,7 @@ public class DedubaClass
     // packed: w/a strings, w/w unsigned numbers, w/(a) lists
     // 
 
-    public static string Sdpack(object? v, string name)
+    private static string Sdpack(object? v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (v == null) return "u";
@@ -447,7 +448,7 @@ public class DedubaClass
                 var unpackedList = new List<object?>();
                 var s = 0;
                 var n = unpack_w(d, ref s);
-                while (n-- >= 0)
+                while (n-- > 0)
                 {
                     var il = unpack_w(d, ref s);
                     unpackedList.Add(Sdunpack(d.Substring(s, (int)il)));
@@ -471,7 +472,7 @@ public class DedubaClass
     }
 
 
-    public static object[] Usr(int uid)
+    private static object[] Usr(int uid)
     {
         return [uid, GetPasswd((uint)uid).PwPasswd];
     }
@@ -484,7 +485,7 @@ public class DedubaClass
         return Marshal.PtrToStructure<GroupEntry>(grPtr);
     }
 
-    public static object[] Grp(int gid)
+    private static object[] Grp(int gid)
     {
         return [gid, GetGroup((uint)gid).GrName];
     }
@@ -645,7 +646,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -668,16 +669,16 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
-                    var inode = new List<object[]>
+                    var inode = new List<object>
                     {
                         new[] { statBuf[2], statBuf[3] },
                         Usr((int)statBuf[4]),
                         Grp((int)statBuf[5]),
                         new[] { statBuf[6], statBuf[7], statBuf[9], statBuf[10] }
-                    }.ToArray();
-                    string? data;
+                    };
                     string[] hashes = [];
                     _ds = 0;
+                    MemoryStream mem;
                     if (LibCalls.S_ISREG(statBuf))
                     {
                         var size = (long)statBuf[7];
@@ -695,9 +696,10 @@ public class DedubaClass
                     }
                     else if (LibCalls.S_ISLNK(statBuf))
                     {
+                        string? dataIslink;
                         try
                         {
-                            data = Readlink(entry);
+                            dataIslink = Readlink(entry);
                         }
                         catch (Exception ex)
                         {
@@ -705,12 +707,12 @@ public class DedubaClass
                             continue;
                         }
 
-                        var size = data.Length;
-                        if (Testing) ConWrite(Dumper(D(data)));
+                        var size = dataIslink.Length;
+                        if (Testing) ConWrite(Dumper(D(dataIslink)));
                         MemoryStream? mem1 = null;
                         try
                         {
-                            var dataBytes = Encoding.UTF8.GetBytes(data);
+                            var dataBytes = Encoding.UTF8.GetBytes(dataIslink);
                             mem1 = new MemoryStream(dataBytes);
                         }
                         catch (Exception ex)
@@ -720,20 +722,18 @@ public class DedubaClass
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
-                        _ds = data.Length;
-                        data = null;
+                        _ds = dataIslink.Length;
                     }
                     else if (LibCalls.S_ISDIR(statBuf))
                     {
-                        var data2 = Sdpack(Dirtmp[entry] ?? [], "dir");
+                        var dataIsdir = Sdpack(Dirtmp[entry] ?? [], "dir");
                         Dirtmp.Remove(entry);
-                        var size = data2.Length;
-                        if (Testing) ConWrite(Dumper(D(data2)));
-                        MemoryStream? mem2 = null;
+                        var size = dataIsdir.Length;
+                        if (Testing) ConWrite(Dumper(D(dataIsdir)));
                         try
                         {
-                            var dataBytes = Encoding.UTF8.GetBytes(data2);
-                            mem2 = new MemoryStream(dataBytes);
+                            var dataBytes = Encoding.UTF8.GetBytes(dataIsdir);
+                            mem = new MemoryStream(dataBytes);
                         }
                         catch (Exception ex)
                         {
@@ -742,16 +742,14 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = save_file(mem2!, size, $"{entry} $data $dirtmp").ToArray();
-                        _ds = data2.Length;
-                        data2 = null;
+                        hashes = save_file(mem, size, $"{entry} $data $dirtmp").ToArray();
+                        _ds = dataIsdir.Length;
                     }
 
                     if (Testing) ConWrite($"data: {Dumper(D(hashes))}");
-                    inode = inode.Append(hashes).ToArray();
-                    data = Sdpack(inode, "inode");
+                    inode = inode.Append(hashes).ToList();
+                    string data = Sdpack(inode, "inode");
                     if (Testing) ConWrite(Dumper(D(data)));
-                    MemoryStream? mem = null;
                     try
                     {
                         var dataBytes = Encoding.UTF8.GetBytes(data);
@@ -764,7 +762,7 @@ public class DedubaClass
                     }
 
                     // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
-                    hashes = save_file(mem!, data.Length, $"{entry} $data @inode").ToArray();
+                    hashes = save_file(mem, data.Length, $"{entry} $data @inode").ToArray();
                     var ino = Sdpack(hashes.ToArray(), "fileid");
                     Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = start == null ? null : DateTime.Now.Subtract((DateTime)start);
@@ -793,20 +791,6 @@ public class DedubaClass
         }
     }
 
-    private static void LogLine(string message)
-    {
-        if (Testing)
-        {
-            ConWrite(message);
-            _log?.WriteLine($"{DateTime.Now}: {message}");
-        }
-    }
-
-    private static void LogError(string entry, string message)
-    {
-        Error($"Error: {entry} - {message}", "?");
-        _log?.WriteLine($"Error: {entry} - {message}");
-    }
 
 
     private readonly struct PasswdEntry
@@ -829,7 +813,7 @@ public class DedubaClass
         public readonly string GrName = "";
         public readonly string gr_passwd = "";
         public readonly uint gr_gid = new();
-        public readonly string[] GrMem = new string[0];
+        public readonly string[] GrMem = [];
 
         public GroupEntry()
         {
