@@ -122,6 +122,33 @@ public partial class LibCalls
             __glibc_reserved3 = glibcReserved3;
         }
     }
+    public readonly struct PasswdEntry
+    {
+        public readonly string pw_name = "";
+        public readonly string PwPasswd = "";
+        public readonly uint pw_uid = new();
+        public readonly uint pw_gid = new();
+        public readonly string pw_gecos = "";
+        public readonly string pw_dir = "";
+        public readonly string pw_shell = "";
+
+        public PasswdEntry()
+        {
+        }
+    }
+
+    public readonly struct GroupEntry
+    {
+        public readonly string GrName = "";
+        public readonly string gr_passwd = "";
+        public readonly uint gr_gid = new();
+        public readonly string[] GrMem = [];
+
+        public GroupEntry()
+        {
+        }
+    }
+
 
     public readonly struct TimeSpec
     {

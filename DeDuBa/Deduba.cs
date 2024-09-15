@@ -463,12 +463,12 @@ public class DedubaClass
     }
 
 
-    private static PasswdEntry GetPasswd(uint uid)
+    private static LibCalls.PasswdEntry GetPasswd(uint uid)
     {
         var pwPtr = LibCalls.getpwuid(uid);
         if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
 
-        return Marshal.PtrToStructure<PasswdEntry>(pwPtr);
+        return Marshal.PtrToStructure<LibCalls.PasswdEntry>(pwPtr);
     }
 
 
@@ -477,12 +477,12 @@ public class DedubaClass
         return [uid, GetPasswd((uint)uid).PwPasswd];
     }
 
-    private static GroupEntry GetGroup(uint gid)
+    private static LibCalls.GroupEntry GetGroup(uint gid)
     {
         var grPtr = LibCalls.getgrgid(gid);
         if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
 
-        return Marshal.PtrToStructure<GroupEntry>(grPtr);
+        return Marshal.PtrToStructure<LibCalls.GroupEntry>(grPtr);
     }
 
     private static object[] Grp(int gid)
@@ -646,7 +646,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -792,30 +792,4 @@ public class DedubaClass
     }
 
 
-    private readonly struct PasswdEntry
-    {
-        public readonly string pw_name = "";
-        public readonly string PwPasswd = "";
-        public readonly uint pw_uid = new();
-        public readonly uint pw_gid = new();
-        public readonly string pw_gecos = "";
-        public readonly string pw_dir = "";
-        public readonly string pw_shell = "";
-
-        public PasswdEntry()
-        {
-        }
-    }
-
-    private readonly struct GroupEntry
-    {
-        public readonly string GrName = "";
-        public readonly string gr_passwd = "";
-        public readonly uint gr_gid = new();
-        public readonly string[] GrMem = [];
-
-        public GroupEntry()
-        {
-        }
-    }
 }
