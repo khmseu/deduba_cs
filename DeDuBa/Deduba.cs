@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -19,9 +18,9 @@ public class DedubaClass
     private static string? _startTimestamp;
     private static string? _archive;
     private static string _dataPath = "";
-    private static string? _tmpp;
+    // private static string? _tmpp;
 
-    private static readonly Dictionary<string, string> Settings = new();
+    // private static readonly Dictionary<string, string> Settings = new();
     private static long _ds;
     private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
@@ -50,12 +49,12 @@ public class DedubaClass
 
         _archive = Testing ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
         _dataPath = Path.Combine(_archive, "DATA");
-        _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
+        // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
 
         _ = Directory.CreateDirectory(_dataPath);
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            var dirInfo = new DirectoryInfo(_dataPath)
+            _ = new DirectoryInfo(_dataPath)
             {
                 UnixFileMode = (UnixFileMode)0711
             };
@@ -646,7 +645,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -726,7 +725,7 @@ public class DedubaClass
                     }
                     else if (LibCalls.S_ISDIR(statBuf))
                     {
-                        var dataIsdir = Sdpack(Dirtmp[entry] ?? [], "dir");
+                        var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out List<object>? value) ? value : new List<object>(), "dir");
                         Dirtmp.Remove(entry);
                         var size = dataIsdir.Length;
                         if (Testing) ConWrite(Dumper(D(dataIsdir)));
