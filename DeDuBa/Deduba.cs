@@ -646,7 +646,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -790,6 +790,4 @@ public class DedubaClass
             if (Testing) ConWrite($"{"_".Repeat(80)}\n");
         }
     }
-
-
 }
