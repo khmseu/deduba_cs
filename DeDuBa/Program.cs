@@ -1,8 +1,10 @@
-﻿internal class Program
+﻿using DeDuBa;
+
+internal class Program
 {
     private static void Main(string[] args)
     {
-        DeDuBa.DedubaClass.Testing = true;
-        DeDuBa.DedubaClass.Backup(args);
+        DedubaClass.Testing = true;
+        DedubaClass.Backup(args);
     }
 }
