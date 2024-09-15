@@ -17,6 +17,7 @@ public class DedubaClass
     public static bool Testing = true;
     private static string? _startTimestamp;
     private static string? _archive;
+
     private static string _dataPath = "";
     // private static string? _tmpp;
 
@@ -53,12 +54,10 @@ public class DedubaClass
 
         _ = Directory.CreateDirectory(_dataPath);
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
             _ = new DirectoryInfo(_dataPath)
             {
                 UnixFileMode = (UnixFileMode)0711
             };
-        }
 
         var logname = Path.Combine(_archive, "log_" + _startTimestamp);
         _log = new StreamWriter(logname);
@@ -645,7 +644,7 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[])[(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
@@ -725,7 +724,8 @@ public class DedubaClass
                     }
                     else if (LibCalls.S_ISDIR(statBuf))
                     {
-                        var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out List<object>? value) ? value : new List<object>(), "dir");
+                        var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
+                            "dir");
                         Dirtmp.Remove(entry);
                         var size = dataIsdir.Length;
                         if (Testing) ConWrite(Dumper(D(dataIsdir)));
