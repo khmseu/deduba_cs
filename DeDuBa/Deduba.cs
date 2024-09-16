@@ -23,7 +23,7 @@ public class DedubaClass
 
     // private static readonly Dictionary<string, string> Settings = new();
     private static long _ds;
-    private static readonly Dictionary<string, List<object>> Dirtmp = [];
+    private static readonly Dictionary<string, List<object>> Dirtmp = new Dictionary<string, List<object>>();
     private static readonly Dictionary<string, long> Bstats = [];
     private static readonly Dictionary<ulong, int> Devices = [];
     private static readonly Dictionary<string, string?> Fs2Ino = [];
@@ -47,7 +47,7 @@ public class DedubaClass
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
-        _archive = Testing ? "/home/kai/projects/Backup/ARCHIVE2" : "/archive/backup";
+        _archive = Testing ? "/home/kai/projects/Backup/ARCHIVE3" : "/archive/backup";
         _dataPath = Path.Combine(_archive, "DATA");
         // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
 
@@ -77,7 +77,7 @@ public class DedubaClass
             foreach (var root in argv)
             {
                 var st = LibCalls.Lstat(root);
-                if (st.Length > 0) Devices[(ulong)st[0]] = 1;
+                if (st != null) Devices[st?.StDev ?? 0] = 1;
             }
 
             ConWrite(Dumper(D(Devices)));
@@ -149,9 +149,18 @@ public class DedubaClass
         string[] ret = [];
         foreach (var kvp in values)
         {
-            var jsonOutput = JsonSerializer.Serialize(kvp.Value, SerializerOptions);
-            ret = ret.Append($"{kvp.Key} = {jsonOutput}\n")
-                .ToArray();
+            try
+            {
+                var jsonOutput = JsonSerializer.Serialize(kvp.Value, SerializerOptions);
+                ret = ret.Append($"{kvp.Key} = {jsonOutput}\n")
+                    .ToArray();
+            }
+            catch (System.Exception ex)
+            {
+                Error(kvp.Key, nameof(JsonSerializer.Serialize), ex);
+                ret = ret.Append($"{kvp.Key} = {ex.Message}\n")
+                    .ToArray();
+            }
         }
 
         return string.Join("", ret);
@@ -164,14 +173,14 @@ public class DedubaClass
     // ############################################################################
     // errors
 
-    private static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
+    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
     {
         Error(file, op, new Win32Exception(), lineNumber);
     }
 
-    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
+    public static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
     {
-        var msg = $"*** {file}: {op}: {ex.Message}\n";
+        var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
         if (Testing) ConWrite(msg, lineNumber);
         if (_log != null) _log.Write(msg);
         else
@@ -405,26 +414,36 @@ public class DedubaClass
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (v == null) return "u";
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t.FullName), D(v))}");
 
-        switch (t.Name)
+        if (t.Name.EndsWith("[]"))
         {
-            case "String":
-                return "s" + v;
-            case "Int32":
-            case "Int64":
-                var intValue = (long)v;
-                return intValue >= 0
-                    ? "n" + pack_w((ulong)intValue)
-                    : "N" + pack_w((ulong)-intValue);
-            case "Array":
-                var array = (Array)v;
-                var ary = new List<string>();
-                foreach (var item in array) ary.Add(Sdpack(item, ""));
-                return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
-            default:
-                throw new InvalidOperationException("unexpected type " + t.Name);
+            var array = (Array)v;
+            var ary = new List<string>();
+            foreach (var item in array) ary.Add(Sdpack(item, ""));
+            return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
         }
+        else
+            switch (t.Name)
+            {
+                case "String":
+                    return "s" + v;
+                case "Int32":
+                case "UInt32":
+                case "Int64":
+                case "UInt64":
+                    var intValue = Convert.ToInt64(v);
+                    return intValue >= 0
+                        ? "n" + pack_w((ulong)intValue)
+                        : "N" + pack_w((ulong)-intValue);
+                case "Array":
+                    var array = (Array)v;
+                    var ary = new List<string>();
+                    foreach (var item in array) ary.Add(Sdpack(item, ""));
+                    return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
+                default:
+                    throw new InvalidOperationException("unexpected type " + t.Name);
+            }
     }
 
     public static object? Sdunpack(string value)
@@ -459,12 +478,12 @@ public class DedubaClass
         }
     }
 
-    private static object[] Usr(int uid)
+    private static object[] Usr(uint uid)
     {
         return new object[] { uid, LibCalls.GetPasswd((uint)uid).PwName };
     }
 
-    private static object[] Grp(int gid)
+    private static object[] Grp(uint gid)
     {
         return new object[] { gid, LibCalls.GetGroup((uint)gid).GrName };
     }
@@ -546,7 +565,7 @@ public class DedubaClass
             if (Testing) ConWrite($"{Dumper(D(entry), D(volume), D(directories), D(file))}");
             var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
             var name = file;
-            object[] statBuf = [];
+            LibCalls.LStatData? statBuf = null;
             DateTime? start = null;
             try
             {
@@ -563,8 +582,8 @@ public class DedubaClass
                 Error(entry, nameof(LibCalls.Lstat), ex);
             }
 
-            if (Testing) ConWrite(Dumper(D(statBuf[0])));
-            if (Devices.ContainsKey((ulong)statBuf[0]) && _dataPath != null &&
+            if (Testing) ConWrite(Dumper(D(statBuf?.StDev)));
+            if (Devices.ContainsKey(statBuf?.StDev ?? 0) && _dataPath != null &&
                 Path.GetRelativePath(_dataPath, entry).StartsWith(".."))
             {
                 ConWrite($"stat: {Dumper(D(statBuf))}");
@@ -582,13 +601,13 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack((ulong[]) [(ulong)statBuf[0], (ulong)statBuf[1]], "fsfid");
+                var fsfid = Sdpack(new List<object?> { statBuf?.StDev ?? 0, statBuf?.StIno }, "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (LibCalls.S_ISDIR(statBuf))
+                    if ((statBuf?.StIsDir) ?? false)
                         while (true)
                             try
                             {
@@ -607,22 +626,22 @@ public class DedubaClass
                     // lstat(entry);
                     var inode = new List<object>
                     {
-                        new[] { statBuf[2], statBuf[3] },
-                        Usr((int)statBuf[4]),
-                        Grp((int)statBuf[5]),
-                        new[] { statBuf[6], statBuf[7], statBuf[9], statBuf[10] }
+                        new[] { statBuf?.StMode, statBuf?.StNlink },
+                        Usr(Convert.ToUInt32(statBuf?.StUid)),
+                        Grp(Convert.ToUInt32(statBuf?.StGid)),
+                        new object?[] { statBuf?.StRdev, statBuf?.StSize, statBuf?.StMtim, statBuf?.StCtim }
                     };
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
-                    if (LibCalls.S_ISREG(statBuf))
+                    if ((statBuf?.StIsReg) ?? false)
                     {
-                        var size = (long)statBuf[7];
+                        var size = statBuf?.StSize;
                         if (size != 0)
                             try
                             {
                                 var fileStream = File.OpenRead(entry);
-                                hashes = save_file(fileStream, size, entry).ToArray();
+                                hashes = save_file(fileStream, size ?? 0, entry).ToArray();
                             }
                             catch (Exception ex)
                             {
@@ -630,7 +649,7 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if (LibCalls.S_ISLNK(statBuf))
+                    else if ((statBuf?.StIsLnk) ?? false)
                     {
                         string? dataIslink;
                         try
@@ -660,7 +679,7 @@ public class DedubaClass
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
                         _ds = dataIslink.Length;
                     }
-                    else if (LibCalls.S_ISDIR(statBuf))
+                    else if ((statBuf?.StIsDir) ?? false)
                     {
                         var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
                             "dir");
@@ -705,11 +724,11 @@ public class DedubaClass
                     TimeSpan? needed = start == null ? null : DateTime.Now.Subtract((DateTime)start);
                     var speed = needed?.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
                     if (Testing) ConWrite($"timing: {Dumper(D(_ds), D(needed), D(speed))}");
-                    report = $"[{statBuf[7]:d} -> {_packsum:d}: {needed:d}s]";
+                    report = $"[{statBuf?.StSize:d} -> {_packsum:d}: {needed:d}s]";
                 }
                 else
                 {
-                    report = $"[{statBuf[7]:d} -> duplicate]";
+                    report = $"[{statBuf?.StSize:d} -> duplicate]";
                 }
 
                 if (!Dirtmp.ContainsKey(dir)) Dirtmp[dir] = new List<object>();

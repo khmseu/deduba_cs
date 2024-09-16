@@ -82,34 +82,94 @@ public partial class LibCalls
 
         return Marshal.PtrToStructure<GroupEntry>(grPtr);
     }
+    public readonly struct LStatData
+    {
+        public ulong StDev { get; }
+        public ulong StIno { get; }
+        public uint StMode { get; }
+        public bool StIsDir { get; }
+        public bool StIsReg { get; }
+        public bool StIsLnk { get; }
+        public ulong StNlink { get; }
+        public uint StUid { get; }
+        public uint StGid { get; }
+        public ulong StRdev { get; }
+        public long StSize { get; }
+        public DateTime StAtim { get; }
+        public DateTime StMtim { get; }
+        public DateTime StCtim { get; }
+        public long StBlksize { get; }
+        public long StBlocks { get; }
 
-    public static object[] Lstat(string filename)
+
+        public LStatData(ulong stDev,
+                         ulong stIno,
+                         uint stMode,
+                         bool stIsDir, bool stIsReg, bool stIsLnk,
+                         ulong stNlink,
+                         uint stUid,
+                         uint stGid,
+                         ulong stRdev,
+                         long stSize,
+                         DateTime stAtim,
+                         DateTime stMtim,
+                         DateTime stCtim,
+                         long stBlksize,
+                         long stBlocks)
+        {
+            StDev = stDev;
+            StIno = stIno;
+            StMode = stMode;
+            StIsDir = stIsDir;
+            StIsReg = stIsReg;
+            StIsLnk = stIsLnk;
+            StNlink = stNlink;
+            StUid = stUid;
+            StGid = stGid;
+            StRdev = stRdev;
+            StSize = stSize;
+            StAtim = stAtim;
+            StMtim = stMtim;
+            StCtim = stCtim;
+            StBlksize = stBlksize;
+            StBlocks = stBlocks;
+        }
+    }
+    public static LStatData? Lstat(string filename)
     {
         var buf = new StatInfo();
         var ret = __lxstat(1, filename, ref buf);
-        if (ret != 0) throw new Win32Exception();
+        if (ret != 0)
+        {
+            DedubaClass.Error(filename, nameof(__lxstat));
+            return null;
+        }
 
         double T2d(TimeSpec t)
         {
             return t.TvSec + (double)t.TvNsec / (1000 * 1000 * 1000);
         }
 
-        return
-        [
-            buf.StDev,
-            buf.StIno,
-            buf.StMode,
-            buf.StNlink,
-            buf.StUid,
-            buf.StGid,
-            buf.StRdev,
-            buf.StSize,
-            T2d(buf.StAtim),
-            T2d(buf.StMtim),
-            T2d(buf.StCtim),
-            buf.StBlksize,
-            buf.StBlocks
-        ];
+        return new LStatData(buf.StDev, buf.StIno, buf.StMode, S_ISDIR(buf), S_ISREG(buf), S_ISLNK(buf), buf.StNlink,
+                             buf.StUid, buf.StGid, buf.StRdev, buf.StSize,
+                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StAtim)),
+                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StMtim)),
+                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StCtim)), buf.stBlksize, buf.StBlocks);
+        // [
+        //     buf.StDev,
+        //     buf.StIno,
+        //     buf.StMode,
+        //     buf.StNlink,
+        //     buf.StUid,
+        //     buf.StGid,
+        //     buf.StRdev,
+        //     buf.StSize,
+        //     T2d(buf.StAtim),
+        //     T2d(buf.StMtim),
+        //     T2d(buf.StCtim),
+        //     buf.stBlksize,
+        //     buf.StBlocks
+        // ];
     }
 
     public static string Readlink(string path)
@@ -138,7 +198,7 @@ public partial class LibCalls
         private readonly int __pad0 = new();
         public readonly ulong StRdev = new();
         public readonly long StSize = new();
-        public readonly long StBlksize = new();
+        public readonly long stBlksize = new();
         public readonly long StBlocks = new();
         public readonly TimeSpec StAtim = new();
         public readonly TimeSpec StMtim = new();
