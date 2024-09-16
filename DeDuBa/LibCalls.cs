@@ -82,59 +82,7 @@ public partial class LibCalls
 
         return Marshal.PtrToStructure<GroupEntry>(grPtr);
     }
-    public readonly struct LStatData
-    {
-        public ulong StDev { get; }
-        public ulong StIno { get; }
-        public uint StMode { get; }
-        public bool StIsDir { get; }
-        public bool StIsReg { get; }
-        public bool StIsLnk { get; }
-        public ulong StNlink { get; }
-        public uint StUid { get; }
-        public uint StGid { get; }
-        public ulong StRdev { get; }
-        public long StSize { get; }
-        public DateTime StAtim { get; }
-        public DateTime StMtim { get; }
-        public DateTime StCtim { get; }
-        public long StBlksize { get; }
-        public long StBlocks { get; }
 
-
-        public LStatData(ulong stDev,
-                         ulong stIno,
-                         uint stMode,
-                         bool stIsDir, bool stIsReg, bool stIsLnk,
-                         ulong stNlink,
-                         uint stUid,
-                         uint stGid,
-                         ulong stRdev,
-                         long stSize,
-                         DateTime stAtim,
-                         DateTime stMtim,
-                         DateTime stCtim,
-                         long stBlksize,
-                         long stBlocks)
-        {
-            StDev = stDev;
-            StIno = stIno;
-            StMode = stMode;
-            StIsDir = stIsDir;
-            StIsReg = stIsReg;
-            StIsLnk = stIsLnk;
-            StNlink = stNlink;
-            StUid = stUid;
-            StGid = stGid;
-            StRdev = stRdev;
-            StSize = stSize;
-            StAtim = stAtim;
-            StMtim = stMtim;
-            StCtim = stCtim;
-            StBlksize = stBlksize;
-            StBlocks = stBlocks;
-        }
-    }
     public static LStatData? Lstat(string filename)
     {
         var buf = new StatInfo();
@@ -151,10 +99,10 @@ public partial class LibCalls
         }
 
         return new LStatData(buf.StDev, buf.StIno, buf.StMode, S_ISDIR(buf), S_ISREG(buf), S_ISLNK(buf), buf.StNlink,
-                             buf.StUid, buf.StGid, buf.StRdev, buf.StSize,
-                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StAtim)),
-                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StMtim)),
-                             DateTime.UnixEpoch.AddSeconds(T2d(buf.StCtim)), buf.stBlksize, buf.StBlocks);
+            buf.StUid, buf.StGid, buf.StRdev, buf.StSize,
+            DateTime.UnixEpoch.AddSeconds(T2d(buf.StAtim)),
+            DateTime.UnixEpoch.AddSeconds(T2d(buf.StMtim)),
+            DateTime.UnixEpoch.AddSeconds(T2d(buf.StCtim)), buf.stBlksize, buf.StBlocks);
         // [
         //     buf.StDev,
         //     buf.StIno,
@@ -183,6 +131,60 @@ public partial class LibCalls
         } while (true);
 
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
+    }
+
+    public readonly struct LStatData
+    {
+        public ulong StDev { get; }
+        public ulong StIno { get; }
+        public uint StMode { get; }
+        public bool StIsDir { get; }
+        public bool StIsReg { get; }
+        public bool StIsLnk { get; }
+        public ulong StNlink { get; }
+        public uint StUid { get; }
+        public uint StGid { get; }
+        public ulong StRdev { get; }
+        public long StSize { get; }
+        public DateTime StAtim { get; }
+        public DateTime StMtim { get; }
+        public DateTime StCtim { get; }
+        public long StBlksize { get; }
+        public long StBlocks { get; }
+
+
+        public LStatData(ulong stDev,
+            ulong stIno,
+            uint stMode,
+            bool stIsDir, bool stIsReg, bool stIsLnk,
+            ulong stNlink,
+            uint stUid,
+            uint stGid,
+            ulong stRdev,
+            long stSize,
+            DateTime stAtim,
+            DateTime stMtim,
+            DateTime stCtim,
+            long stBlksize,
+            long stBlocks)
+        {
+            StDev = stDev;
+            StIno = stIno;
+            StMode = stMode;
+            StIsDir = stIsDir;
+            StIsReg = stIsReg;
+            StIsLnk = stIsLnk;
+            StNlink = stNlink;
+            StUid = stUid;
+            StGid = stGid;
+            StRdev = stRdev;
+            StSize = stSize;
+            StAtim = stAtim;
+            StMtim = stMtim;
+            StCtim = stCtim;
+            StBlksize = stBlksize;
+            StBlocks = stBlocks;
+        }
     }
 
 

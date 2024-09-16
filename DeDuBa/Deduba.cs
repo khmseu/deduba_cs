@@ -23,7 +23,7 @@ public class DedubaClass
 
     // private static readonly Dictionary<string, string> Settings = new();
     private static long _ds;
-    private static readonly Dictionary<string, List<object>> Dirtmp = new Dictionary<string, List<object>>();
+    private static readonly Dictionary<string, List<object>> Dirtmp = new();
     private static readonly Dictionary<string, long> Bstats = [];
     private static readonly Dictionary<ulong, int> Devices = [];
     private static readonly Dictionary<string, string?> Fs2Ino = [];
@@ -148,20 +148,18 @@ public class DedubaClass
     {
         string[] ret = [];
         foreach (var kvp in values)
-        {
             try
             {
                 var jsonOutput = JsonSerializer.Serialize(kvp.Value, SerializerOptions);
                 ret = ret.Append($"{kvp.Key} = {jsonOutput}\n")
                     .ToArray();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Error(kvp.Key, nameof(JsonSerializer.Serialize), ex);
                 ret = ret.Append($"{kvp.Key} = {ex.Message}\n")
                     .ToArray();
             }
-        }
 
         return string.Join("", ret);
     }
@@ -423,27 +421,27 @@ public class DedubaClass
             foreach (var item in array) ary.Add(Sdpack(item, ""));
             return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
         }
-        else
-            switch (t.Name)
-            {
-                case "String":
-                    return "s" + v;
-                case "Int32":
-                case "UInt32":
-                case "Int64":
-                case "UInt64":
-                    var intValue = Convert.ToInt64(v);
-                    return intValue >= 0
-                        ? "n" + pack_w((ulong)intValue)
-                        : "N" + pack_w((ulong)-intValue);
-                case "Array":
-                    var array = (Array)v;
-                    var ary = new List<string>();
-                    foreach (var item in array) ary.Add(Sdpack(item, ""));
-                    return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
-                default:
-                    throw new InvalidOperationException("unexpected type " + t.Name);
-            }
+
+        switch (t.Name)
+        {
+            case "String":
+                return "s" + v;
+            case "Int32":
+            case "UInt32":
+            case "Int64":
+            case "UInt64":
+                var intValue = Convert.ToInt64(v);
+                return intValue >= 0
+                    ? "n" + pack_w((ulong)intValue)
+                    : "N" + pack_w((ulong)-intValue);
+            case "Array":
+                var array = (Array)v;
+                var ary = new List<string>();
+                foreach (var item in array) ary.Add(Sdpack(item, ""));
+                return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
+            default:
+                throw new InvalidOperationException("unexpected type " + t.Name);
+        }
     }
 
     public static object? Sdunpack(string value)
@@ -480,12 +478,12 @@ public class DedubaClass
 
     private static object[] Usr(uint uid)
     {
-        return new object[] { uid, LibCalls.GetPasswd((uint)uid).PwName };
+        return new object[] { uid, LibCalls.GetPasswd(uid).PwName };
     }
 
     private static object[] Grp(uint gid)
     {
-        return new object[] { gid, LibCalls.GetGroup((uint)gid).GrName };
+        return new object[] { gid, LibCalls.GetGroup(gid).GrName };
     }
 
     private static string save_data(string data)
@@ -607,7 +605,7 @@ public class DedubaClass
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if ((statBuf?.StIsDir) ?? false)
+                    if (statBuf?.StIsDir ?? false)
                         while (true)
                             try
                             {
@@ -634,7 +632,7 @@ public class DedubaClass
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
-                    if ((statBuf?.StIsReg) ?? false)
+                    if (statBuf?.StIsReg ?? false)
                     {
                         var size = statBuf?.StSize;
                         if (size != 0)
@@ -649,7 +647,7 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if ((statBuf?.StIsLnk) ?? false)
+                    else if (statBuf?.StIsLnk ?? false)
                     {
                         string? dataIslink;
                         try
@@ -679,7 +677,7 @@ public class DedubaClass
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
                         _ds = dataIslink.Length;
                     }
-                    else if ((statBuf?.StIsDir) ?? false)
+                    else if (statBuf?.StIsDir ?? false)
                     {
                         var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
                             "dir");
