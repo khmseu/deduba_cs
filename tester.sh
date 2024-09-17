@@ -15,3 +15,5 @@ for i in cs pl; do
     script -c "'time' -v $(echo ${arexe[$i]} *)" "${i}.tmp"
     perl -pe "s,${arts[$i]}\s*,,g; s,ARCHIVE\d,ARCHIVE?,g" <"${i}.tmp" >"${i}.log"
 done
+
+diff -aus {pl,cs}.log >artest.diff

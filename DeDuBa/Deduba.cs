@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -407,41 +409,57 @@ public class DedubaClass
     // packed: w/a strings, w/w unsigned numbers, w/(a) lists
     // 
 
-    private static string Sdpack(object? v, string name)
+
+
+    // Überladung für Nullable-Typen
+    private static string Sdpack<T>(T? v, string name) where T : struct
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
-        if (v == null) return "u";
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        return v is null ? "u" : Sdpack<T>(v, name);
+    }
+    // Überladung für Stringtypen
+    private static string Sdpack<T>(T v, string name) where T : string
+    {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        var t = v.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
-        if (t.Name.EndsWith("[]"))
-        {
-            var array = (Array)v;
-            var ary = new List<string>();
-            foreach (var item in array) ary.Add(Sdpack(item, ""));
-            return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
-        }
+        return "s" + v;
+    }
+    // Überladung für nicht-String-Werttypen
+    private static string Sdpack<T>(T v, string name) where T : struct
+    {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        var t = v.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
-        switch (t.Name)
-        {
-            case "String":
-                return "s" + v;
-            case "Int32":
-            case "UInt32":
-            case "Int64":
-            case "UInt64":
-                var intValue = Convert.ToInt64(v);
-                return intValue >= 0
-                    ? "n" + pack_w((ulong)intValue)
-                    : "N" + pack_w((ulong)-intValue);
-            case "Array":
-                var array = (Array)v;
-                var ary = new List<string>();
-                foreach (var item in array) ary.Add(Sdpack(item, ""));
-                return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
-            default:
-                throw new InvalidOperationException("unexpected type " + t.Name);
-        }
+        var intValue = Convert.ToInt64(v);
+        return intValue >= 0
+            ? "n" + pack_w((ulong)intValue)
+            : "N" + pack_w((ulong)-intValue);
+    }
+    // Überladung für Enumerables
+    private static string Sdpack<T>(T v, string name) where T : IEnumerable
+    {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        var t = v.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+
+        if (v == null) return "u";
+        var ary = new List<string>();
+        foreach (var item in v) ary.Add(Sdpack(item, ""));
+        return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
+    }
+    // Überladung für Objekte (Fallback)
+    private static string Sdpack(object v, string name)
+    {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        var t = v.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+
+        throw new InvalidOperationException($"unexpected type {t.FullName}");
     }
 
     public static object? Sdunpack(string value)
