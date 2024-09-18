@@ -177,7 +177,7 @@ public class DedubaClass
         Error(file, op, new Win32Exception(), lineNumber);
     }
 
-    public static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
+    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
         if (Testing) ConWrite(msg, lineNumber);
@@ -521,12 +521,12 @@ public class DedubaClass
 
     private static object[] Usr(uint uid)
     {
-        return new object[] { uid, LibCalls.GetPasswd(uid).PwName };
+        return [uid, LibCalls.GetPasswd(uid).PwName];
     }
 
     private static object[] Grp(uint gid)
     {
-        return new object[] { gid, LibCalls.GetGroup(gid).GrName };
+        return [gid, LibCalls.GetGroup(gid).GrName];
     }
 
     private static string save_data(string data)

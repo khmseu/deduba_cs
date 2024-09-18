@@ -133,58 +133,37 @@ public partial class LibCalls
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
 
-    public readonly struct LStatData
+    public readonly struct LStatData(ulong stDev,
+        ulong stIno,
+        uint stMode,
+        bool stIsDir, bool stIsReg, bool stIsLnk,
+        ulong stNlink,
+        uint stUid,
+        uint stGid,
+        ulong stRdev,
+        long stSize,
+        DateTime stAtim,
+        DateTime stMtim,
+        DateTime stCtim,
+        long stBlksize,
+        long stBlocks)
     {
-        public ulong StDev { get; }
-        public ulong StIno { get; }
-        public uint StMode { get; }
-        public bool StIsDir { get; }
-        public bool StIsReg { get; }
-        public bool StIsLnk { get; }
-        public ulong StNlink { get; }
-        public uint StUid { get; }
-        public uint StGid { get; }
-        public ulong StRdev { get; }
-        public long StSize { get; }
-        public DateTime StAtim { get; }
-        public DateTime StMtim { get; }
-        public DateTime StCtim { get; }
-        public long StBlksize { get; }
-        public long StBlocks { get; }
-
-
-        public LStatData(ulong stDev,
-            ulong stIno,
-            uint stMode,
-            bool stIsDir, bool stIsReg, bool stIsLnk,
-            ulong stNlink,
-            uint stUid,
-            uint stGid,
-            ulong stRdev,
-            long stSize,
-            DateTime stAtim,
-            DateTime stMtim,
-            DateTime stCtim,
-            long stBlksize,
-            long stBlocks)
-        {
-            StDev = stDev;
-            StIno = stIno;
-            StMode = stMode;
-            StIsDir = stIsDir;
-            StIsReg = stIsReg;
-            StIsLnk = stIsLnk;
-            StNlink = stNlink;
-            StUid = stUid;
-            StGid = stGid;
-            StRdev = stRdev;
-            StSize = stSize;
-            StAtim = stAtim;
-            StMtim = stMtim;
-            StCtim = stCtim;
-            StBlksize = stBlksize;
-            StBlocks = stBlocks;
-        }
+        public ulong StDev { get; } = stDev;
+        public ulong StIno { get; } = stIno;
+        public uint StMode { get; } = stMode;
+        public bool StIsDir { get; } = stIsDir;
+        public bool StIsReg { get; } = stIsReg;
+        public bool StIsLnk { get; } = stIsLnk;
+        public ulong StNlink { get; } = stNlink;
+        public uint StUid { get; } = stUid;
+        public uint StGid { get; } = stGid;
+        public ulong StRdev { get; } = stRdev;
+        public long StSize { get; } = stSize;
+        public DateTime StAtim { get; } = stAtim;
+        public DateTime StMtim { get; } = stMtim;
+        public DateTime StCtim { get; } = stCtim;
+        public long StBlksize { get; } = stBlksize;
+        public long StBlocks { get; } = stBlocks;
     }
 
 

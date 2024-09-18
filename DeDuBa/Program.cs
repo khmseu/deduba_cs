@@ -1,10 +1,13 @@
 ﻿using DeDuBa;
 
-internal class Program
+namespace DeDuBa
 {
-    private static void Main(string[] args)
+    internal class Program
     {
-        DedubaClass.Testing = true;
-        DedubaClass.Backup(args);
+        private static void Main(string[] args)
+        {
+            DedubaClass.Testing = true;
+            DedubaClass.Backup(args);
+        }
     }
 }
