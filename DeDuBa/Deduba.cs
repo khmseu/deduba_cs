@@ -412,28 +412,28 @@ public class DedubaClass
 
 
     // Überladung für Nullable-Typen
-    private static string Sdpack<T>(T? v, string name) where T : struct
+    private static string SdpackNull(object? v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
-        var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
-        return v is null ? "u" : Sdpack<T>(v, name);
+        var t = v?.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(SdpackNull)}: {name}: {Dumper(D(t?.FullName), D(v))}");
+        return v is null ? "u" : Sdpack(v, name);
     }
     // Überladung für Stringtypen
-    private static string Sdpack<T>(T v, string name) where T : string
+    private static string SdpackString(string v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
         return "s" + v;
     }
     // Überladung für nicht-String-Werttypen
-    private static string Sdpack<T>(T v, string name) where T : struct
+    private static string SdpackNum<T>(T v, string name) where T : struct
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
         var intValue = Convert.ToInt64(v);
         return intValue >= 0
@@ -441,11 +441,11 @@ public class DedubaClass
             : "N" + pack_w((ulong)-intValue);
     }
     // Überladung für Enumerables
-    private static string Sdpack<T>(T v, string name) where T : IEnumerable
+    private static string SdpackSeq<T>(T v, string name) where T : IEnumerable
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
         if (v == null) return "u";
         var ary = new List<string>();
@@ -453,13 +453,36 @@ public class DedubaClass
         return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
     }
     // Überladung für Objekte (Fallback)
+    private static string SdpackOther(object v, string name)
+    {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        var t = v.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+
+        throw new InvalidOperationException($"unexpected type {t.FullName}");
+    }
     private static string Sdpack(object v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack<T>)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
-        throw new InvalidOperationException($"unexpected type {t.FullName}");
+        switch (v)
+        {
+            case null:
+                return SdpackNull(v, name);
+            case string s:
+                return SdpackString(s, name);
+            case Int128 int128: return SdpackNum(int128, name);
+            case Int64 int64: return SdpackNum(int64, name);
+            case Int32 int32: return SdpackNum(int32, name);
+            case Int16 int16: return SdpackNum(int16, name);
+            case byte int8: return SdpackNum(int8, name);
+            case IEnumerable en: return SdpackSeq(en, name);
+            default:
+                throw new InvalidOperationException($"unexpected type {t.FullName}");
+                break;
+        }
     }
 
     public static object? Sdunpack(string value)
