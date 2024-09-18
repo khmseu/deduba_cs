@@ -455,20 +455,20 @@ public class DedubaClass
     }
 
     // Überladung für Objekte (Fallback)
-    private static string SdpackOther(object v, string name)
+    private static string SdpackOther(object? v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
-        var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        var t = v?.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t?.FullName), D(v))}");
 
-        throw new InvalidOperationException($"unexpected type {t.FullName}");
+        throw new InvalidOperationException($"unexpected type {t?.FullName ?? "unknown"}");
     }
 
-    private static string Sdpack(object v, string name)
+    private static string Sdpack(object? v, string name)
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
-        var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        var t = v?.GetType();
+        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t?.FullName), D(v))}");
 
         switch (v)
         {
@@ -483,8 +483,7 @@ public class DedubaClass
             case byte int8: return SdpackNum(int8, name);
             case IEnumerable en: return SdpackSeq(en, name);
             default:
-                throw new InvalidOperationException($"unexpected type {t.FullName}");
-                break;
+                return SdpackOther(v, name);
         }
     }
 
