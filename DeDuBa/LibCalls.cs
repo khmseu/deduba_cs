@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace DeDuBa;
 
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
+// ReSharper disable InconsistentNaming
+// ReSharper disable once ClassNeverInstantiated.Global
 public partial class LibCalls
 {
     private static byte[] _buf = new byte[1];
@@ -21,47 +24,51 @@ public partial class LibCalls
     private static partial long __readlink_alias([MarshalAs(UnmanagedType.LPStr)] string path,
         [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
 
-    public static bool S_ISDIR(uint m)
+    private static bool S_ISDIR(uint m)
     {
         return (m & 0170000) == 0040000;
     }
 
-    public static bool S_ISDIR(StatInfo s)
+    private static bool S_ISDIR(StatInfo s)
     {
         return S_ISDIR(s.StMode);
     }
-
-    public static bool S_ISDIR(object[] s)
+    // ReSharper disable once UnusedMember.Local
+    private static bool S_ISDIR(object[] s)
     {
         return S_ISDIR((uint)s[2]);
     }
 
-    public static bool S_ISREG(uint m)
+    private static bool S_ISREG(uint m)
     {
         return (m & 0170000) == 0100000;
     }
+    // ReSharper disable once UnusedMember.Local
 
-    public static bool S_ISREG(StatInfo s)
+    private static bool S_ISREG(StatInfo s)
     {
         return S_ISREG(s.StMode);
     }
 
-    public static bool S_ISREG(object[] s)
+    // ReSharper disable once UnusedMember.Local
+    private static bool S_ISREG(object[] s)
     {
         return S_ISREG((uint)s[2]);
     }
 
-    public static bool S_ISLNK(uint m)
+    private static bool S_ISLNK(uint m)
     {
         return (m & 0170000) == 0120000;
     }
 
-    public static bool S_ISLNK(StatInfo s)
+    // ReSharper disable once UnusedMember.Local
+    private static bool S_ISLNK(StatInfo s)
     {
         return S_ISLNK(s.StMode);
     }
 
-    public static bool S_ISLNK(object[] s)
+    // ReSharper disable once UnusedMember.Local
+    private static bool S_ISLNK(object[] s)
     {
         return S_ISLNK((uint)s[2]);
     }
@@ -132,7 +139,7 @@ public partial class LibCalls
 
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
-
+    // ReSharper disable UnusedMember.Global
     public readonly struct LStatData(
         ulong stDev,
         ulong stIno,

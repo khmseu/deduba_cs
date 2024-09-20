@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using Bzip2;
 
 namespace DeDuBa;
-
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DedubaClass
 {
     private const long Chunksize = 1024 * 1024 * 1024;
@@ -78,6 +78,7 @@ public class DedubaClass
             foreach (var root in argv)
             {
                 var st = LibCalls.Lstat(root);
+                // ReSharper disable once ConstantConditionalAccessQualifier
                 if (st != null) Devices[st?.StDev ?? 0] = 1;
             }
 
@@ -171,7 +172,7 @@ public class DedubaClass
 
     // ############################################################################
     // errors
-
+    // ReSharper disable ExplicitCallerInfoArgument
     public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
     {
         Error(file, op, new Win32Exception(), lineNumber);
@@ -196,6 +197,7 @@ public class DedubaClass
         Console.Write(
             $"\n{lineNumber} {DateTime.Now} {msg}");
     }
+    // ReSharper enable ExplicitCallerInfoArgument
 
     // ############################################################################
     // build arlist/preflist
@@ -448,7 +450,7 @@ public class DedubaClass
         var t = v.GetType();
         if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
 
-        if (v == null) return "u";
+
         var ary = new List<string>();
         foreach (var item in v) ary.Add(Sdpack(item, ""));
         return "l" + pack_w((ulong)ary.Count) + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
@@ -486,7 +488,7 @@ public class DedubaClass
                 return SdpackOther(v, name);
         }
     }
-
+    // ReSharper disable once UnusedMember.Global
     public static object? Sdunpack(string value)
     {
         var p = value.Substring(0, 1);
@@ -677,6 +679,7 @@ public class DedubaClass
                     MemoryStream mem;
                     if (statBuf?.StIsReg ?? false)
                     {
+                        // ReSharper disable once ConstantConditionalAccessQualifier
                         var size = statBuf?.StSize;
                         if (size != 0)
                             try
