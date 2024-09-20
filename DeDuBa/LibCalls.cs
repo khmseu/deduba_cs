@@ -133,10 +133,13 @@ public partial class LibCalls
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
 
-    public readonly struct LStatData(ulong stDev,
+    public readonly struct LStatData(
+        ulong stDev,
         ulong stIno,
         uint stMode,
-        bool stIsDir, bool stIsReg, bool stIsLnk,
+        bool stIsDir,
+        bool stIsReg,
+        bool stIsLnk,
         ulong stNlink,
         uint stUid,
         uint stGid,
