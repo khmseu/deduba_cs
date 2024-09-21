@@ -33,6 +33,7 @@ public partial class LibCalls
     {
         return S_ISDIR(s.StMode);
     }
+
     // ReSharper disable once UnusedMember.Local
     private static bool S_ISDIR(object[] s)
     {
@@ -139,6 +140,7 @@ public partial class LibCalls
 
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
+
     // ReSharper disable UnusedMember.Global
     public readonly struct LStatData(
         ulong stDev,

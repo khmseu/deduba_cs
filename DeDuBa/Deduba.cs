@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using Bzip2;
 
 namespace DeDuBa;
+
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DedubaClass
 {
@@ -488,6 +489,7 @@ public class DedubaClass
                 return SdpackOther(v, name);
         }
     }
+
     // ReSharper disable once UnusedMember.Global
     public static object? Sdunpack(string value)
     {
