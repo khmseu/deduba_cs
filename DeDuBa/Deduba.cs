@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
@@ -6,8 +7,10 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bzip2;
+using Tenray.ZoneTree.Segments.DiskSegmentVariations;
 
 namespace DeDuBa;
 
@@ -42,9 +45,80 @@ public class DedubaClass
     // preflist: list of files and directories under a given prefix
     // (as \0-separated list)
     private static readonly Dictionary<string, string> Preflist = [];
-    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        IgnoreReadOnlyFields = false,
+        IgnoreReadOnlyProperties = false,
+        IncludeFields = true,
+        // ReferenceHandler = ReferenceHandler.Preserve,
+        WriteIndented = true,
+    };
 
+    private struct Finfo
+    {
+        public bool Exists;
+        public string DirectoryName;
+        public string Extension;
+        public string FullName;
+        public string LinkTarget;
+        public string Name;
+    };
+    private static Finfo ToFinfo<T>(T? fi) where T : FileSystemInfo
+    {
+        var fo = new Finfo();
+        if (fi is null) return fo;
+        fo.Exists = fi.Exists;
+        fo.Extension = fi.Extension;
+        fo.FullName = fi.FullName;
+        fo.LinkTarget = fi.LinkTarget ?? "";
+        fo.Name = fi.Name;
+        switch (fi)
+        {
+            case FileInfo fif:
+                fo.DirectoryName = fif.DirectoryName ?? "";
+                break;
+            case DirectoryInfo fid:
+                break;
+            default:
+                throw new ArgumentException(fi.GetType().AssemblyQualifiedName, nameof(fi));
+                break;
+        }
 
+        return fo;
+    }
+
+    // # 0 dev      device number of filesystem
+    // # 1 ino      inode number
+    // # 2 mode     file mode  (type and permissions)
+    // # 3 nlink    number of (hard) links to the file
+    // # 4 uid      numeric user ID of file's owner
+    // # 5 gid      numeric group ID of file's owner
+    // # 6 rdev     the device identifier (special files only)
+    // # 7 size     total size of file, in bytes
+    // # 8 atime    last access time in seconds since the epoch
+    // # 9 mtime    last modify time in seconds since the epoch
+    // # 10 ctime    inode change time in seconds since the epoch (*)
+    // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
+    // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
+    private static double[]? LS2OD(LibCalls.LStatData? ls)
+    {
+        if (!ls.HasValue) return null;
+        var od = new double[13];
+        od[0] = ls.Value.StDev;
+        od[1] = ls.Value.StIno;
+        od[2] = ls.Value.StMode;
+        od[3] = ls.Value.StNlink;
+        od[4] = ls.Value.StUid;
+        od[5] = ls.Value.StGid;
+        od[6] = ls.Value.StRdev;
+        od[7] = ls.Value.StSize;
+        od[8] = ls.Value.StAtim.Subtract(DateTime.UnixEpoch).TotalSeconds;
+        od[9] = ls.Value.StMtim.Subtract(DateTime.UnixEpoch).TotalSeconds;
+        od[10] = ls.Value.StCtim.Subtract(DateTime.UnixEpoch).TotalSeconds;
+        od[11] = ls.Value.StBlksize;
+        od[12] = ls.Value.StBlocks;
+        return od;
+    }
     public static void Backup(string[] argv)
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
@@ -70,17 +144,27 @@ public class DedubaClass
         //#############################################################################
         // Main program
         //#############################################################################
+        Console.Write("\n\nMain program\n");
 
         try
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
-            argv = argv.Select(Path.GetFullPath).ToArray();
+            argv = argv.Select(raw =>
+            {
+                return LibCalls.CANONICALIZE_FILE_NAME(raw);
+            }).Select(Path.GetFullPath).ToArray();
+            ConWrite($"Filtered; {Dumper(D(argv))}");
 
             foreach (var root in argv)
             {
                 var st = LibCalls.Lstat(root);
                 // ReSharper disable once ConstantConditionalAccessQualifier
-                if (st != null) Devices[st?.StDev ?? 0] = 1;
+                if (st != null)
+                {
+                    var i = st?.StDev ?? 0;
+                    if (!Devices.ContainsKey(i)) Devices[i] = 0;
+                    Devices[i]++;
+                }
             }
 
             ConWrite(Dumper(D(Devices)));
@@ -99,11 +183,11 @@ public class DedubaClass
             {
                 ConWrite("Before backup:\n");
                 foreach (var kvp in Arlist)
-                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Arlist)}[{kvp.Key}]", kvp.Value)));
+                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Arlist)}['{kvp.Key}']", kvp.Value)));
 
                 // Iterate over preflist
                 foreach (var kvp in Preflist)
-                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Preflist)}[{kvp.Key}]", kvp.Value)));
+                    ConWrite(Dumper(new KeyValuePair<string, object?>($"{nameof(Preflist)}['{kvp.Key}']", kvp.Value)));
             }
 
             // ##############################################################################
@@ -174,29 +258,29 @@ public class DedubaClass
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
-    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0)
+    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
     {
-        Error(file, op, new Win32Exception(), lineNumber);
+        Error(file, op, new Win32Exception(), lineNumber, callerMemberName);
     }
 
-    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0)
+    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
-        if (Testing) ConWrite(msg, lineNumber);
+        if (Testing) ConWrite(msg, lineNumber, callerMemberName);
         if (_log != null) _log.Write(msg);
         else
             throw new Exception(msg);
     }
 
-    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0)
+    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
     {
-        ConWrite($"WARN: {msg}\n", lineNumber);
+        ConWrite($"WARN: {msg}\n", lineNumber, callerMemberName);
     }
 
-    private static void ConWrite(string msg, [CallerLineNumber] int lineNumber = 0)
+    private static void ConWrite(string msg, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
     {
         Console.Write(
-            $"\n{lineNumber} {DateTime.Now} {msg}");
+            $"\n{lineNumber} {DateTime.Now} <{callerMemberName}> {msg}");
     }
     // ReSharper enable ExplicitCallerInfoArgument
 
@@ -417,7 +501,7 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(SdpackNull)}: {name}: {Dumper(D(t?.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t?.FullName), D(v))}");
         return v is null ? "u" : Sdpack(v, name);
     }
 
@@ -426,7 +510,7 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t.FullName), D(v))}");
 
         return "s" + v;
     }
@@ -436,7 +520,7 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t.FullName), D(v))}");
 
         var intValue = Convert.ToInt64(v);
         return intValue >= 0
@@ -449,7 +533,7 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t.FullName), D(v))}");
 
 
         var ary = new List<string>();
@@ -462,7 +546,6 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t?.FullName), D(v))}");
 
         throw new InvalidOperationException($"unexpected type {t?.FullName ?? "unknown"}");
     }
@@ -471,7 +554,7 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
-        if (name.Length > 0 && Testing) ConWrite($"{nameof(Sdpack)}: {name}: {Dumper(D(t?.FullName), D(v))}");
+        if (name.Length > 0 && Testing) ConWrite($"{name}: {Dumper(D(t?.FullName), D(v))}");
 
         switch (v)
         {
@@ -483,7 +566,12 @@ public class DedubaClass
             case long int64: return SdpackNum(int64, name);
             case int int32: return SdpackNum(int32, name);
             case short int16: return SdpackNum(int16, name);
-            case byte int8: return SdpackNum(int8, name);
+            case sbyte int8: return SdpackNum(int8, name);
+            case UInt128 uint128: return SdpackNum(uint128, name);
+            case ulong uint64: return SdpackNum(uint64, name);
+            case uint uint32: return SdpackNum(uint32, name);
+            case ushort uint16: return SdpackNum(uint16, name);
+            case byte uint8: return SdpackNum(uint8, name);
             case IEnumerable en: return SdpackSeq(en, name);
             default:
                 return SdpackOther(v, name);
@@ -601,7 +689,9 @@ public class DedubaClass
     // ##############################################################################
     private static void backup_worker(string[] filesToBackup)
     {
-        foreach (var entry in filesToBackup.OrderBy(e => e))
+        ConWrite($"Debug 1: {nameof(backup_worker)}({Dumper(D(filesToBackup))})");
+        ConWrite($"Debug 2: {nameof(backup_worker)}({Dumper(D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})");
+        foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
         {
             var volume = Path.GetPathRoot(entry);
             var directories = Path.GetDirectoryName(entry);
@@ -611,16 +701,18 @@ public class DedubaClass
             var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
             var name = file;
             LibCalls.LStatData? statBuf = null;
-            DateTime? start = null;
+
+            // $dir is the current directory name,
+            // $name is the current filename within that directory
+            // $entry is the complete pathname to the file.
+            DateTime? start = DateTime.Now;
+            if (Testing) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
             try
             {
                 statBuf = LibCalls.Lstat(entry);
-
-                // $dir is the current directory name,
-                // $name is the current filename within that directory
-                // $entry is the complete pathname to the file.
-                start = DateTime.Now;
-                if (Testing) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
+                if (!statBuf.HasValue) throw new Win32Exception();
+                var sb = statBuf.Value;
+                ConWrite($"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
             }
             catch (Exception ex)
             {
@@ -631,7 +723,7 @@ public class DedubaClass
             if (Devices.ContainsKey(statBuf?.StDev ?? 0) && _dataPath != null &&
                 Path.GetRelativePath(_dataPath, entry).StartsWith(".."))
             {
-                ConWrite($"stat: {Dumper(D(statBuf))}");
+                ConWrite($"stat: {Dumper(D(LS2OD(statBuf)))}");
 
                 // 0 dev      device number of filesystem
                 // 1 ino      inode number

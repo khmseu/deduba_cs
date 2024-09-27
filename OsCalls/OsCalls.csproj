@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Verweis auf die exportierte Bibliothek von OsCallsShim -->
+    <Reference Include="libOsCallsShim">
+      <HintPath>..\OsCallsShim\bin\$(Configuration)\export\libOsCallsShim.so</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

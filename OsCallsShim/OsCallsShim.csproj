@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ConfigurationType>Makefile</ConfigurationType>
+    <ProjectName>OsCallsShim</ProjectName>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <TargetFramework>net8.0</TargetFramework>
+    <ExportDir>$(OutDir)export/</ExportDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
+
+  <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
+    <Exec Command="make" />
+    <Copy SourceFiles="bin/libOsCallsShim.so" DestinationFolder="$(ExportDir)" />
+  </Target>
+
+
+  <Target Name="MakeClean" BeforeTargets="Clean">
+    <Exec Command="make clean" />
+  </Target>
+</Project>

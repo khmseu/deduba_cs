@@ -482,3 +482,5 @@ DeDuBa/xxx.*
 artest.diff
 inspectcode.xml
 perl
+artest*.diff
+*.code-profile

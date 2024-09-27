@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeDuBa", "DeDuBa\DeDuBa.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeDuBa.Test", "DeDuBa.Test\DeDuBa.Test.csproj", "{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsCalls", "OsCalls\OsCalls.csproj", "{C71E2FAF-F823-4762-AA70-10FF261A62E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsCallsShim", "OsCallsShim\OsCallsShim.csproj", "{13DBA6E6-3E1D-4614-BC2A-F2771D7AAF06}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E82710D-31B6-423A-9E5C-FBB930F9FDB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C71E2FAF-F823-4762-AA70-10FF261A62E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C71E2FAF-F823-4762-AA70-10FF261A62E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C71E2FAF-F823-4762-AA70-10FF261A62E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C71E2FAF-F823-4762-AA70-10FF261A62E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13DBA6E6-3E1D-4614-BC2A-F2771D7AAF06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13DBA6E6-3E1D-4614-BC2A-F2771D7AAF06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13DBA6E6-3E1D-4614-BC2A-F2771D7AAF06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13DBA6E6-3E1D-4614-BC2A-F2771D7AAF06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

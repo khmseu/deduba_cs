@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace DeDuBa;
 
@@ -19,10 +20,16 @@ public partial class LibCalls
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     private static partial int __lxstat(int __ver, string __filename, ref StatInfo __stat_buf);
 
-
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     private static partial long __readlink_alias([MarshalAs(UnmanagedType.LPStr)] string path,
-        [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
+            [MarshalAs(UnmanagedType.LPArray)] byte[] buf, ulong bufsize);
+
+    [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial IntPtr canonicalize_file_name(string path);
+
+    [LibraryImport("libc.so.6")]
+    private static partial void free(IntPtr ptr);
+
 
     private static bool S_ISDIR(uint m)
     {
@@ -141,6 +148,18 @@ public partial class LibCalls
         return new string(_buf.AsSpan(0, (int)sz).ToArray().Select(x => (char)x).ToArray());
     }
 
+    public static string CANONICALIZE_FILE_NAME(string path)
+    {
+        var _buf = canonicalize_file_name(path);
+        if (_buf == IntPtr.Zero) throw new Win32Exception();
+        else
+        {
+            var ret = Marshal.PtrToStringUTF8(_buf);
+            free(_buf);
+            return ret ?? "";
+        }
+    }
+
     // ReSharper disable UnusedMember.Global
     public readonly struct LStatData(
         ulong stDev,
@@ -180,7 +199,7 @@ public partial class LibCalls
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct StatInfo
+    private readonly struct StatInfo
     {
         public readonly ulong StDev = new();
         public readonly ulong StIno = new();
@@ -220,12 +239,16 @@ public partial class LibCalls
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public readonly struct GroupEntry
     {
         public readonly string GrName = "";
         public readonly string gr_passwd = "";
         public readonly uint gr_gid = new();
-        public readonly string[] GrMem = [];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public readonly string[] GrMem = []; // Array of pointers to strings
+
+
 
         public GroupEntry()
         {
