@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
@@ -7,10 +6,8 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bzip2;
-using Tenray.ZoneTree.Segments.DiskSegmentVariations;
 
 namespace DeDuBa;
 
@@ -45,24 +42,16 @@ public class DedubaClass
     // preflist: list of files and directories under a given prefix
     // (as \0-separated list)
     private static readonly Dictionary<string, string> Preflist = [];
+
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         IgnoreReadOnlyFields = false,
         IgnoreReadOnlyProperties = false,
         IncludeFields = true,
         // ReferenceHandler = ReferenceHandler.Preserve,
-        WriteIndented = true,
+        WriteIndented = true
     };
 
-    private struct Finfo
-    {
-        public bool Exists;
-        public string DirectoryName;
-        public string Extension;
-        public string FullName;
-        public string LinkTarget;
-        public string Name;
-    };
     private static Finfo ToFinfo<T>(T? fi) where T : FileSystemInfo
     {
         var fo = new Finfo();
@@ -119,6 +108,7 @@ public class DedubaClass
         od[12] = ls.Value.StBlocks;
         return od;
     }
+
     public static void Backup(string[] argv)
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
@@ -149,10 +139,8 @@ public class DedubaClass
         try
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
-            argv = argv.Select(raw =>
-            {
-                return LibCalls.CANONICALIZE_FILE_NAME(raw);
-            }).Select(Path.GetFullPath).ToArray();
+            argv = argv.Select(raw => { return LibCalls.CANONICALIZE_FILE_NAME(raw); }).Select(Path.GetFullPath)
+                .ToArray();
             ConWrite($"Filtered; {Dumper(D(argv))}");
 
             foreach (var root in argv)
@@ -251,6 +239,16 @@ public class DedubaClass
         return string.Join("", ret);
     }
 
+    private struct Finfo
+    {
+        public bool Exists;
+        public string DirectoryName;
+        public string Extension;
+        public string FullName;
+        public string LinkTarget;
+        public string Name;
+    }
+
     // ############################################################################
     // Subroutines
     // ############################################################################
@@ -258,12 +256,14 @@ public class DedubaClass
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
-    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
+    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string callerMemberName = "")
     {
         Error(file, op, new Win32Exception(), lineNumber, callerMemberName);
     }
 
-    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
+    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string callerMemberName = "")
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
         if (Testing) ConWrite(msg, lineNumber, callerMemberName);
@@ -272,12 +272,14 @@ public class DedubaClass
             throw new Exception(msg);
     }
 
-    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
+    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string callerMemberName = "")
     {
         ConWrite($"WARN: {msg}\n", lineNumber, callerMemberName);
     }
 
-    private static void ConWrite(string msg, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string callerMemberName = "")
+    private static void ConWrite(string msg, [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string callerMemberName = "")
     {
         Console.Write(
             $"\n{lineNumber} {DateTime.Now} <{callerMemberName}> {msg}");
@@ -690,7 +692,8 @@ public class DedubaClass
     private static void backup_worker(string[] filesToBackup)
     {
         ConWrite($"Debug 1: {nameof(backup_worker)}({Dumper(D(filesToBackup))})");
-        ConWrite($"Debug 2: {nameof(backup_worker)}({Dumper(D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})");
+        ConWrite(
+            $"Debug 2: {nameof(backup_worker)}({Dumper(D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})");
         foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
         {
             var volume = Path.GetPathRoot(entry);
@@ -712,7 +715,8 @@ public class DedubaClass
                 statBuf = LibCalls.Lstat(entry);
                 if (!statBuf.HasValue) throw new Win32Exception();
                 var sb = statBuf.Value;
-                ConWrite($"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
+                ConWrite(
+                    $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
             }
             catch (Exception ex)
             {
