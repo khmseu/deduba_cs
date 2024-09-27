@@ -2,10 +2,10 @@
 
 namespace OsCalls;
 
-public unsafe class ValXfer
+public unsafe static class ValXfer
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct THandle
+    public  struct THandle
     {
         private readonly void* handler;
         private readonly void* data;
