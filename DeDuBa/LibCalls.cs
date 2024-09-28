@@ -150,10 +150,7 @@ public partial class LibCalls
     public static string CANONICALIZE_FILE_NAME(string path)
     {
         var _buf = canonicalize_file_name(path);
-        if (_buf == IntPtr.Zero)
-        {
-            throw new Win32Exception();
-        }
+        if (_buf == IntPtr.Zero) throw new Win32Exception();
 
         var ret = Marshal.PtrToStringUTF8(_buf);
         free(_buf);

@@ -70,7 +70,7 @@ public class DedubaClass
                 break;
             default:
                 throw new ArgumentException(fi.GetType().AssemblyQualifiedName, nameof(fi));
-                        }
+        }
 
         return fo;
     }
@@ -548,7 +548,7 @@ public class DedubaClass
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
 
-        throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}",name);
+        throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}", name);
     }
 
     private static string Sdpack(object? v, string name)
