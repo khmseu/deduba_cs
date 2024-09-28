@@ -3,11 +3,11 @@ using static OsCalls.ValXfer;
 
 namespace OsCalls;
 
-public static unsafe class UserGroupDB
+public static unsafe class UserGroupDatabase
 {
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    public static extern TValue* getpwuid(ulong uid);
+    public static extern ValueT* getpwuid(ulong uid);
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    public static extern TValue* getgrgid(ulong gid);
+    public static extern ValueT* getgrgid(ulong gid);
 }

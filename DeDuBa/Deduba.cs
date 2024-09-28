@@ -70,8 +70,7 @@ public class DedubaClass
                 break;
             default:
                 throw new ArgumentException(fi.GetType().AssemblyQualifiedName, nameof(fi));
-                break;
-        }
+                        }
 
         return fo;
     }
@@ -89,7 +88,7 @@ public class DedubaClass
     // # 10 ctime    inode change time in seconds since the epoch (*)
     // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
     // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-    private static double[]? LS2OD(LibCalls.LStatData? ls)
+    private static double[]? Ls2Od(LibCalls.LStatData? ls)
     {
         if (!ls.HasValue) return null;
         var od = new double[13];
@@ -139,7 +138,7 @@ public class DedubaClass
         try
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
-            argv = argv.Select(raw => { return LibCalls.CANONICALIZE_FILE_NAME(raw); }).Select(Path.GetFullPath)
+            argv = argv.Select(LibCalls.CANONICALIZE_FILE_NAME).Select(Path.GetFullPath)
                 .ToArray();
             ConWrite($"Filtered; {Dumper(D(argv))}");
 
@@ -150,7 +149,7 @@ public class DedubaClass
                 if (st != null)
                 {
                     var i = st?.StDev ?? 0;
-                    if (!Devices.ContainsKey(i)) Devices[i] = 0;
+                    Devices.TryAdd(i, 0);
                     Devices[i]++;
                 }
             }
@@ -549,7 +548,7 @@ public class DedubaClass
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
 
-        throw new InvalidOperationException($"unexpected type {t?.FullName ?? "unknown"}");
+        throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}",name);
     }
 
     private static string Sdpack(object? v, string name)
@@ -727,7 +726,7 @@ public class DedubaClass
             if (Devices.ContainsKey(statBuf?.StDev ?? 0) && _dataPath != null &&
                 Path.GetRelativePath(_dataPath, entry).StartsWith(".."))
             {
-                ConWrite($"stat: {Dumper(D(LS2OD(statBuf)))}");
+                ConWrite($"stat: {Dumper(D(Ls2Od(statBuf)))}");
 
                 // 0 dev      device number of filesystem
                 // 1 ino      inode number

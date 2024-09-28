@@ -4,7 +4,7 @@ namespace OsCalls;
 
 public static unsafe class ValXfer
 {
-    public enum TType
+    public enum TypeT
     {
         None = 0,
         IsNumber,
@@ -13,13 +13,13 @@ public static unsafe class ValXfer
     }
 
     [DllImport("libOsCalls.so", CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetNextValue(TValue* value);
+    public static extern bool GetNextValue(ValueT* value);
 
     [DllImport("libOsCalls.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void CreateHandle(TValue* value, void* handler, void* data);
+    private static extern void CreateHandle(ValueT* value, void* handler, void* data);
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct THandle
+    public struct HandleT
     {
         private readonly void* handler;
         private readonly void* data;
@@ -27,12 +27,12 @@ public static unsafe class ValXfer
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct TValue
+    public readonly struct ValueT
     {
-        public readonly THandle Handle;
-        public readonly TType Type;
+        public readonly HandleT Handle;
+        public readonly TypeT Type;
         public readonly Int64 Number;
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly IntPtr String;
-        public readonly THandle Complex;
+        public readonly HandleT Complex;
     }
 }
