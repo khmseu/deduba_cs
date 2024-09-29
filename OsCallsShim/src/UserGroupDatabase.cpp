@@ -58,6 +58,19 @@ namespace OsCalls
         }
     }
 
+    bool handle_group_mem(OsCalls::ValueT *value)
+    {
+        auto mem = reinterpret_cast<char **>(value->Handle.data1);
+        if (mem[value->Handle.index] == nullptr)
+        {
+            delete value;
+            return false;
+        }
+        value->Type = TypeT::IsString;
+        value->Name = "[]";
+        value->String = mem[value->Handle.index];
+        return true;
+    }
     bool handle_group(ValueT *value)
     {
         auto gr = reinterpret_cast<group *>(value->Handle.data1);
@@ -73,8 +86,8 @@ namespace OsCalls
             }
             // else fall through
         default:
-            delete (value->Handle.data1);
-            delete[] (value->Handle.data2);
+            delete reinterpret_cast<group *>(value->Handle.data1);
+            delete[] reinterpret_cast<char *>(value->Handle.data2);
             delete value;
             return false;
         case 1:
@@ -90,22 +103,6 @@ namespace OsCalls
             return true;
         }
     }
-
-    bool handle_group_mem(OsCalls::ValueT *value)
-    {
-        auto mem = reinterpret_cast<char **>(value->Handle.data1);
-        if (mem[value->Handle.index] == nullptr)
-        {
-            delete[] mem;
-            delete value;
-            return false;
-        }
-        value->Type = TypeT::IsString;
-        value->Name = "[]";
-        value->String = mem[value->Handle.index];
-        return true;
-    }
-
     auto pwbufsz = sysconf(_SC_GETPW_R_SIZE_MAX);
     auto grbufsz = sysconf(_SC_GETGR_R_SIZE_MAX);
 
@@ -137,7 +134,7 @@ namespace OsCalls
                 v->Number = rc;
             return v;
         };
-        ValueT *getgrgid(uint64_t uid) {};
+
         ValueT *getgrgid(uint64_t gid)
         {
             if (grbufsz <= 0)
