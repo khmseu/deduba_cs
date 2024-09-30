@@ -6,9 +6,9 @@
 
 namespace OsCalls
 {
-    bool handle_passwd(ValueT *value)
+    bool handle_passwd(ValueT* value)
     {
-        auto pw = reinterpret_cast<passwd *>(value->Handle.data1);
+        auto pw = reinterpret_cast<passwd*>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
@@ -19,10 +19,10 @@ namespace OsCalls
                 value->String = pw->pw_name;
                 return true;
             }
-            // else fall through
+        // else fall through
         default:
-            delete reinterpret_cast<passwd *>(value->Handle.data1);
-            delete[] reinterpret_cast<char *>(value->Handle.data2);
+            delete reinterpret_cast<passwd*>(value->Handle.data1);
+            delete[] reinterpret_cast<char*>(value->Handle.data2);
             delete value;
             return false;
         case 1:
@@ -58,9 +58,9 @@ namespace OsCalls
         }
     }
 
-    bool handle_group_mem(OsCalls::ValueT *value)
+    bool handle_group_mem(OsCalls::ValueT* value)
     {
-        auto mem = reinterpret_cast<char **>(value->Handle.data1);
+        auto mem = reinterpret_cast<char**>(value->Handle.data1);
         if (mem[value->Handle.index] == nullptr)
         {
             delete value;
@@ -71,9 +71,10 @@ namespace OsCalls
         value->String = mem[value->Handle.index];
         return true;
     }
-    bool handle_group(ValueT *value)
+
+    bool handle_group(ValueT* value)
     {
-        auto gr = reinterpret_cast<group *>(value->Handle.data1);
+        auto gr = reinterpret_cast<group*>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
@@ -84,10 +85,10 @@ namespace OsCalls
                 value->String = gr->gr_name;
                 return true;
             }
-            // else fall through
+        // else fall through
         default:
-            delete reinterpret_cast<group *>(value->Handle.data1);
-            delete[] reinterpret_cast<char *>(value->Handle.data2);
+            delete reinterpret_cast<group*>(value->Handle.data1);
+            delete[] reinterpret_cast<char*>(value->Handle.data2);
             delete value;
             return false;
         case 1:
@@ -100,66 +101,69 @@ namespace OsCalls
             value->Name = "gr_mem[]";
             value->Complex = new ValueT();
             CreateHandle(value->Complex, handle_group_mem, gr->gr_mem, nullptr);
+            value->Complex->Type = TypeT::IsOK;
             return true;
         }
     }
+
     auto pwbufsz = sysconf(_SC_GETPW_R_SIZE_MAX);
     auto grbufsz = sysconf(_SC_GETGR_R_SIZE_MAX);
 
-    extern "C"
+    extern "C" {
+    ValueT* getpwuid(uint64_t uid)
     {
-        ValueT *getpwuid(uint64_t uid)
+        if (pwbufsz <= 0)
+            pwbufsz = 1024;
+        auto pwbuf = new passwd();
+        struct passwd* pwbufp = nullptr;
+        auto rc = 0;
+        char* strbuf = nullptr;
+        do
         {
-            if (pwbufsz <= 0)
-                pwbufsz = 1024;
-            auto pwbuf = new passwd();
-            struct passwd *pwbufp = nullptr;
-            auto rc = 0;
-            char *strbuf = nullptr;
-            do
+            strbuf = new char[pwbufsz];
+            rc = ::getpwuid_r(uid, pwbuf, strbuf, pwbufsz, &pwbufp);
+            if (rc == ERANGE)
             {
-                strbuf = new char[pwbufsz];
-                rc = ::getpwuid_r(uid, pwbuf, strbuf, pwbufsz, &pwbufp);
-                if (rc == ERANGE)
-                {
-                    pwbufsz <<= 1;
-                    delete[] strbuf;
-                }
-            } while (rc == ERANGE);
-            auto v = new ValueT();
-            CreateHandle(v, handle_passwd, pwbuf, strbuf);
-            if (rc == 0)
-                v->Type = TypeT::IsOK;
-            else
-                v->Number = rc;
-            return v;
-        };
+                pwbufsz <<= 1;
+                delete[] strbuf;
+            }
+        }
+        while (rc == ERANGE);
+        auto v = new ValueT();
+        CreateHandle(v, handle_passwd, pwbuf, strbuf);
+        if (rc == 0)
+            v->Type = TypeT::IsOK;
+        else
+            v->Number = rc;
+        return v;
+    };
 
-        ValueT *getgrgid(uint64_t gid)
+    ValueT* getgrgid(uint64_t gid)
+    {
+        if (grbufsz <= 0)
+            grbufsz = 1024;
+        auto grbuf = new group();
+        struct group* grbufp = nullptr;
+        auto rc = 0;
+        char* strbuf = nullptr;
+        do
         {
-            if (grbufsz <= 0)
-                grbufsz = 1024;
-            auto grbuf = new group();
-            struct group *grbufp = nullptr;
-            auto rc = 0;
-            char *strbuf = nullptr;
-            do
+            strbuf = new char[grbufsz];
+            rc = ::getgrgid_r(gid, grbuf, strbuf, grbufsz, &grbufp);
+            if (rc == ERANGE)
             {
-                strbuf = new char[grbufsz];
-                rc = ::getgrgid_r(gid, grbuf, strbuf, grbufsz, &grbufp);
-                if (rc == ERANGE)
-                {
-                    grbufsz <<= 1;
-                    delete[] strbuf;
-                }
-            } while (rc == ERANGE);
-            auto v = new ValueT();
-            CreateHandle(v, handle_group, grbuf, strbuf);
-            if (rc == 0)
-                v->Type = TypeT::IsOK;
-            else
-                v->Number = rc;
-            return v;
-        };
+                grbufsz <<= 1;
+                delete[] strbuf;
+            }
+        }
+        while (rc == ERANGE);
+        auto v = new ValueT();
+        CreateHandle(v, handle_group, grbuf, strbuf);
+        if (rc == 0)
+            v->Type = TypeT::IsOK;
+        else
+            v->Number = rc;
+        return v;
+    };
     }
 }
