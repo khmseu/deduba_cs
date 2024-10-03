@@ -13,7 +13,9 @@ arts[pl]='\d+\s\w\w\w\s\w\w\w\s\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d'
 
 files="$(echo *)"
 for i in cs pl; do
-    script -c "'time' -v  ${arexe[${i}]} -- ${files}" "${i}.tmp"
+    LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0 \
+        strace -omist-$i -fvs333 -y -yy -t \
+        script -c "'time' -v  ${arexe[${i}]} -- ${files}" "${i}.tmp" &>/dev/null
     perl -f logfilter.pl "${arts[${i}]}" <"${i}.tmp" >"${i}.log"
 done
 

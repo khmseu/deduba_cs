@@ -10,11 +10,9 @@ public partial class LibCalls
 {
     private static byte[] _buf = new byte[1];
 
-    [LibraryImport("libc.so.6")]
-    private static partial IntPtr getpwuid(uint uid);
 
-    [LibraryImport("libc.so.6")]
-    private static partial IntPtr getgrgid(uint gid);
+
+
 
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     private static partial int __lxstat(int __ver, string __filename, ref StatInfo __stat_buf);
@@ -80,22 +78,10 @@ public partial class LibCalls
         return S_ISLNK((uint)s[2]);
     }
 
-    public static PasswdEntry GetPasswd(uint uid)
-    {
-        var pwPtr = getpwuid(uid);
-        if (pwPtr == IntPtr.Zero) throw new Exception("Failed to get passwd struct");
-
-        return Marshal.PtrToStructure<PasswdEntry>(pwPtr);
-    }
 
 
-    public static GroupEntry GetGroup(uint gid)
-    {
-        var grPtr = getgrgid(gid);
-        if (grPtr == IntPtr.Zero) throw new Exception("Failed to get group struct");
 
-        return Marshal.PtrToStructure<GroupEntry>(grPtr);
-    }
+
 
     public static LStatData? Lstat(string filename)
     {

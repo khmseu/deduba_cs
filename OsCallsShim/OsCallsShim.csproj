@@ -2,9 +2,7 @@
   <PropertyGroup>
     <ConfigurationType>Makefile</ConfigurationType>
     <ProjectName>OsCallsShim</ProjectName>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <TargetFramework>net8.0</TargetFramework>
-    <ExportDir>$(OutDir)export/</ExportDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,12 +10,14 @@
   </ItemGroup>
 
   <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
-    <Exec Command="make" />
-    <Copy SourceFiles="bin/libOsCallsShim.so" DestinationFolder="$(ExportDir)" />
+    <Exec EnvironmentVariables="OUT_DIR=$(OutDir)" Command="make" />
   </Target>
 
-
   <Target Name="MakeClean" BeforeTargets="Clean">
-    <Exec Command="make clean" />
+    <Exec EnvironmentVariables="OUT_DIR=$(OutDir)" Command="make clean" />
+  </Target>
+
+  <Target Name="CopyNativeLibs" AfterTargets="Publish">
+    <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>

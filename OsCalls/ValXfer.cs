@@ -15,10 +15,10 @@ public static unsafe class ValXfer
         IsComplex
     }
 
-    [DllImport("libOsCalls.so", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     public static extern bool GetNextValue(ValueT* value);
 
-    [DllImport("libOsCalls.so", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     private static extern void CreateHandle(ValueT* value, void* handler, void* data1, void* data2);
 
     public static JsonNode? ToNode(ValueT* value, string op)

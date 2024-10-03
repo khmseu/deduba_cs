@@ -6,11 +6,7 @@
     <OutputType>library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <!-- Verweis auf die exportierte Bibliothek von OsCallsShim -->
-    <Reference Include="libOsCallsShim">
-      <HintPath>..\OsCallsShim\bin\$(Configuration)\export\libOsCallsShim.so</HintPath>
-    </Reference>
+    <ProjectReference Include="..\OsCallsShim\OsCallsShim.csproj" />
   </ItemGroup>
 </Project>

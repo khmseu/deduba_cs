@@ -1,7 +1,7 @@
 CXX         := g++
 CXX_FLAGS   := -Wall -Wextra -std=c++17 -ggdb -fPIC -fdiagnostics-color=always
 
-BIN         := bin
+BIN         := $(OUT_DIR)
 SRC         := src
 INCLUDE     := include
 LIB         := lib

@@ -1,3 +1,4 @@
+using OsCalls;
 using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
@@ -140,7 +141,7 @@ public class DedubaClass
             // @ARGV = map { canonpath realpath $_ } @ARGV;
             argv = argv.Select(LibCalls.CANONICALIZE_FILE_NAME).Select(Path.GetFullPath)
                 .ToArray();
-            ConWrite($"Filtered; {Dumper(D(argv))}");
+            ConWrite($"Filtered: {Dumper(D(argv))}");
 
             foreach (var root in argv)
             {
@@ -385,7 +386,9 @@ public class DedubaClass
                 if (f.EndsWith("/"))
                     newDirs.Add(f);
 
-            for (var n = 0x00; n <= 0xff; n++)
+            for (var n = 0x00;
+n <= 0xff;
+n++)
             {
                 var dir = $"{n:x2}";
                 var de = $"{dir}/";
@@ -573,6 +576,7 @@ public class DedubaClass
             case uint uint32: return SdpackNum(uint32, name);
             case ushort uint16: return SdpackNum(uint16, name);
             case byte uint8: return SdpackNum(uint8, name);
+            case Double double_: return SdpackNum(double_, name);
             case IEnumerable en: return SdpackSeq(en, name);
             default:
                 return SdpackOther(v, name);
@@ -614,12 +618,12 @@ public class DedubaClass
 
     private static object[] Usr(uint uid)
     {
-        return [uid, LibCalls.GetPasswd(uid).PwName];
+        return [uid, UserGroupDatabase.GetPwUid(uid)?["pw_name"]?.ToString() ?? uid.ToString()];
     }
 
     private static object[] Grp(uint gid)
     {
-        return [gid, LibCalls.GetGroup(gid).GrName];
+        return [gid, UserGroupDatabase.GetGrGid(gid)?["gr_name"]?.ToString() ?? gid.ToString()];
     }
 
     private static string save_data(string data)
@@ -630,7 +634,9 @@ public class DedubaClass
 
         if (outFile != null)
         {
+            Bstats.TryAdd("saved_blocks", 0);
             Bstats["saved_blocks"]++;
+            Bstats.TryAdd("saved_bytes", 0);
             Bstats["saved_bytes"] += data.Length;
 
             try
@@ -652,7 +658,9 @@ public class DedubaClass
         }
         else
         {
+            Bstats.TryAdd("duplicate_blocks", 0);
             Bstats["duplicate_blocks"]++;
+            Bstats.TryAdd("duplicate_bytes", 0);
             Bstats["duplicate_bytes"] += data.Length;
             if (Testing) ConWrite($"{hash} already exists");
         }
@@ -764,12 +772,13 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
+                    var filtered_inode = Ls2Od(statBuf);
                     var inode = new List<object>
                     {
-                        new[] { statBuf?.StMode, statBuf?.StNlink },
-                        Usr(Convert.ToUInt32(statBuf?.StUid)),
-                        Grp(Convert.ToUInt32(statBuf?.StGid)),
-                        new object?[] { statBuf?.StRdev, statBuf?.StSize, statBuf?.StMtim, statBuf?.StCtim }
+                        new object?[] { filtered_inode?[2], filtered_inode?[3] },
+                        Usr(Convert.ToUInt32(filtered_inode?[4])),
+                        Grp(Convert.ToUInt32(filtered_inode?[5])),
+                        new object?[] { filtered_inode?[6], filtered_inode?[7], filtered_inode?[9], filtered_inode?[10] }
                     };
                     string[] hashes = [];
                     _ds = 0;
