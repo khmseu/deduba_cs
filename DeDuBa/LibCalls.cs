@@ -11,9 +11,6 @@ public partial class LibCalls
     private static byte[] _buf = new byte[1];
 
 
-
-
-
     [LibraryImport("libc.so.6", StringMarshalling = StringMarshalling.Utf8)]
     private static partial int __lxstat(int __ver, string __filename, ref StatInfo __stat_buf);
 
@@ -77,10 +74,6 @@ public partial class LibCalls
     {
         return S_ISLNK((uint)s[2]);
     }
-
-
-
-
 
 
     public static LStatData? Lstat(string filename)

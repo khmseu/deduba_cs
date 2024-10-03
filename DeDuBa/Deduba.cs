@@ -1,4 +1,3 @@
-using OsCalls;
 using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
@@ -9,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bzip2;
+using OsCalls;
 
 namespace DeDuBa;
 
@@ -387,8 +387,8 @@ public class DedubaClass
                     newDirs.Add(f);
 
             for (var n = 0x00;
-n <= 0xff;
-n++)
+                 n <= 0xff;
+                 n++)
             {
                 var dir = $"{n:x2}";
                 var de = $"{dir}/";
@@ -576,7 +576,7 @@ n++)
             case uint uint32: return SdpackNum(uint32, name);
             case ushort uint16: return SdpackNum(uint16, name);
             case byte uint8: return SdpackNum(uint8, name);
-            case Double double_: return SdpackNum(double_, name);
+            case double double_: return SdpackNum(double_, name);
             case IEnumerable en: return SdpackSeq(en, name);
             default:
                 return SdpackOther(v, name);
@@ -778,7 +778,8 @@ n++)
                         new object?[] { filtered_inode?[2], filtered_inode?[3] },
                         Usr(Convert.ToUInt32(filtered_inode?[4])),
                         Grp(Convert.ToUInt32(filtered_inode?[5])),
-                        new object?[] { filtered_inode?[6], filtered_inode?[7], filtered_inode?[9], filtered_inode?[10] }
+                        new object?[]
+                            { filtered_inode?[6], filtered_inode?[7], filtered_inode?[9], filtered_inode?[10] }
                     };
                     string[] hashes = [];
                     _ds = 0;
