@@ -256,13 +256,15 @@ public class DedubaClass
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
-    public static void Error(string file, string op, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
+    public static void Error(string file, string op, [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
         Error(file, op, new Win32Exception(), filePath, lineNumber, callerMemberName);
     }
 
-    private static void Error(string file, string op, Exception ex, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
+    private static void Error(string file, string op, Exception ex, [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
@@ -278,7 +280,8 @@ public class DedubaClass
         ConWrite($"WARN: {msg}\n", filePath, lineNumber, callerMemberName);
     }
 
-    private static void ConWrite(string msg, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
+    private static void ConWrite(string msg, [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
         Console.Write(

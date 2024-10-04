@@ -5,11 +5,10 @@
 
 namespace OsCalls
 {
-    extern "C"
-    {
-        ValueT *lstat(const char *path);
-        ValueT *readlink(const char *path);
-        ValueT *canonicalize_file_name(const char *path);
+    extern "C" {
+    ValueT* lstat(const char* path);
+    ValueT* readlink(const char* path);
+    ValueT* canonicalize_file_name(const char* path);
     }
 } // namespace OsCalls
 

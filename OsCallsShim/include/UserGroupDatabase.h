@@ -5,10 +5,9 @@
 
 namespace OsCalls
 {
-    extern "C"
-    {
-        ValueT *getpwuid(uint64_t uid);
-        ValueT *getgrgid(uint64_t uid);
+    extern "C" {
+    ValueT* getpwuid(uint64_t uid);
+    ValueT* getgrgid(uint64_t uid);
     }
 } // namespace OsCalls
 
