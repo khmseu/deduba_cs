@@ -348,6 +348,9 @@ sub save_file(*$$) {
     my $size = shift;
     my $tag  = shift;
     my @hashes;
+    print "\n", __LINE__, ' ', scalar localtime, ' save_file: ',
+      Dumper( $size, $tag )
+      if TESTING;
 
 #my @layers = PerlIO::get_layers($file, details => 1);
 #print "\n", __LINE__, ' ', scalar localtime, ' input: ', Dumper(@layers, $size) if TESTING;
@@ -463,6 +466,9 @@ sub backup_worker(@) {
                     my $size = -s _;
                     if ($size) {
                         my $file;
+                        print "\n", __LINE__, ' ', scalar localtime, ' ',
+                          Dumper($entry)
+                          if TESTING;
                         unless ( open $file, '<:unix mmap raw', $entry ) {
                             error $entry, 'open';
                             next;

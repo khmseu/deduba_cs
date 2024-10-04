@@ -256,33 +256,33 @@ public class DedubaClass
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
-    public static void Error(string file, string op, [CallerLineNumber] int lineNumber = 0,
+    public static void Error(string file, string op, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
-        Error(file, op, new Win32Exception(), lineNumber, callerMemberName);
+        Error(file, op, new Win32Exception(), filePath, lineNumber, callerMemberName);
     }
 
-    private static void Error(string file, string op, Exception ex, [CallerLineNumber] int lineNumber = 0,
+    private static void Error(string file, string op, Exception ex, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n";
-        if (Testing) ConWrite(msg, lineNumber, callerMemberName);
+        if (Testing) ConWrite(msg, filePath, lineNumber, callerMemberName);
         if (_log != null) _log.Write(msg);
         else
             throw new Exception(msg);
     }
 
-    private static void Warn(string msg, [CallerLineNumber] int lineNumber = 0,
+    private static void Warn(string msg, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
-        ConWrite($"WARN: {msg}\n", lineNumber, callerMemberName);
+        ConWrite($"WARN: {msg}\n", filePath, lineNumber, callerMemberName);
     }
 
-    private static void ConWrite(string msg, [CallerLineNumber] int lineNumber = 0,
+    private static void ConWrite(string msg, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
         Console.Write(
-            $"\n{lineNumber} {DateTime.Now} <{callerMemberName}> {msg}");
+            $"\n{lineNumber} {DateTime.Now} <{Path.GetFileName(filePath)}:{lineNumber} {callerMemberName}> {msg}");
     }
     // ReSharper enable ExplicitCallerInfoArgument
 
@@ -670,6 +670,7 @@ public class DedubaClass
 
     private static List<string> save_file(Stream fileStream, long size, string tag)
     {
+        if (Testing) ConWrite($"save_file: {Dumper(D(size), D(tag))}");
         var hashes = new List<string>();
 
         // my @layers = PerlIO::get_layers($file, details => 1);
@@ -721,9 +722,9 @@ public class DedubaClass
             {
                 statBuf = LibCalls.Lstat(entry);
                 if (!statBuf.HasValue) throw new Win32Exception();
-                var sb = statBuf.Value;
-                ConWrite(
-                    $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
+                // var sb = statBuf.Value;
+                // ConWrite(
+                //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
             }
             catch (Exception ex)
             {
@@ -791,6 +792,7 @@ public class DedubaClass
                         if (size != 0)
                             try
                             {
+                                if (Testing) ConWrite(Dumper(D(entry)));
                                 var fileStream = File.OpenRead(entry);
                                 hashes = save_file(fileStream, size ?? 0, entry).ToArray();
                             }
@@ -875,7 +877,7 @@ public class DedubaClass
                     TimeSpan? needed = start == null ? null : DateTime.Now.Subtract((DateTime)start);
                     var speed = needed?.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
                     if (Testing) ConWrite($"timing: {Dumper(D(_ds), D(needed), D(speed))}");
-                    report = $"[{statBuf?.StSize:d} -> {_packsum:d}: {needed:d}s]";
+                    report = $"[{statBuf?.StSize:d} -> {_packsum:d}: {needed:c}s]";
                 }
                 else
                 {

@@ -7,7 +7,7 @@ my $timestamp = shift @ARGV;
 
 while (<>) {
     chomp;
-    s{$timestamp\s(<\w+>)?\s*}{($1//'')."\n"}ge;
+    s{^$timestamp\s(<\w+\.\w+:\d+ \w+>)?\s*}{($1//'')."\n"}ge;
     s/ARCHIVE\d/ARCHIVE?/g;
     s/ => /:/;
     s/[\%\$\@\;\\]//g;
