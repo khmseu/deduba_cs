@@ -7,13 +7,13 @@
 
 namespace OsCalls
 {
-    bool handle_lstat(ValueT* value)
+    bool handle_lstat(ValueT *value)
     {
-        auto stbuf = reinterpret_cast<struct stat*>(value->Handle.data1);
+        auto stbuf = reinterpret_cast<struct stat *>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
-            if (value->Type == TypeT::IsOK)
+            if (value->Type == TypeT::IsOk)
             {
                 value->Type = TypeT::IsNumber;
                 value->Name = "st_dev";
@@ -22,7 +22,7 @@ namespace OsCalls
             }
         // else fall through
         default:
-            delete reinterpret_cast<struct stat*>(value->Handle.data1);
+            delete reinterpret_cast<struct stat *>(value->Handle.data1);
             delete value;
             return false;
         case 1:
@@ -88,37 +88,37 @@ namespace OsCalls
         }
     }
 
-    bool handle_readlink(ValueT* value)
+    bool handle_readlink(ValueT *value)
     {
-        auto cfn = reinterpret_cast<const char*>(value->Handle.data1);
+        auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
-            if (value->Type == TypeT::IsOK)
+            if (value->Type == TypeT::IsOk)
             {
                 value->Type = TypeT::IsString;
-                value->Name = "pw_name";
+                value->Name = "path";
                 value->String = cfn;
                 return true;
             }
         // else fall through
         default:
-            delete[] reinterpret_cast<char*>(value->Handle.data1);
+            delete[] reinterpret_cast<char *>(value->Handle.data1);
             delete value;
             return false;
         }
     }
 
-    bool handle_cfn(ValueT* value)
+    bool handle_cfn(ValueT *value)
     {
-        auto cfn = reinterpret_cast<const char*>(value->Handle.data1);
+        auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
-            if (value->Type == TypeT::IsOK)
+            if (value->Type == TypeT::IsOk)
             {
                 value->Type = TypeT::IsString;
-                value->Name = "pw_name";
+                value->Name = "path";
                 value->String = cfn;
                 return true;
             }
@@ -132,59 +132,59 @@ namespace OsCalls
 
     auto slbufsz = _POSIX_PATH_MAX;
 
-    extern "C" {
-    ValueT* lstat(const char* path)
+    extern "C"
     {
-        auto stbuf = new struct stat();
-        auto rc = ::lstat(path, stbuf);
-        auto v = new ValueT();
-        CreateHandle(v, handle_lstat, stbuf, nullptr);
-        if (rc < 0)
-            v->Number = errno;
-        else
-            v->Type = TypeT::IsOK;
-        return v;
-    };
-
-    ValueT* readlink(const char* path)
-    {
-        if (slbufsz <= 0)
-            slbufsz = 1024;
-        auto cnt = 0;
-        char* strbuf = nullptr;
-        do
+        ValueT *lstat(const char *path)
         {
-            strbuf = new char[slbufsz];
-            cnt = ::readlink(path, strbuf, slbufsz - 1);
-            if (cnt >= slbufsz - 1)
+            auto stbuf = new struct stat();
+            auto rc = ::lstat(path, stbuf);
+            auto v = new ValueT();
+            CreateHandle(v, handle_lstat, stbuf, nullptr);
+            if (rc < 0)
+                v->Number = errno;
+            else
+                v->Type = TypeT::IsOk;
+            return v;
+        };
+
+        ValueT *readlink(const char *path)
+        {
+            if (slbufsz <= 0)
+                slbufsz = 1024;
+            auto cnt = 0;
+            char *strbuf = nullptr;
+            do
             {
-                slbufsz <<= 1;
-                delete[] strbuf;
+                strbuf = new char[slbufsz];
+                cnt = ::readlink(path, strbuf, slbufsz - 1);
+                if (cnt >= slbufsz - 1)
+                {
+                    slbufsz <<= 1;
+                    delete[] strbuf;
+                }
+            } while (cnt >= slbufsz - 1);
+            auto v = new ValueT();
+            CreateHandle(v, handle_readlink, strbuf, nullptr);
+            if (cnt < 0)
+                v->Number = errno;
+            else
+            {
+                v->Type = TypeT::IsOk;
+                strbuf[cnt] = '\0';
             }
-        }
-        while (cnt >= slbufsz - 1);
-        auto v = new ValueT();
-        CreateHandle(v, handle_readlink, strbuf, nullptr);
-        if (cnt < 0)
-            v->Number = errno;
-        else
-        {
-            v->Type = TypeT::IsOK;
-            strbuf[cnt] = '\0';
-        }
-        return v;
-    };
+            return v;
+        };
 
-    ValueT* canonicalize_file_name(const char* path)
-    {
-        auto cfn = ::canonicalize_file_name(path);
-        auto v = new ValueT();
-        CreateHandle(v, handle_cfn, cfn, nullptr);
-        if (cfn == nullptr)
-            v->Type = TypeT::IsOK;
-        else
-            v->Number = errno;
-        return v;
-    };
+        ValueT *canonicalize_file_name(const char *path)
+        {
+            auto cfn = ::canonicalize_file_name(path);
+            auto v = new ValueT();
+            CreateHandle(v, handle_cfn, cfn, nullptr);
+            if (cfn == nullptr)
+                v->Type = TypeT::IsOk;
+            else
+                v->Number = errno;
+            return v;
+        };
     }
 }

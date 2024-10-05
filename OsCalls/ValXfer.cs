@@ -12,7 +12,8 @@ public static unsafe class ValXfer
         IsError,
         IsNumber,
         IsString,
-        IsComplex
+        IsComplex,
+        IsTimeSpec,
     }
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
@@ -44,6 +45,9 @@ public static unsafe class ValXfer
                         break;
                     case TypeT.IsComplex:
                         array.Add(ToNode(value->Complex, $"{op}[{value->Handle.index}]"));
+                        break;
+                    case TypeT.IsTimeSpec:
+                        array.Add(value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000));
                         break;
                     default:
                         throw new ArgumentException($"{op} Invalid ValueT type {value->Type:G}.{value->Handle.index}",
@@ -92,6 +96,18 @@ public static unsafe class ValXfer
         public Int64 index;
     }
 
+
+
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly struct TimeSpecT
+    {
+        public readonly long TvSec;
+        public readonly long TvNsec;
+    }
+
+
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ValueT
     {
@@ -101,5 +117,6 @@ public static unsafe class ValXfer
         public readonly Int64 Number;
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly IntPtr String;
         public readonly ValueT* Complex;
+        public readonly TimeSpecT TimeSpec;
     }
 }
