@@ -8,7 +8,7 @@ public static unsafe class ValXfer
 {
     public enum TypeT
     {
-        IsOK = 0,
+        IsOk = 0,
         IsError,
         IsNumber,
         IsString,
@@ -16,12 +16,12 @@ public static unsafe class ValXfer
     }
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetNextValue(ValueT* value);
+    private static extern bool GetNextValue(ValueT* value);
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     private static extern void CreateHandle(ValueT* value, void* handler, void* data1, void* data2);
 
-    public static JsonNode? ToNode(ValueT* value, string op)
+    public static JsonNode ToNode(ValueT* value, string op)
     {
         if (value == null) throw new ArgumentNullException(nameof(value));
         var maybeError = (int)value->Number;

@@ -579,7 +579,7 @@ public class DedubaClass
             case uint uint32: return SdpackNum(uint32, name);
             case ushort uint16: return SdpackNum(uint16, name);
             case byte uint8: return SdpackNum(uint8, name);
-            case double double_: return SdpackNum(double_, name);
+            case double @double: return SdpackNum(@double, name);
             case IEnumerable en: return SdpackSeq(en, name);
             default:
                 return SdpackOther(v, name);
@@ -776,14 +776,14 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
-                    var filtered_inode = Ls2Od(statBuf);
+                    var filteredInode = Ls2Od(statBuf);
                     var inode = new List<object>
                     {
-                        new object?[] { filtered_inode?[2], filtered_inode?[3] },
-                        Usr(Convert.ToUInt32(filtered_inode?[4])),
-                        Grp(Convert.ToUInt32(filtered_inode?[5])),
+                        new object?[] { filteredInode?[2], filteredInode?[3] },
+                        Usr(Convert.ToUInt32(filteredInode?[4])),
+                        Grp(Convert.ToUInt32(filteredInode?[5])),
                         new object?[]
-                            { filtered_inode?[6], filtered_inode?[7], filtered_inode?[9], filtered_inode?[10] }
+                            { filteredInode?[6], filteredInode?[7], filteredInode?[9], filteredInode?[10] }
                     };
                     string[] hashes = [];
                     _ds = 0;

@@ -10,11 +10,11 @@
   </ItemGroup>
 
   <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
-    <Exec EnvironmentVariables="OUT_DIR=$(OutDir)" Command="make" />
+    <Exec EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)" Command="make" />
   </Target>
 
   <Target Name="MakeClean" BeforeTargets="Clean">
-    <Exec EnvironmentVariables="OUT_DIR=$(OutDir)" Command="make clean" />
+    <Exec EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)" Command="make clean" />
   </Target>
 
   <Target Name="CopyNativeLibs" AfterTargets="Publish">

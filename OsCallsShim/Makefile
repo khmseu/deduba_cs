@@ -2,9 +2,9 @@ CXX         := g++
 CXX_FLAGS   := -Wall -Wextra -std=c++17 -ggdb -fPIC -fdiagnostics-color=always
 
 BIN         := $(OUT_DIR)
-SRC         := src
-INCLUDE     := include
-LIB         := lib
+SRC         := $(PROJECT_DIR)/src
+INCLUDE     := $(PROJECT_DIR)/include
+LIB         := $(PROJECT_DIR)/lib
 
 LIBRARIES   :=
 SHARED_LIB  := libOsCallsShim.so
