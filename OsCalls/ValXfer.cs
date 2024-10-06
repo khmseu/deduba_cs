@@ -13,7 +13,7 @@ public static unsafe class ValXfer
         IsNumber,
         IsString,
         IsComplex,
-        IsTimeSpec,
+        IsTimeSpec
     }
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
@@ -95,9 +95,6 @@ public static unsafe class ValXfer
         private readonly void* data2;
         public Int64 index;
     }
-
-
-
 
 
     [StructLayout(LayoutKind.Sequential)]

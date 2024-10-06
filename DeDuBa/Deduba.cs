@@ -96,17 +96,17 @@ public class DedubaClass
         var od = new double[13];
         od[0] = ls["st_dev"]?.GetValue<ulong>() ?? 0;
         od[1] = ls["st_ino"]?.GetValue<ulong>() ?? 0;
-        od[2] = ls["st_mode"]?.GetValue<ulong>() ?? 0; ;
-        od[3] = ls["st_nlink"]?.GetValue<ulong>() ?? 0; ;
+        od[2] = ls["st_mode"]?.GetValue<ulong>() ?? 0;
+        od[3] = ls["st_nlink"]?.GetValue<ulong>() ?? 0;
         od[4] = ls["st_uid"]?.GetValue<ulong>() ?? 0;
         od[5] = ls["st_gid"]?.GetValue<ulong>() ?? 0;
-        od[6] = ls["st_rdev"]?.GetValue<ulong>() ?? 0; ;
-        od[7] = ls["st_size"]?.GetValue<ulong>() ?? 0; ;
+        od[6] = ls["st_rdev"]?.GetValue<ulong>() ?? 0;
+        od[7] = ls["st_size"]?.GetValue<ulong>() ?? 0;
         od[8] = ls["st_atim"]?.GetValue<double>() ?? 0;
         od[9] = ls["st_mtim"]?.GetValue<double>() ?? 0;
         od[10] = ls["st_ctim"]?.GetValue<double>() ?? 0;
-        od[11] = ls["st_blksize"]?.GetValue<ulong>() ?? 0; ;
-        od[12] = ls["st_blocks"]?.GetValue<ulong>() ?? 0; ;
+        od[11] = ls["st_blksize"]?.GetValue<ulong>() ?? 0;
+        od[12] = ls["st_blocks"]?.GetValue<ulong>() ?? 0;
         return od;
     }
 
@@ -140,15 +140,15 @@ public class DedubaClass
         try
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
-            argv = argv.Select(OsCalls.FileSystem.Canonicalizefilename)
-                       .Select(node => node?["path"]?.ToString())
-                       .Select(path => path != null ? Path.GetFullPath(path) : "")
-                       .ToArray();
+            argv = argv.Select(FileSystem.Canonicalizefilename)
+                .Select(node => node?["path"]?.ToString())
+                .Select(path => path != null ? Path.GetFullPath(path) : "")
+                .ToArray();
             ConWrite($"Filtered: {Dumper(D(argv))}");
 
             foreach (var root in argv)
             {
-                var st = OsCalls.FileSystem.LStat(root);
+                var st = FileSystem.LStat(root);
                 // ReSharper disable once ConstantConditionalAccessQualifier
                 if (st != null)
                 {
@@ -726,7 +726,7 @@ public class DedubaClass
             if (Testing) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
             try
             {
-                statBuf = OsCalls.FileSystem.LStat(entry);
+                statBuf = FileSystem.LStat(entry);
                 if (statBuf == null) throw new Win32Exception();
                 // var sb = statBuf.Value;
                 // ConWrite(
@@ -734,7 +734,7 @@ public class DedubaClass
             }
             catch (Exception ex)
             {
-                Error(entry, nameof(OsCalls.FileSystem.LStat), ex);
+                Error(entry, nameof(FileSystem.LStat), ex);
             }
 
             var st_dev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
@@ -757,13 +757,15 @@ public class DedubaClass
                 // 10 ctime    inode change time in seconds since the epoch (*)
                 // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack(new List<object?> { statBuf?["st_dev"]?.GetValue<ulong>() ?? 0, statBuf?["st_ino"]?.GetValue<ulong>() }, "fsfid");
+                var fsfid = Sdpack(
+                    new List<object?>
+                        { statBuf?["st_dev"]?.GetValue<ulong>() ?? 0, statBuf?["st_ino"]?.GetValue<ulong>() }, "fsfid");
                 var old = Fs2Ino.ContainsKey(fsfid);
                 string report;
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (OsCalls.FileSystem.isDir(statBuf))
+                    if (FileSystem.isDir(statBuf))
                         while (true)
                             try
                             {
@@ -792,7 +794,7 @@ public class DedubaClass
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
-                    if (OsCalls.FileSystem.isReg(statBuf))
+                    if (FileSystem.isReg(statBuf))
                     {
                         // ReSharper disable once ConstantConditionalAccessQualifier
                         var size = statBuf?["st_size"]?.GetValue<ulong>();
@@ -809,16 +811,16 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if (OsCalls.FileSystem.isLnk(statBuf))
+                    else if (FileSystem.isLnk(statBuf))
                     {
                         string? dataIslink;
                         try
                         {
-                            dataIslink = OsCalls.FileSystem.ReadLink(entry)?.GetValue<string>() ?? "";
+                            dataIslink = FileSystem.ReadLink(entry)?.GetValue<string>() ?? "";
                         }
                         catch (Exception ex)
                         {
-                            Error(entry, nameof(OsCalls.FileSystem.ReadLink), ex);
+                            Error(entry, nameof(FileSystem.ReadLink), ex);
                             continue;
                         }
 
@@ -839,7 +841,7 @@ public class DedubaClass
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
                         _ds = dataIslink.Length;
                     }
-                    else if (OsCalls.FileSystem.isDir(statBuf))
+                    else if (FileSystem.isDir(statBuf))
                     {
                         var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
                             "dir");
