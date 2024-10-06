@@ -12,12 +12,12 @@ public static unsafe class UserGroupDatabase
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     private static extern ValueT* getgrgid(ulong gid);
 
-    public static JsonNode? GetPwUid(ulong uid)
+    public static JsonNode GetPwUid(ulong uid)
     {
         return ToNode(getpwuid(uid), nameof(getpwuid));
     }
 
-    public static JsonNode? GetGrGid(ulong gid)
+    public static JsonNode GetGrGid(ulong gid)
     {
         return ToNode(getgrgid(gid), nameof(getgrgid));
     }

@@ -16,32 +16,32 @@ public static unsafe class FileSystem
     private static extern ValueT* canonicalize_file_name(string path);
 
 
-    public static JsonNode? LStat(string path)
+    public static JsonNode LStat(string path)
     {
         return ToNode(lstat(path), nameof(lstat));
     }
 
-    public static JsonNode? ReadLink(string path)
+    public static JsonNode ReadLink(string path)
     {
         return ToNode(readlink(path), nameof(readlink));
     }
 
-    public static JsonNode? Canonicalizefilename(string path)
+    public static JsonNode Canonicalizefilename(string path)
     {
         return ToNode(canonicalize_file_name(path), nameof(canonicalize_file_name));
     }
 
-    public static bool isDir(JsonNode? buf)
+    public static bool IsDir(JsonNode? buf)
     {
         return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0x4000;
     }
 
-    public static bool isReg(JsonNode? buf)
+    public static bool IsReg(JsonNode? buf)
     {
         return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0x8000;
     }
 
-    public static bool isLnk(JsonNode? buf)
+    public static bool IsLnk(JsonNode? buf)
     {
         return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0xA000;
     }

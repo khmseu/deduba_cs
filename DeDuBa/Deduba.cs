@@ -54,28 +54,28 @@ public class DedubaClass
         WriteIndented = true
     };
 
-    private static Finfo ToFinfo<T>(T? fi) where T : FileSystemInfo
-    {
-        var fo = new Finfo();
-        if (fi is null) return fo;
-        fo.Exists = fi.Exists;
-        fo.Extension = fi.Extension;
-        fo.FullName = fi.FullName;
-        fo.LinkTarget = fi.LinkTarget ?? "";
-        fo.Name = fi.Name;
-        switch (fi)
-        {
-            case FileInfo fif:
-                fo.DirectoryName = fif.DirectoryName ?? "";
-                break;
-            case DirectoryInfo fid:
-                break;
-            default:
-                throw new ArgumentException(fi.GetType().AssemblyQualifiedName, nameof(fi));
-        }
+    // private static Finfo ToFinfo<T>(T? fi) where T : FileSystemInfo
+    // {
+    //     var fo = new Finfo();
+    //     if (fi is null) return fo;
+    //     fo.Exists = fi.Exists;
+    //     fo.Extension = fi.Extension;
+    //     fo.FullName = fi.FullName;
+    //     fo.LinkTarget = fi.LinkTarget ?? "";
+    //     fo.Name = fi.Name;
+    //     switch (fi)
+    //     {
+    //         case FileInfo fif:
+    //             fo.DirectoryName = fif.DirectoryName ?? "";
+    //             break;
+    //         case DirectoryInfo /* fid */:
+    //             break;
+    //         default:
+    //             throw new ArgumentException(fi.GetType().AssemblyQualifiedName, nameof(fi));
+    //     }
 
-        return fo;
-    }
+    //     return fo;
+    // }
 
     // # 0 dev      device number of filesystem
     // # 1 ino      inode number
@@ -141,7 +141,7 @@ public class DedubaClass
         {
             // @ARGV = map { canonpath realpath $_ } @ARGV;
             argv = argv.Select(FileSystem.Canonicalizefilename)
-                .Select(node => node?["path"]?.ToString())
+                .Select(node => node["path"]?.ToString())
                 .Select(path => path != null ? Path.GetFullPath(path) : "")
                 .ToArray();
             ConWrite($"Filtered: {Dumper(D(argv))}");
@@ -149,13 +149,9 @@ public class DedubaClass
             foreach (var root in argv)
             {
                 var st = FileSystem.LStat(root);
-                // ReSharper disable once ConstantConditionalAccessQualifier
-                if (st != null)
-                {
-                    var i = st?["st_dev"]?.GetValue<ulong>() ?? 0;
-                    Devices.TryAdd(i, 0);
-                    Devices[i]++;
-                }
+                var i = st["st_dev"]?.GetValue<ulong>() ?? 0;
+                Devices.TryAdd(i, 0);
+                Devices[i]++;
             }
 
             ConWrite(Dumper(D(Devices)));
@@ -242,15 +238,15 @@ public class DedubaClass
         return string.Join("", ret);
     }
 
-    private struct Finfo
-    {
-        public bool Exists;
-        public string DirectoryName;
-        public string Extension;
-        public string FullName;
-        public string LinkTarget;
-        public string Name;
-    }
+    // private struct Finfo
+    // {
+    //     public bool Exists;
+    //     public string DirectoryName;
+    //     public string Extension;
+    //     public string FullName;
+    //     public string LinkTarget;
+    //     public string Name;
+    // }
 
     // ############################################################################
     // Subroutines
@@ -259,7 +255,7 @@ public class DedubaClass
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
-    public static void Error(string file, string op, [CallerFilePath] string filePath = "",
+    private static void Error(string file, string op, [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
@@ -624,12 +620,12 @@ public class DedubaClass
 
     private static object[] Usr(uint uid)
     {
-        return [uid, UserGroupDatabase.GetPwUid(uid)?["pw_name"]?.ToString() ?? uid.ToString()];
+        return [uid, UserGroupDatabase.GetPwUid(uid)["pw_name"]?.ToString() ?? uid.ToString()];
     }
 
     private static object[] Grp(uint gid)
     {
-        return [gid, UserGroupDatabase.GetGrGid(gid)?["gr_name"]?.ToString() ?? gid.ToString()];
+        return [gid, UserGroupDatabase.GetGrGid(gid)["gr_name"]?.ToString() ?? gid.ToString()];
     }
 
     private static string save_data(string data)
@@ -722,7 +718,7 @@ public class DedubaClass
             // $dir is the current directory name,
             // $name is the current filename within that directory
             // $entry is the complete pathname to the file.
-            DateTime? start = DateTime.Now;
+            var start = DateTime.Now;
             if (Testing) ConWrite($"handle_file: {Dumper(D(dir), D(name), D(entry))}");
             try
             {
@@ -737,9 +733,9 @@ public class DedubaClass
                 Error(entry, nameof(FileSystem.LStat), ex);
             }
 
-            var st_dev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
-            if (Testing) ConWrite(Dumper(D(st_dev)));
-            if (Devices.ContainsKey(st_dev) && _dataPath != null &&
+            var stDev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
+            if (Testing) ConWrite(Dumper(D(stDev)));
+            if (Devices.ContainsKey(stDev) && _dataPath != null &&
                 Path.GetRelativePath(_dataPath, entry).StartsWith(".."))
             {
                 ConWrite($"stat: {Dumper(D(Ls2Od(statBuf)))}");
@@ -765,7 +761,7 @@ public class DedubaClass
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (FileSystem.isDir(statBuf))
+                    if (FileSystem.IsDir(statBuf))
                         while (true)
                             try
                             {
@@ -794,7 +790,7 @@ public class DedubaClass
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
-                    if (FileSystem.isReg(statBuf))
+                    if (FileSystem.IsReg(statBuf))
                     {
                         // ReSharper disable once ConstantConditionalAccessQualifier
                         var size = statBuf?["st_size"]?.GetValue<ulong>();
@@ -811,12 +807,12 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if (FileSystem.isLnk(statBuf))
+                    else if (FileSystem.IsLnk(statBuf))
                     {
                         string? dataIslink;
                         try
                         {
-                            dataIslink = FileSystem.ReadLink(entry)?.GetValue<string>() ?? "";
+                            dataIslink = FileSystem.ReadLink(entry).GetValue<string>() ?? "";
                         }
                         catch (Exception ex)
                         {
@@ -841,7 +837,7 @@ public class DedubaClass
                         hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
                         _ds = dataIslink.Length;
                     }
-                    else if (FileSystem.isDir(statBuf))
+                    else if (FileSystem.IsDir(statBuf))
                     {
                         var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
                             "dir");
@@ -883,8 +879,8 @@ public class DedubaClass
                     hashes = save_file(mem, data.Length, $"{entry} $data @inode").ToArray();
                     var ino = Sdpack(hashes.ToArray(), "fileid");
                     Fs2Ino[fsfid] = ino;
-                    TimeSpan? needed = start == null ? null : DateTime.Now.Subtract((DateTime)start);
-                    var speed = needed?.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
+                    TimeSpan? needed = DateTime.Now.Subtract(start);
+                    var speed = needed.Value.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
                     if (Testing) ConWrite($"timing: {Dumper(D(_ds), D(needed), D(speed))}");
                     report = $"[{statBuf?["st_size"]?.GetValue<ulong>():d} -> {_packsum:d}: {needed:c}s]";
                 }
