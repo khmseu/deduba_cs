@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OsCalls\OsCalls.csproj" />
+    <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>

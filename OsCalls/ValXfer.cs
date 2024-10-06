@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using UtilitiesLibrary;
 using System.Text.Json.Nodes;
 
 namespace OsCalls;
@@ -26,7 +27,12 @@ public static unsafe class ValXfer
         if (value == null) throw new ArgumentNullException(nameof(value));
         var maybeError = (int)value->Number;
         var more = GetNextValue(value);
-        if (value->Type == TypeT.IsError) throw new Win32Exception(maybeError, op);
+        if (value->Type == TypeT.IsError)
+        {
+            Win32Exception win32Exception = new Win32Exception(maybeError, op);
+            UtilitiesLibrary.Utilities.Error(nameof(ToNode), op, win32Exception);
+            throw win32Exception;
+        }
         var name = Marshal.PtrToStringUTF8(value->Name) ??
                    throw new ArgumentNullException(nameof(value), $"{op} Feld {nameof(ValueT.Name)}");
         if (name == "[]")

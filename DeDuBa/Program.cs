@@ -5,7 +5,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        DedubaClass.Testing = true;
+        UtilitiesLibrary.Utilities.Testing = true;
         DedubaClass.Backup(args);
     }
 }
