@@ -1,11 +1,13 @@
-﻿namespace DeDuBa;
+﻿using UtilitiesLibrary;
+
+namespace DeDuBa;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 internal class Program
 {
     private static void Main(string[] args)
     {
-        UtilitiesLibrary.Utilities.Testing = true;
+        Utilities.Testing = true;
         DedubaClass.Backup(args);
     }
 }

@@ -4,7 +4,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Bzip2;
@@ -111,11 +110,12 @@ public class DedubaClass
         {
             _ = Directory.CreateDirectory(_dataPath);
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             Utilities.Error(_dataPath, nameof(Directory.CreateDirectory), ex);
             throw;
         }
+
         try
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
@@ -124,11 +124,12 @@ public class DedubaClass
                     UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
                 };
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             Utilities.Error(_dataPath, nameof(DirectoryInfo.UnixFileMode), ex);
             throw;
         }
+
         var logname = Path.Combine(_archive, "log_" + _startTimestamp);
         try
         {
@@ -136,12 +137,13 @@ public class DedubaClass
             {
                 Utilities._log = new StreamWriter(logname);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Utilities.Error(logname, nameof(StreamWriter), ex);
                 throw;
-            }        // STDOUT->autoflush(1);
-                     // STDERR->autoflush(1);
+            } // STDOUT->autoflush(1);
+
+            // STDERR->autoflush(1);
             Utilities._log.AutoFlush = true;
 
 
@@ -160,11 +162,12 @@ public class DedubaClass
                         .Select(path => path != null ? Path.GetFullPath(path) : "")
                         .ToArray();
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     Utilities.Error(nameof(argv), nameof(FileSystem.Canonicalizefilename), ex);
                     throw;
                 }
+
                 Utilities.ConWrite($"Filtered: {Utilities.Dumper(Utilities.D(argv))}");
 
                 foreach (var root in argv)
@@ -174,11 +177,12 @@ public class DedubaClass
                     {
                         st = FileSystem.LStat(root);
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         Utilities.Error(root, nameof(FileSystem.LStat), ex);
                         throw;
                     }
+
                     var i = st["st_dev"]?.GetValue<ulong>() ?? 0;
                     Devices.TryAdd(i, 0);
                     Devices[i]++;
@@ -200,11 +204,13 @@ public class DedubaClass
                 {
                     Utilities.ConWrite("Before backup:\n");
                     foreach (var kvp in Arlist)
-                        Utilities.ConWrite(Utilities.Dumper(new KeyValuePair<string, object?>($"{nameof(Arlist)}['{kvp.Key}']", kvp.Value)));
+                        Utilities.ConWrite(Utilities.Dumper(
+                            new KeyValuePair<string, object?>($"{nameof(Arlist)}['{kvp.Key}']", kvp.Value)));
 
                     // Iterate over preflist
                     foreach (var kvp in Preflist)
-                        Utilities.ConWrite(Utilities.Dumper(new KeyValuePair<string, object?>($"{nameof(Preflist)}['{kvp.Key}']", kvp.Value)));
+                        Utilities.ConWrite(Utilities.Dumper(
+                            new KeyValuePair<string, object?>($"{nameof(Preflist)}['{kvp.Key}']", kvp.Value)));
                 }
 
                 // ##############################################################################
@@ -475,7 +481,8 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
-        if (name.Length > 0 && Utilities.Testing) Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}");
+        if (name.Length > 0 && Utilities.Testing)
+            Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}");
         return v is null ? "u" : Sdpack(v, name);
     }
 
@@ -484,7 +491,8 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing) Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
+        if (name.Length > 0 && Utilities.Testing)
+            Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
 
         return "s" + v;
     }
@@ -494,7 +502,8 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing) Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
+        if (name.Length > 0 && Utilities.Testing)
+            Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
 
         var intValue = Convert.ToInt64(v);
         return intValue >= 0
@@ -507,7 +516,8 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing) Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
+        if (name.Length > 0 && Utilities.Testing)
+            Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}");
 
 
         var ary = new List<string>();
@@ -528,7 +538,8 @@ public class DedubaClass
     {
         if (name == null) throw new ArgumentNullException(nameof(name));
         var t = v?.GetType();
-        if (name.Length > 0 && Utilities.Testing) Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}");
+        if (name.Length > 0 && Utilities.Testing)
+            Utilities.ConWrite($"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}");
 
         switch (v)
         {
@@ -640,7 +651,8 @@ public class DedubaClass
 
     private static List<string> save_file(Stream fileStream, long size, string tag)
     {
-        if (Utilities.Testing) Utilities.ConWrite($"save_file: {Utilities.Dumper(Utilities.D(size), Utilities.D(tag))}");
+        if (Utilities.Testing)
+            Utilities.ConWrite($"save_file: {Utilities.Dumper(Utilities.D(size), Utilities.D(tag))}");
         var hashes = new List<string>();
 
         // my @layers = PerlIO::get_layers($file, details => 1);
@@ -650,7 +662,8 @@ public class DedubaClass
             {
                 var data = new byte[Chunksize];
                 var n12 = fileStream.Read(data, 0, (int)Math.Min(Chunksize, size));
-                if (Utilities.Testing) Utilities.ConWrite($"chunk: {Utilities.Dumper(Utilities.D(size), Utilities.D(n12))}");
+                if (Utilities.Testing)
+                    Utilities.ConWrite($"chunk: {Utilities.Dumper(Utilities.D(size), Utilities.D(n12))}");
                 if (n12 == 0) break;
 
                 hashes.Add(save_data(new string(data.AsSpan(0, n12).ToArray().Select(x => (char)x).ToArray())));
@@ -678,7 +691,9 @@ public class DedubaClass
             var directories = Path.GetDirectoryName(entry);
             var file = Path.GetFileName(entry);
             if (Utilities.Testing) Utilities.ConWrite($"{"=".Repeat(80)}\n");
-            if (Utilities.Testing) Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(entry), Utilities.D(volume), Utilities.D(directories), Utilities.D(file))}");
+            if (Utilities.Testing)
+                Utilities.ConWrite(
+                    $"{Utilities.Dumper(Utilities.D(entry), Utilities.D(volume), Utilities.D(directories), Utilities.D(file))}");
             var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
             var name = file;
             JsonNode? statBuf = null;
@@ -687,11 +702,13 @@ public class DedubaClass
             // $name is the current filename within that directory
             // $entry is the complete pathname to the file.
             var start = DateTime.Now;
-            if (Utilities.Testing) Utilities.ConWrite($"handle_file: {Utilities.Dumper(Utilities.D(dir), Utilities.D(name), Utilities.D(entry))}");
+            if (Utilities.Testing)
+                Utilities.ConWrite(
+                    $"handle_file: {Utilities.Dumper(Utilities.D(dir), Utilities.D(name), Utilities.D(entry))}");
             try
             {
                 statBuf = FileSystem.LStat(entry);
-                if (statBuf == null) throw new Win32Exception();
+                if (statBuf == null) throw new Win32Exception("null statBuf");
                 // var sb = statBuf.Value;
                 // Utilities.ConWrite(
                 //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
@@ -849,7 +866,9 @@ public class DedubaClass
                     Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = DateTime.Now.Subtract(start);
                     var speed = needed.Value.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
-                    if (Utilities.Testing) Utilities.ConWrite($"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}");
+                    if (Utilities.Testing)
+                        Utilities.ConWrite(
+                            $"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}");
                     report = $"[{statBuf?["st_size"]?.GetValue<ulong>():d} -> {_packsum:d}: {needed:c}s]";
                 }
                 else

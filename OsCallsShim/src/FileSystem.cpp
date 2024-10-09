@@ -139,10 +139,11 @@ namespace OsCalls
             auto stbuf = new struct stat();
             errno = 0;
             auto rc = ::lstat(path, stbuf);
+            auto en = errno;
             auto v = new ValueT();
             CreateHandle(v, handle_lstat, stbuf, nullptr);
             if (rc < 0)
-                v->Number = errno;
+                v->Number = en;
             else
                 v->Type = TypeT::IsOk;
             return v;
@@ -153,12 +154,14 @@ namespace OsCalls
             if (slbufsz <= 0)
                 slbufsz = 1024;
             auto cnt = 0;
+            auto en = 0;
             char *strbuf = nullptr;
             do
             {
                 strbuf = new char[slbufsz];
                 errno = 0;
                 cnt = ::readlink(path, strbuf, slbufsz - 1);
+                en = errno;
                 if (cnt >= slbufsz - 1)
                 {
                     slbufsz <<= 1;
@@ -168,7 +171,7 @@ namespace OsCalls
             auto v = new ValueT();
             CreateHandle(v, handle_readlink, strbuf, nullptr);
             if (cnt < 0)
-                v->Number = errno;
+                v->Number = en;
             else
             {
                 v->Type = TypeT::IsOk;
@@ -179,14 +182,17 @@ namespace OsCalls
 
         ValueT *canonicalize_file_name(const char *path)
         {
+            // ::chown("*** before ***", errno, (intptr_t)path);
             errno = 0;
             auto cfn = ::canonicalize_file_name(path);
+            auto en = errno;
+            // ::chown("*** after ***", errno, (intptr_t)cfn);
             auto v = new ValueT();
             CreateHandle(v, handle_cfn, cfn, nullptr);
-            if (cfn == nullptr)
+            if (cfn != nullptr)
                 v->Type = TypeT::IsOk;
             else
-                v->Number = errno;
+                v->Number = en;
             return v;
         };
     }

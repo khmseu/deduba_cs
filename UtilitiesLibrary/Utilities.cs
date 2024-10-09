@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace UtilitiesLibrary;
 
@@ -13,15 +14,21 @@ public class Utilities
     {
         return new KeyValuePair<string, object?>(name, value);
     }
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    private static JsonSerializerOptions GenSerializerOptions()
     {
-        IgnoreReadOnlyFields = false,
-        IgnoreReadOnlyProperties = false,
-        IncludeFields = true,
-        // ReferenceHandler = ReferenceHandler.Preserve,
-        WriteIndented = true
-    };
-
+        JsonSerializerOptions Options =
+        new JsonSerializerOptions()
+        {
+            IgnoreReadOnlyFields = false,
+            IgnoreReadOnlyProperties = false,
+            IncludeFields = true,
+            // ReferenceHandler = ReferenceHandler.Preserve,
+            WriteIndented = true
+        };
+        Options.Converters.Add(new JsonStringEnumConverter());
+        return Options;
+    }
+    private static readonly JsonSerializerOptions SerializerOptions = GenSerializerOptions();
     public static string Dumper(params KeyValuePair<string, object?>[] values)
     {
         string[] ret = [];
@@ -50,10 +57,11 @@ public class Utilities
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string callerMemberName = "")
     {
-        Error(file, op, new Win32Exception(), filePath, lineNumber, callerMemberName);
+        Error(file, op, new Win32Exception("error in Error"), filePath, lineNumber, callerMemberName);
     }
     public static bool Testing = true;
     public static StreamWriter? _log;
+
 
     public static void Error(string file, string op, Exception ex, [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0,

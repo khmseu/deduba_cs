@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
-using UtilitiesLibrary;
 using System.Text.Json.Nodes;
+using UtilitiesLibrary;
 
 namespace OsCalls;
 
@@ -25,14 +25,16 @@ public static unsafe class ValXfer
     public static JsonNode ToNode(ValueT* value, string op)
     {
         if (value == null) throw new ArgumentNullException(nameof(value));
+        ShowValue(value, "", op);
         var maybeError = (int)value->Number;
         var more = GetNextValue(value);
         if (value->Type == TypeT.IsError)
         {
-            Win32Exception win32Exception = new Win32Exception(maybeError, op);
-            UtilitiesLibrary.Utilities.Error(nameof(ToNode), op, win32Exception);
+            var win32Exception = new Win32Exception(maybeError, $"{nameof(ToNode)} found {op} caused error {maybeError}");
+            Utilities.Error(nameof(ToNode), op, win32Exception);
             throw win32Exception;
         }
+
         var name = Marshal.PtrToStringUTF8(value->Name) ??
                    throw new ArgumentNullException(nameof(value), $"{op} Feld {nameof(ValueT.Name)}");
         if (name == "[]")
@@ -40,6 +42,7 @@ public static unsafe class ValXfer
             var array = new JsonArray();
             while (more)
             {
+                ShowValue(value, name, op);
                 switch (value->Type)
                 {
                     case TypeT.IsNumber:
@@ -68,6 +71,7 @@ public static unsafe class ValXfer
         var obj = new JsonObject();
         while (more)
         {
+            ShowValue(value, name, op);
             switch (value->Type)
             {
                 case TypeT.IsNumber:
@@ -78,6 +82,9 @@ public static unsafe class ValXfer
                     break;
                 case TypeT.IsComplex:
                     obj[name] = ToNode(value->Complex, $"{op}.{name}");
+                    break;
+                case TypeT.IsTimeSpec:
+                    obj[name] = (value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000));
                     break;
                 default:
                     throw new ArgumentException($"{op} Invalid ValueT type {value->Type:G}.{value->Handle.index}",
@@ -90,14 +97,31 @@ public static unsafe class ValXfer
         }
 
         return obj;
+
+        static void ShowValue(ValueT* value, string name, string op)
+        {if(false)
+            Utilities.ConWrite(
+                Utilities.Dumper(Utilities.D(op),
+                                 Utilities.D(name),
+                                 Utilities.D(value->Handle.index),
+                                 Utilities.D((ulong)value->Handle.data1),
+                                 Utilities.D((ulong)value->Handle.data2),
+                                 Utilities.D(value->Type),
+                                 Utilities.D((ulong)value->Name),
+                                 Utilities.D(Marshal.PtrToStringUTF8(value->Name)),
+                                 Utilities.D(value->Number),
+                                 Utilities.D((ulong)value->String),
+                                 Utilities.D((ulong)value->Complex),
+                                 Utilities.D(value->TimeSpec)));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct HandleT
     {
         private readonly void* handler;
-        private readonly void* data1;
-        private readonly void* data2;
+        public readonly void* data1;
+        public readonly void* data2;
         public Int64 index;
     }
 
