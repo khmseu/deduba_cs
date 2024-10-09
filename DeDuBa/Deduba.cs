@@ -797,7 +797,7 @@ public class DedubaClass
                         string? dataIslink;
                         try
                         {
-                            dataIslink = FileSystem.ReadLink(entry).GetValue<string>() ?? "";
+                            dataIslink = FileSystem.ReadLink(entry).GetValue<string>();
                         }
                         catch (Exception ex)
                         {
