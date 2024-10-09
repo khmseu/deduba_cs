@@ -7,9 +7,9 @@
 
 namespace OsCalls
 {
-    bool handle_lstat(ValueT *value)
+    bool handle_lstat(ValueT* value)
     {
-        auto stbuf = reinterpret_cast<struct stat *>(value->Handle.data1);
+        auto stbuf = reinterpret_cast<struct stat*>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
@@ -22,7 +22,7 @@ namespace OsCalls
             }
         // else fall through
         default:
-            delete reinterpret_cast<struct stat *>(value->Handle.data1);
+            delete reinterpret_cast<struct stat*>(value->Handle.data1);
             delete value;
             return false;
         case 1:
@@ -88,9 +88,9 @@ namespace OsCalls
         }
     }
 
-    bool handle_readlink(ValueT *value)
+    bool handle_readlink(ValueT* value)
     {
-        auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
+        auto cfn = reinterpret_cast<const char*>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
@@ -103,15 +103,15 @@ namespace OsCalls
             }
         // else fall through
         default:
-            delete[] reinterpret_cast<char *>(value->Handle.data1);
+            delete[] reinterpret_cast<char*>(value->Handle.data1);
             delete value;
             return false;
         }
     }
 
-    bool handle_cfn(ValueT *value)
+    bool handle_cfn(ValueT* value)
     {
-        auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
+        auto cfn = reinterpret_cast<const char*>(value->Handle.data1);
         switch (value->Handle.index)
         {
         case 0:
@@ -132,68 +132,68 @@ namespace OsCalls
 
     auto slbufsz = _POSIX_PATH_MAX;
 
-    extern "C"
+    extern "C" {
+    ValueT* lstat(const char* path)
     {
-        ValueT *lstat(const char *path)
-        {
-            auto stbuf = new struct stat();
-            errno = 0;
-            auto rc = ::lstat(path, stbuf);
-            auto en = errno;
-            auto v = new ValueT();
-            CreateHandle(v, handle_lstat, stbuf, nullptr);
-            if (rc < 0)
-                v->Number = en;
-            else
-                v->Type = TypeT::IsOk;
-            return v;
-        };
+        auto stbuf = new struct stat();
+        errno = 0;
+        auto rc = ::lstat(path, stbuf);
+        auto en = errno;
+        auto v = new ValueT();
+        CreateHandle(v, handle_lstat, stbuf, nullptr);
+        if (rc < 0)
+            v->Number = en;
+        else
+            v->Type = TypeT::IsOk;
+        return v;
+    };
 
-        ValueT *readlink(const char *path)
+    ValueT* readlink(const char* path)
+    {
+        if (slbufsz <= 0)
+            slbufsz = 1024;
+        auto cnt = 0;
+        auto en = 0;
+        char* strbuf = nullptr;
+        do
         {
-            if (slbufsz <= 0)
-                slbufsz = 1024;
-            auto cnt = 0;
-            auto en = 0;
-            char *strbuf = nullptr;
-            do
+            strbuf = new char[slbufsz];
+            errno = 0;
+            cnt = ::readlink(path, strbuf, slbufsz - 1);
+            en = errno;
+            if (cnt >= slbufsz - 1)
             {
-                strbuf = new char[slbufsz];
-                errno = 0;
-                cnt = ::readlink(path, strbuf, slbufsz - 1);
-                en = errno;
-                if (cnt >= slbufsz - 1)
-                {
-                    slbufsz <<= 1;
-                    delete[] strbuf;
-                }
-            } while (cnt >= slbufsz - 1);
-            auto v = new ValueT();
-            CreateHandle(v, handle_readlink, strbuf, nullptr);
-            if (cnt < 0)
-                v->Number = en;
-            else
-            {
-                v->Type = TypeT::IsOk;
-                strbuf[cnt] = '\0';
+                slbufsz <<= 1;
+                delete[] strbuf;
             }
-            return v;
-        };
-
-        ValueT *canonicalize_file_name(const char *path)
+        }
+        while (cnt >= slbufsz - 1);
+        auto v = new ValueT();
+        CreateHandle(v, handle_readlink, strbuf, nullptr);
+        if (cnt < 0)
+            v->Number = en;
+        else
         {
-            // ::chown("*** before ***", errno, (intptr_t)path);
-            errno = 0;
-            auto cfn = ::canonicalize_file_name(path);
-            auto en = errno;
-            // ::chown("*** after ***", errno, (intptr_t)cfn);
-            auto v = new ValueT();
-            CreateHandle(v, handle_cfn, cfn, nullptr);
-            if (cfn != nullptr)
-                v->Type = TypeT::IsOk;
-            else
-                v->Number = en;
-            return v;
-        };
+            v->Type = TypeT::IsOk;
+            strbuf[cnt] = '\0';
+        }
+        return v;
+    };
+
+    ValueT* canonicalize_file_name(const char* path)
+    {
+        // ::chown("*** before ***", errno, (intptr_t)path);
+        errno = 0;
+        auto cfn = ::canonicalize_file_name(path);
+        auto en = errno;
+        // ::chown("*** after ***", errno, (intptr_t)cfn);
+        auto v = new ValueT();
+        CreateHandle(v, handle_cfn, cfn, nullptr);
+        if (cfn != nullptr)
+            v->Type = TypeT::IsOk;
+        else
+            v->Number = en;
+        return v;
+    };
     }
 }

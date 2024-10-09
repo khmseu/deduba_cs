@@ -30,7 +30,8 @@ public static unsafe class ValXfer
         var more = GetNextValue(value);
         if (value->Type == TypeT.IsError)
         {
-            var win32Exception = new Win32Exception(maybeError, $"{nameof(ToNode)} found {op} caused error {maybeError}");
+            var win32Exception =
+                new Win32Exception(maybeError, $"{nameof(ToNode)} found {op} caused error {maybeError}");
             Utilities.Error(nameof(ToNode), op, win32Exception);
             throw win32Exception;
         }
@@ -84,7 +85,7 @@ public static unsafe class ValXfer
                     obj[name] = ToNode(value->Complex, $"{op}.{name}");
                     break;
                 case TypeT.IsTimeSpec:
-                    obj[name] = (value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000));
+                    obj[name] = value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000);
                     break;
                 default:
                     throw new ArgumentException($"{op} Invalid ValueT type {value->Type:G}.{value->Handle.index}",
@@ -99,20 +100,21 @@ public static unsafe class ValXfer
         return obj;
 
         static void ShowValue(ValueT* value, string name, string op)
-        {if(false)
-            Utilities.ConWrite(
-                Utilities.Dumper(Utilities.D(op),
-                                 Utilities.D(name),
-                                 Utilities.D(value->Handle.index),
-                                 Utilities.D((ulong)value->Handle.data1),
-                                 Utilities.D((ulong)value->Handle.data2),
-                                 Utilities.D(value->Type),
-                                 Utilities.D((ulong)value->Name),
-                                 Utilities.D(Marshal.PtrToStringUTF8(value->Name)),
-                                 Utilities.D(value->Number),
-                                 Utilities.D((ulong)value->String),
-                                 Utilities.D((ulong)value->Complex),
-                                 Utilities.D(value->TimeSpec)));
+        {
+            if (false)
+                Utilities.ConWrite(
+                    Utilities.Dumper(Utilities.D(op),
+                        Utilities.D(name),
+                        Utilities.D(value->Handle.index),
+                        Utilities.D((ulong)value->Handle.data1),
+                        Utilities.D((ulong)value->Handle.data2),
+                        Utilities.D(value->Type),
+                        Utilities.D((ulong)value->Name),
+                        Utilities.D(Marshal.PtrToStringUTF8(value->Name)),
+                        Utilities.D(value->Number),
+                        Utilities.D((ulong)value->String),
+                        Utilities.D((ulong)value->Complex),
+                        Utilities.D(value->TimeSpec)));
         }
     }
 
