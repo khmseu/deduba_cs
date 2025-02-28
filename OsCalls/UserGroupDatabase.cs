@@ -14,11 +14,11 @@ public static unsafe class UserGroupDatabase
 
     public static JsonNode GetPwUid(ulong uid)
     {
-        return ToNode(getpwuid(uid), nameof(getpwuid));
+        return ToNode(getpwuid(uid), $"user {uid}", nameof(getpwuid));
     }
 
     public static JsonNode GetGrGid(ulong gid)
     {
-        return ToNode(getgrgid(gid), nameof(getgrgid));
+        return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
     }
 }

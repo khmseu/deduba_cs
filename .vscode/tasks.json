@@ -1,26 +1,43 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Build C++ project",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "command": "make",
-        },
-        {
-            "label": "Build & run C++ project",
-            "type": "shell",
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "command": "make",
-            "args": [
-                "run"
-            ]
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build C++ project",
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "make"
+    },
+    {
+      "label": "Build & run C++ project",
+      "type": "shell",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "command": "make",
+      "args": ["run"]
+    },
+    {
+      "type": "msbuild",
+      "problemMatcher": ["$msCompile"],
+      "group": "build",
+      "label": "Build: DeDuBa.csproj",
+      "detail": "Build the DeDuBa.csproj project using dotnet build"
+    },
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["build", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "detail": "Build the DeDuBa.csproj project using dotnet build"
+    }
+  ]
 }

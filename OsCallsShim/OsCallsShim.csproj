@@ -1,12 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <ConfigurationType>Makefile</ConfigurationType>
-    <ProjectName>OsCallsShim</ProjectName>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="libOsCallsShim.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
@@ -15,6 +22,10 @@
 
   <Target Name="MakeClean" BeforeTargets="Clean">
     <Exec EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)" Command="make clean" />
+  </Target>
+
+    <Target Name="CopySharedLibrary" AfterTargets="Build">
+    <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(OutputPath)" />
   </Target>
 
   <Target Name="CopyNativeLibs" AfterTargets="Publish">

@@ -18,17 +18,17 @@ public static unsafe class FileSystem
 
     public static JsonNode LStat(string path)
     {
-        return ToNode(lstat(path), nameof(lstat));
+        return ToNode(lstat(path), path, nameof(lstat));
     }
 
     public static JsonNode ReadLink(string path)
     {
-        return ToNode(readlink(path), nameof(readlink));
+        return ToNode(readlink(path), path, nameof(readlink));
     }
 
     public static JsonNode Canonicalizefilename(string path)
     {
-        return ToNode(canonicalize_file_name(path), nameof(canonicalize_file_name));
+        return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
 
     public static bool IsDir(JsonNode? buf)

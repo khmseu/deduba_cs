@@ -16,7 +16,7 @@ for i in cs pl; do
     rm -f "${i}."{log,tmp} "mist-${i}"
     LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0
     # strace -omist-$i -fvs333 -y -yy -t \#
-    script -c "'time' -v  ${arexe[${i}]} -- ${files}" "${i}.tmp" &>/dev/null
+    script -c "'time' -v  timeout 1m ${arexe[${i}]} -- ${files}" "${i}.tmp" &>/dev/null
     perl -f logfilter.pl "${arts[${i}]}" <"${i}.tmp" >"${i}.log"
 done
 

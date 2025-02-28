@@ -1,26 +1,77 @@
 {
-    "version": "0.2.0",
     "configurations": [
         {
-            "name": "C++ Debug (gdb)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/main",
-            "preLaunchTask": "Build C++ project",
-            "args": [],
-            "stopAtEntry": false,
+            "args": [
+                "tester.sh"
+            ],
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
+            "environment": [
+                {
+                    "name": "LD_DEBUG",
+                    "value": "libs"
+                },
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0"
+                }
+            ],
+            "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
+            "name": "C++: DeDuBa Debug",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/DeDuBa/bin/Debug/net8.0/${input:platform}/DeDuBa.dll",
+            "request": "launch",
             "setupCommands": [
                 {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+                    "description": "Automatische Strukturierung und Einrückung für gdb aktivieren",
+                    "ignoreFailures": true,
+                    "text": "-enable-pretty-printing"
+                },
+                {
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
+                    "ignoreFailures": true,
+                    "text": "-gdb-set disassembly-flavor intel"
                 }
-            ]
+            ],
+            "stopAtEntry": true,
+            "type": "cppdbg"
+        },
+        {
+            "args": [
+                "tester.sh"
+            ],
+            "console": "internalConsole",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "LD_DEBUG": "libs",
+                "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0"
+            },
+            "justMyCode": false,
+            "name": "C#: DeDuBa Debug",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/DeDuBa/bin/Debug/net8.0/${input:platform}/DeDuBa.dll",
+            "request": "launch",
+            "requireExactSource": false,
+            "stopAtEntry": true,
+            "type": "coreclr"
         }
-    ]
+    ],
+    "inputs": [
+        {
+            "description": "Pick a platform",
+            "id": "platform",
+            "options": [
+                {
+                    "label": "Linux",
+                    "value": "linux-x64"
+                },
+                {
+                    "label": "Windows",
+                    "value": "win-x64"
+                }
+            ],
+            "type": "pickString"
+        }
+    ],
+    "version": "0.2.0"
 }

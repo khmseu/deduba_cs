@@ -22,17 +22,18 @@ public static unsafe class ValXfer
     private static extern bool GetNextValue(ValueT* value);
 
 
-    public static JsonNode ToNode(ValueT* value, string op)
+    public static JsonNode ToNode(ValueT* value, string file, string op)
     {
         if (value == null) throw new ArgumentNullException(nameof(value));
         ShowValue(value, "", op);
         var maybeError = (int)value->Number;
+        var wasOk = value->Type;
         var more = GetNextValue(value);
-        if (value->Type == TypeT.IsError)
+        if (wasOk == TypeT.IsError)
         {
             var win32Exception =
-                new Win32Exception(maybeError, $"{nameof(ToNode)} found {op} caused error {maybeError}");
-            Utilities.Error(nameof(ToNode), op, win32Exception);
+                new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
+            Utilities.Error(file, op, win32Exception);
             throw win32Exception;
         }
 
@@ -53,7 +54,7 @@ public static unsafe class ValXfer
                         array.Add(Marshal.PtrToStringUTF8(value->String));
                         break;
                     case TypeT.IsComplex:
-                        array.Add(ToNode(value->Complex, $"{op}[{value->Handle.index}]"));
+                        array.Add(ToNode(value->Complex, file, $"{op}[{value->Handle.index}]"));
                         break;
                     case TypeT.IsTimeSpec:
                         array.Add(value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000));
@@ -82,7 +83,7 @@ public static unsafe class ValXfer
                     obj[name] = Marshal.PtrToStringUTF8(value->String);
                     break;
                 case TypeT.IsComplex:
-                    obj[name] = ToNode(value->Complex, $"{op}.{name}");
+                    obj[name] = ToNode(value->Complex, file, $"{op}.{name}");
                     break;
                 case TypeT.IsTimeSpec:
                     obj[name] = value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000);
@@ -102,6 +103,7 @@ public static unsafe class ValXfer
         static void ShowValue(ValueT* value, string name, string op)
         {
             if (false)
+#pragma warning disable CS0162 // Unerreichbarer Code wurde entdeckt.
                 Utilities.ConWrite(
                     Utilities.Dumper(Utilities.D(op),
                         Utilities.D(name),
@@ -115,6 +117,7 @@ public static unsafe class ValXfer
                         Utilities.D((ulong)value->String),
                         Utilities.D((ulong)value->Complex),
                         Utilities.D(value->TimeSpec)));
+#pragma warning restore CS0162 // Unerreichbarer Code wurde entdeckt.
         }
     }
 
@@ -140,11 +143,11 @@ public static unsafe class ValXfer
     public readonly struct ValueT
     {
         public readonly HandleT Handle;
-        public readonly TypeT Type;
-        [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly IntPtr Name;
+        public readonly TimeSpecT TimeSpec;
         public readonly Int64 Number;
+        [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly IntPtr Name;
         [MarshalAs(UnmanagedType.LPUTF8Str)] public readonly IntPtr String;
         public readonly ValueT* Complex;
-        public readonly TimeSpecT TimeSpec;
+        public readonly TypeT Type;
     }
 }

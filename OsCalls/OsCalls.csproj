@@ -4,11 +4,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>library</OutputType>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\OsCallsShim\OsCallsShim.csproj" />
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
-    <!-- <ProjectReference Include="..\DeDuBa\DeDuBa.csproj" /> -->
   </ItemGroup>
 </Project>
