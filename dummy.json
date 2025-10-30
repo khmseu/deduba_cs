@@ -1,84 +1,84 @@
 {
-    "command": "launch",
-    "arguments": {
-        "name": "yourProjectNameDev",
-        "type": "coreclr",
-        "request": "launch",
-        "projectPath": "/yourProjectPath.csproj",
-        "launchConfigurationId": "TargetFramework=;MyApp_Dev",
-        "__configurationTarget": 6,
-        "preRestartTask": "dotnet: build /yourProjectPath.csproj",
-        "program": "/yourProjectPath/bin/Debug/net8.0/yourProjectPath",
-        "args": "",
-        "cwd": "/yourProjectPath",
-        "env": {
-            "ASPNETCORE_URLS": "https://localhost:44324",
-            "ASPNETCORE_HTTPS_PORT": "44324",
-            "LOCAL_DEVELOPMENT": "true",
-            "ASPNETCORE_ENVIRONMENT": "Development"
-        },
-        "console": "internalConsole",
-        "checkForDevCert": true,
-        "launchSettingsProfile": null,
-        "debugConsoleVerbosity": "verbose",
-        "debuggerStartDebugTelemetry": {
-            "buildCompletedTimestamp": "0x1922f6721ba",
-            "totalBuildTime": 3353,
-            "projectType": "Web"
-        },
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+https?://\\S+",
-            "uriFormat": "https://localhost:44324/clients"
-        },
-        "hotReloadOnSave": true,
-        "hotReloadVerbosity": "detailed",
-        "stopAtEntry": false,
-        "justMyCode": true,
-        "requireExactSource": true,
-        "enableStepFiltering": true,
-        "logging": {
-            "exceptions": true,
-            "moduleLoad": true,
-            "programOutput": true,
-            "browserStdOut": true,
-            "elapsedTiming": false,
-            "threadExit": false,
-            "processExit": true,
-            "engineLogging": false,
-            "diagnosticsLog": {
-                "protocolMessages": false,
-                "dispatcherMessages": "none",
-                "debugEngineAPITracing": "none",
-                "debugRuntimeEventTracing": false,
-                "expressionEvaluationTracing": false,
-                "startDebuggingTracing": false
-            },
-            "consoleUsageMessage": true
-        },
-        "suppressJITOptimizations": false,
-        "symbolOptions": {
-            "searchPaths": [],
-            "searchMicrosoftSymbolServer": false,
-            "searchNuGetOrgSymbolServer": false,
-            "cachePath": "",
-            "moduleFilter": {
-                "mode": "loadAllButExcluded",
-                "excludedModules": [],
-                "includedModules": [],
-                "includeSymbolsNextToModules": true,
-                "includeSymbolsOnDemand": true
-            }
-        },
-        "expressionEvaluationOptions": {
-            "allowImplicitFuncEval": true,
-            "allowToString": true,
-            "allowFastEvaluate": true,
-            "showRawValues": false
-        },
-        "internalConsoleOptions": "openOnSessionStart",
-        "__sessionId": "90ecc55a-5069-42e8-a332-14ce69577c5f"
+  "command": "launch",
+  "arguments": {
+    "name": "yourProjectNameDev",
+    "type": "coreclr",
+    "request": "launch",
+    "projectPath": "/yourProjectPath.csproj",
+    "launchConfigurationId": "TargetFramework=;MyApp_Dev",
+    "__configurationTarget": 6,
+    "preRestartTask": "dotnet: build /yourProjectPath.csproj",
+    "program": "/yourProjectPath/bin/Debug/net8.0/yourProjectPath",
+    "args": "",
+    "cwd": "/yourProjectPath",
+    "env": {
+      "ASPNETCORE_URLS": "https://localhost:44324",
+      "ASPNETCORE_HTTPS_PORT": "44324",
+      "LOCAL_DEVELOPMENT": "true",
+      "ASPNETCORE_ENVIRONMENT": "Development"
     },
-    "type": "request",
-    "seq": 2
+    "console": "internalConsole",
+    "checkForDevCert": true,
+    "launchSettingsProfile": null,
+    "debugConsoleVerbosity": "verbose",
+    "debuggerStartDebugTelemetry": {
+      "buildCompletedTimestamp": "0x1922f6721ba",
+      "totalBuildTime": 3353,
+      "projectType": "Web"
+    },
+    "serverReadyAction": {
+      "action": "openExternally",
+      "pattern": "\\bNow listening on:\\s+https?://\\S+",
+      "uriFormat": "https://localhost:44324/clients"
+    },
+    "hotReloadOnSave": true,
+    "hotReloadVerbosity": "detailed",
+    "stopAtEntry": false,
+    "justMyCode": true,
+    "requireExactSource": true,
+    "enableStepFiltering": true,
+    "logging": {
+      "exceptions": true,
+      "moduleLoad": true,
+      "programOutput": true,
+      "browserStdOut": true,
+      "elapsedTiming": false,
+      "threadExit": false,
+      "processExit": true,
+      "engineLogging": false,
+      "diagnosticsLog": {
+        "protocolMessages": false,
+        "dispatcherMessages": "none",
+        "debugEngineAPITracing": "none",
+        "debugRuntimeEventTracing": false,
+        "expressionEvaluationTracing": false,
+        "startDebuggingTracing": false
+      },
+      "consoleUsageMessage": true
+    },
+    "suppressJITOptimizations": false,
+    "symbolOptions": {
+      "searchPaths": [],
+      "searchMicrosoftSymbolServer": false,
+      "searchNuGetOrgSymbolServer": false,
+      "cachePath": "",
+      "moduleFilter": {
+        "mode": "loadAllButExcluded",
+        "excludedModules": [],
+        "includedModules": [],
+        "includeSymbolsNextToModules": true,
+        "includeSymbolsOnDemand": true
+      }
+    },
+    "expressionEvaluationOptions": {
+      "allowImplicitFuncEval": true,
+      "allowToString": true,
+      "allowFastEvaluate": true,
+      "showRawValues": false
+    },
+    "internalConsoleOptions": "openOnSessionStart",
+    "__sessionId": "90ecc55a-5069-42e8-a332-14ce69577c5f"
+  },
+  "type": "request",
+  "seq": 2
 }
