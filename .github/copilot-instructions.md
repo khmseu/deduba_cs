@@ -31,7 +31,7 @@ The system uses a unique **C# → C++ → POSIX** interop pattern via P/Invoke:
 
 Files are chunked (1GB chunks), SHA-512 hashed, and stored in a hierarchical directory structure under `DATA/`:
 
-```
+```text
 DATA/ab/cd/abcdef123456789...  # hex(sha512(chunk))
 ```
 
