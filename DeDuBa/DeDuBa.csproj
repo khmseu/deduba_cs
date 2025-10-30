@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <TargetFramework>net8.0</TargetFramework>
+  <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="bzip2.net" Version="1.0.0" />
