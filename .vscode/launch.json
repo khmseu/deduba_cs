@@ -25,7 +25,7 @@
       "MIMode": "gdb",
       "name": "C++: DeDuBa Debug",
       "preLaunchTask": "build",
-  "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
+      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
       "request": "launch",
       "setupCommands": [
         {
@@ -55,7 +55,7 @@
       "justMyCode": false,
       "name": "C#: DeDuBa Debug",
       "preLaunchTask": "build",
-  "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
+      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
       "request": "launch",
       "requireExactSource": false,
       "stopAtEntry": true,

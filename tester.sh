@@ -1,9 +1,9 @@
 #! /bin/bash -x
 
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$DOTNET_ROOT:$PATH"
+export DOTNET_ROOT="${HOME}/.dotnet"
+export PATH="${DOTNET_ROOT}:${PATH}"
 
-rm -rfv ../ARCHIVE?/ *.tmp *.log
+rm -rfv -- ../ARCHIVE?/ *.tmp *.log
 
 declare -A arexe
 declare -A arts
