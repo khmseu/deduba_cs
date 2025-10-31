@@ -8,7 +8,7 @@
     "launchConfigurationId": "TargetFramework=;MyApp_Dev",
     "__configurationTarget": 6,
     "preRestartTask": "dotnet: build /yourProjectPath.csproj",
-  "program": "/yourProjectPath/bin/Debug/net9.0/yourProjectPath",
+    "program": "/yourProjectPath/bin/Debug/net9.0/yourProjectPath",
     "args": "",
     "cwd": "/yourProjectPath",
     "env": {
