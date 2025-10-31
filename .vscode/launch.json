@@ -11,6 +11,14 @@
         {
           "name": "LD_LIBRARY_PATH",
           "value": "${workspaceFolder}/OsCallsShim/bin/Debug/net9.0"
+        },
+        {
+          "name": "DOTNET_ROOT",
+          "value": "${env:HOME}/.dotnet"
+        },
+        {
+          "name": "PATH",
+          "value": "${env:HOME}/.dotnet:${env:PATH}"
         }
       ],
       "externalConsole": false,
@@ -40,7 +48,9 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "LD_DEBUG": "libs",
-  "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net9.0"
+        "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net9.0",
+        "DOTNET_ROOT": "${env:HOME}/.dotnet",
+        "PATH": "${env:HOME}/.dotnet:${env:PATH}"
       },
       "justMyCode": false,
       "name": "C#: DeDuBa Debug",

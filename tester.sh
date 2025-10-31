@@ -1,3 +1,5 @@
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$PATH"
 #! /bin/bash -x
 
 rm -rfv ../ARCHIVE?/ *.tmp *.log
