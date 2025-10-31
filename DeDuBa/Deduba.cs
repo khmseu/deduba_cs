@@ -228,7 +228,7 @@ public class DedubaClass
 
                 Utilities.ConWrite("Backup starting\n");
 
-                backup_worker(argv);
+                Backup_worker(argv);
 
                 // ##############################################################################
 
@@ -473,7 +473,7 @@ public class DedubaClass
         return new string(buf.Skip(inIndex).Select(b => (char)b).ToArray());
     }
 
-    private static ulong unpack_w(string value, ref int s)
+    private static ulong Unpack_w(string value, ref int s)
     {
         ulong auv = 0;
         while (s < value.Length)
@@ -485,17 +485,17 @@ public class DedubaClass
         }
 
         throw new InvalidOperationException(
-            "Unterminated compressed integer in " + nameof(unpack_w)
+            "Unterminated compressed integer in " + nameof(Unpack_w)
         );
     }
 
-    private static ulong unpack_w(string value)
+    private static ulong Unpack_w(string value)
     {
         var s = 0;
-        var ret = unpack_w(value, ref s);
+        var ret = Unpack_w(value, ref s);
         if (s < value.Length)
             throw new InvalidOperationException(
-                "Junk after compressed integer in " + nameof(unpack_w)
+                "Junk after compressed integer in " + nameof(Unpack_w)
             );
         return ret;
     }
@@ -638,16 +638,16 @@ public class DedubaClass
             case "s":
                 return d;
             case "n":
-                return unpack_w(d);
+                return Unpack_w(d);
             case "N":
-                return -(long)unpack_w(d);
+                return -(long)Unpack_w(d);
             case "l":
                 var unpackedList = new List<object?>();
                 var s = 0;
-                var n = unpack_w(d, ref s);
+                var n = Unpack_w(d, ref s);
                 while (n-- > 0)
                 {
-                    var il = unpack_w(d, ref s);
+                    var il = Unpack_w(d, ref s);
                     unpackedList.Add(Sdunpack(d.Substring(s, (int)il)));
                 }
 
@@ -671,7 +671,7 @@ public class DedubaClass
         return [gid, UserGroupDatabase.GetGrGid(gid)["gr_name"]?.ToString() ?? gid.ToString()];
     }
 
-    private static string save_data(string data)
+    private static string Save_data(string data)
     {
         var hashBytes = SHA512.HashData(data.ToArray().Select(x => (byte)x).ToArray());
         var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
@@ -715,11 +715,11 @@ public class DedubaClass
         return hash;
     }
 
-    private static List<string> save_file(Stream fileStream, long size, string tag)
+    private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
         if (Utilities.Testing)
             Utilities.ConWrite(
-                $"save_file: {Utilities.Dumper(Utilities.D(size), Utilities.D(tag))}"
+                $"Save_file: {Utilities.Dumper(Utilities.D(size), Utilities.D(tag))}"
             );
         var hashes = new List<string>();
 
@@ -738,7 +738,7 @@ public class DedubaClass
                     break;
 
                 hashes.Add(
-                    save_data(
+                    Save_data(
                         new string(data.AsSpan(0, n12).ToArray().Select(x => (char)x).ToArray())
                     )
                 );
@@ -756,13 +756,13 @@ public class DedubaClass
     }
 
     // ##############################################################################
-    private static void backup_worker(string[] filesToBackup)
+    private static void Backup_worker(string[] filesToBackup)
     {
         Utilities.ConWrite(
-            $"Debug 1: {nameof(backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup))})"
+            $"Debug 1: {nameof(Backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup))})"
         );
         Utilities.ConWrite(
-            $"Debug 2: {nameof(backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})"
+            $"Debug 2: {nameof(Backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})"
         );
         foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
         {
@@ -845,7 +845,7 @@ public class DedubaClass
                                 var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
                                 if (Utilities.Testing)
                                     Console.Write($"\t{entries.Length} entries");
-                                backup_worker(
+                                Backup_worker(
                                     entries
                                         .Where(x => !x.StartsWith(".."))
                                         .Select(x => Path.Combine(entry, x))
@@ -888,7 +888,7 @@ public class DedubaClass
                                 if (Utilities.Testing)
                                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(entry)));
                                 var fileStream = File.OpenRead(entry);
-                                hashes = save_file(fileStream, (long?)size ?? 0, entry).ToArray();
+                                hashes = Save_file(fileStream, (long?)size ?? 0, entry).ToArray();
                             }
                             catch (Exception ex)
                             {
@@ -924,7 +924,7 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = save_file(mem1!, size, $"{entry} $data readlink").ToArray();
+                        hashes = Save_file(mem1!, size, $"{entry} $data readlink").ToArray();
                         _ds = dataIslink.Length;
                     }
                     else if (FileSystem.IsDir(statBuf))
@@ -949,7 +949,7 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = save_file(mem, size, $"{entry} $data $dirtmp").ToArray();
+                        hashes = Save_file(mem, size, $"{entry} $data $dirtmp").ToArray();
                         _ds = dataIsdir.Length;
                     }
 
@@ -971,7 +971,7 @@ public class DedubaClass
                     }
 
                     // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
-                    hashes = save_file(mem, data.Length, $"{entry} $data @inode").ToArray();
+                    hashes = Save_file(mem, data.Length, $"{entry} $data @inode").ToArray();
                     var ino = Sdpack(hashes.ToArray(), "fileid");
                     Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = DateTime.Now.Subtract(start);

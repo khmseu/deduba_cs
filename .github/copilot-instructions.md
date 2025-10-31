@@ -87,7 +87,7 @@ All errors use `Utilities.Error(file, operation, exception)` which:
 
 ### Data Serialization
 
-The system uses custom binary serialization (`Sdpack`/`Sdunpack`) with variable-length integer encoding (`pack_w`/`unpack_w`):
+The system uses custom binary serialization (`Sdpack`/`Sdunpack`) with variable-length integer encoding (`pack_w`/`Unpack_w`):
 
 - `'s'` prefix = string
 - `'n'`/`'N'` prefix = positive/negative packed integer

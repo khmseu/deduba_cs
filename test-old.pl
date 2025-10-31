@@ -11,16 +11,16 @@ $Data::Dumper::Deparse  = 1;
 $| = 1;
 
 use Carp qw( confess );
-use Cwd qw( realpath );
+use Cwd  qw( realpath );
 use DB_File;
-use Digest::SHA qw( sha512_hex );
-use File::Path qw( make_path remove_tree );
-use File::Spec::Functions qw( :ALL );
-use IO::Compress::Bzip2 qw( :all );
+use Digest::SHA             qw( sha512_hex );
+use File::Path              qw( make_path remove_tree );
+use File::Spec::Functions   qw( :ALL );
+use IO::Compress::Bzip2     qw( :all );
 use IO::Uncompress::Bunzip2 qw( :all );
-use IO::Compress::Xz qw( :all );
-use IO::Uncompress::UnXz qw( :all );
-use POSIX qw( strftime );
+use IO::Compress::Xz        qw( :all );
+use IO::Uncompress::UnXz    qw( :all );
+use POSIX                   qw( strftime );
 
 $SIG{__WARN__} = sub () { confess @_; };
 $SIG{__DIE__}  = sub () { confess @_; };
@@ -163,7 +163,7 @@ sub hash2fn($) {
             pop @prefix;
         }
         $prefix = join '/', @prefix unless @prefix;
-        my @list = split /\0/, $preflist{$prefix};
+        my @list  = split /\0/, $preflist{$prefix};
         my $nlist = scalar @list;
         if ( 255 < $nlist ) {
 
@@ -182,7 +182,7 @@ sub hash2fn($) {
             }
             for my $n ( 0x00 .. 0xff ) {
                 my $dir = sprintf "%02x", $n;
-                my $de = "$dir/";
+                my $de  = "$dir/";
                 unless ( exists $new{$de} ) {
                     mkdir "$data_path/$prefix/$dir";
                     $new{$de}++;
@@ -192,13 +192,14 @@ sub hash2fn($) {
             for my $f (@list) {
                 unless ( $f =~ m[/$] ) {    #]){#
                     my $dir = substr( $f, $plen, 2 );
-                    my $de = "$dir/";
+                    my $de  = "$dir/";
                     unless ( exists $new{$de} ) {
                         mkdir "$data_path/$prefix/$dir";
                         $new{$de}++;
                     }
-                    my ( $from, $to ) =
-                      ( "$data_path/$prefix/$f", "$data_path/$prefix/$dir/$f" );
+                    my ( $from, $to ) = (
+                        "$data_path/$prefix/$f", "$data_path/$prefix/$dir/$f"
+                    );
                     unless ( rename $from, $to ) {
                         error "$from -> $to", 'rename';
                         next;
@@ -369,7 +370,7 @@ sub save_file(*$$) {
         last unless $n1;
         push @hashes, save_data $data;
         $size -= $n2;
-        $ds += $n2;
+        $ds   += $n2;
         $data = undef;
     }
     print "\n", __LINE__, ' ', scalar localtime, ' eof: ',
@@ -431,7 +432,7 @@ sub backup_worker(@) {
 # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
 # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
             my $fsfid = sdpack [ \$stat[0], \$stat[1] ], 'fsfid';
-            my $old = exists $fs2ino{$fsfid};
+            my $old   = exists $fs2ino{$fsfid};
             my $report;
             if ( not $old ) {
                 $fs2ino{$fsfid} = sdpack undef, '';
@@ -533,7 +534,7 @@ sub backup_worker(@) {
                 my $ino = sdpack [@hashes], 'fileid';
                 $fs2ino{$fsfid} = $ino;
                 my $needed = time - $start;
-                my $speed = $needed ? $ds / $needed : undef;
+                my $speed  = $needed ? $ds / $needed : undef;
                 print "\n", __LINE__, ' ', scalar localtime, ' timing: ',
                   Dumper( $ds, $needed, $speed )
                   if TESTING;
