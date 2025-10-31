@@ -5,7 +5,8 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>  <ItemGroup>
+  </PropertyGroup>
+  <ItemGroup>
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
@@ -13,19 +14,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
-    <Exec EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)" Command="make" />
+    <Exec
+      EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
+      Command="make"
+    />
   </Target>
-
   <Target Name="MakeClean" BeforeTargets="Clean">
-    <Exec EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)" Command="make clean" />
+    <Exec
+      EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
+      Command="make clean"
+    />
   </Target>
-
-    <Target Name="CopySharedLibrary" AfterTargets="Build">
+  <Target Name="CopySharedLibrary" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(OutputPath)" />
   </Target>
-
   <Target Name="CopyNativeLibs" AfterTargets="Publish">
     <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(PublishDir)" />
   </Target>
