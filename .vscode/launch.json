@@ -10,7 +10,7 @@
         },
         {
           "name": "LD_LIBRARY_PATH",
-          "value": "${workspaceFolder}/OsCallsShim/bin/Debug/net9.0"
+          "value": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0"
         },
         {
           "name": "DOTNET_ROOT",
@@ -25,7 +25,7 @@
       "MIMode": "gdb",
       "name": "C++: DeDuBa Debug",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
+      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net8.0/${input:platform}/DeDuBa.dll",
       "request": "launch",
       "setupCommands": [
         {
@@ -48,14 +48,14 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "LD_DEBUG": "libs",
-        "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net9.0",
+        "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0",
         "DOTNET_ROOT": "${env:HOME}/.dotnet",
         "PATH": "${env:HOME}/.dotnet:${env:PATH}"
       },
       "justMyCode": false,
       "name": "C#: DeDuBa Debug",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net9.0/${input:platform}/DeDuBa.dll",
+      "program": "${workspaceFolder}/DeDuBa/bin/Debug/net8.0/${input:platform}/DeDuBa.dll",
       "request": "launch",
       "requireExactSource": false,
       "stopAtEntry": true,

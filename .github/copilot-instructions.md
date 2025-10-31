@@ -53,7 +53,7 @@ dotnet build
 
 ```bash
 # Set library path for libOsCallsShim.so
-export LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net9.0
+export LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0
 
 # Run with test archive
 dotnet run --project=DeDuBa -- <files-to-backup>
