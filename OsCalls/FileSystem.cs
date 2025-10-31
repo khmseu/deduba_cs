@@ -15,7 +15,6 @@ public static unsafe class FileSystem
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     private static extern ValueT* canonicalize_file_name(string path);
 
-
     public static JsonNode LStat(string path)
     {
         return ToNode(lstat(path), path, nameof(lstat));
