@@ -10,7 +10,7 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="bzip2.net" Version="1.0.0" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="ZoneTree" Version="1.8.2" />
   </ItemGroup>
   <ItemGroup>

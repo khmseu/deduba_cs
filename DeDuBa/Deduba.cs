@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Bzip2;
+using ICSharpCode.SharpZipLib.BZip2;
 using OsCalls;
 using UtilitiesLibrary;
 
