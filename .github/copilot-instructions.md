@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-DeDuBa is a deduplicating backup system being ported from Perl to C#. It uses content-addressable storage with SHA-512 hashing and BZip2 compression.
+DeDuBa is a deduplicating backup system being ported from Perl to C# . It uses content-addressable storage with SHA-512 hashing and BZip2 compression.
 
 **Core Components:**
 
@@ -64,7 +64,7 @@ dotnet run --project=DeDuBa -- <files-to-backup>
 
 **Debug configurations** (`.vscode/launch.json`):
 
-- "C#: DeDuBa Debug" - Managed debugging
+- "C# : DeDuBa Debug" - Managed debugging
 - "C++: DeDuBa Debug" - Native debugging with gdb
 
 Both require `LD_LIBRARY_PATH` set correctly. Use platform input prompt (linux-x64/win-x64).
@@ -115,7 +115,7 @@ Set `Utilities.Testing = true` (default) to:
 ## Common Pitfalls
 
 1. **Library loading**: Always set `LD_LIBRARY_PATH` before running. Missing this causes cryptic DllNotFoundException.
-2. **Struct layout**: `ValXfer.ValueT` uses `[StructLayout(LayoutKind.Sequential)]` matching C++ memory layout. Any changes require coordination across C#/C++ boundaries.
+2. **Struct layout**: `ValXfer.ValueT` uses `[StructLayout(LayoutKind.Sequential)]` matching C++ memory layout. Any changes require coordination across C# / C++ boundaries.
 3. **Path normalization**: Use `FileSystem.Canonicalizefilename()` for all user inputs to resolve symlinks/relative paths consistently.
 4. **Memory safety**: `ValXfer.ToNode()` uses unsafe pointers. The C++ side manages lifetime via handle callbacks (`handle_lstat`, `handle_readlink`, `handle_cfn`).
 
