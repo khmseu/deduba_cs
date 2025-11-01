@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-debug=0 
+debug=0
 if [[ ${debug} -eq 1 ]]; then
 	export blind="" # set to ">/dev/null 2>&1" to suppress output
 	export nohup="" # set to "nohup" to use nohup
@@ -59,30 +59,30 @@ export DISPLAY="${DISPLAY:-:0}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
 # Method 1: xdg-open (Linux standard)
-if command -v xdg-open $blind; then
-	$nohup xdg-open "${URL}" $blind &
+if command -v xdg-open "${blind}"; then
+	${nohup} xdg-open "${URL}" "${blind}" &
 	disown
 	echo "Browser launch requested (xdg-open)"
-	sleep $wait
+	sleep "${wait}"
 	exit 0
 fi
 
 # Method 2: macOS open
-if command -v open $blind; then
-	$nohup open "${URL}" $blind &
+if command -v open "${blind}"; then
+	${nohup} open "${URL}" "${blind}" &
 	disown
 	echo "Browser launch requested (open)"
-	sleep $wait
+	sleep "${wait}"
 	exit 0
 fi
 
 # Method 3: Direct browser invocation
 for browser in firefox chromium-browser google-chrome chrome; do
-	if command -v "${browser}" $blind; then
-		$nohup "${browser}" "${URL}" $blind &
+	if command -v "${browser}" "${blind}"; then
+		${nohup} "${browser}" "${URL}" "${blind}" &
 		disown
 		echo "Browser launch requested (${browser})"
-		sleep $wait
+		sleep "${wait}"
 		exit 0
 	fi
 done
