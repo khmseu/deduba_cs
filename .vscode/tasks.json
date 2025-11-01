@@ -104,6 +104,14 @@
       ]
     },
     {
+      "label": "Docs: Open served URL",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "'${workspaceFolder}/scripts/open-served-docs.sh'"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
       "label": "Format: Trunk + CSharpier",
       "type": "shell",
       "command": "bash",
