@@ -1,25 +1,37 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Extract the last URL from serve-docs.sh output
-# Look for "Serving ... on http://localhost:PORT" in recent terminal output
+# Determine project root and site dir (mirror serve-docs.sh)
+ROOT_DIR="${workspaceFolder:-$(cd "$(dirname "$0")/.." && pwd)}"
+SITE_DIR="${ROOT_DIR}/docs/_site"
 
-# Try to find a running Python http.server process serving docs/_site
-DOCS_SITE="docs/_site"
-PID=$(pgrep -f "python.*http.server.*${DOCS_SITE}" | head -1 || true)
+# Find a running python http.server whose CWD is SITE_DIR
+PIDS=$(pgrep -f "http\.server" || true)
+FOUND_PID=""
+for pid in ${PIDS}; do
+	# Verify working directory matches SITE_DIR
+	if [[ -L "/proc/${pid}/cwd" ]]; then
+		CWD=$(readlink -f "/proc/${pid}/cwd" || true)
+		if [[ ${CWD} == "${SITE_DIR}" ]]; then
+			FOUND_PID="${pid}"
+			break
+		fi
+	fi
+done
 
-if [[ -z ${PID} ]]; then
+if [[ -z ${FOUND_PID} ]]; then
 	echo "Error: No docs server appears to be running."
 	echo "Start it first with: Tasks: Run Task -> Docs: Serve site (local)"
 	exit 1
 fi
 
-# Extract the port from the process command line
-PORT=$(ps -p "${PID}" -o args= | grep -oP 'http\.server\s+\K\d+' || true)
+# Extract the port from the process command line (last arg passed to http.server)
+ARGS=$(ps -p "${FOUND_PID}" -o args=)
+PORT=$(awk 'NF{print $NF}' <<<"${ARGS}")
 
-if [[ -z ${PORT} ]]; then
-	echo "Error: Could not determine port for running docs server (PID: ${PID})"
-	exit 1
+# Validate PORT is a number; fallback to 8000 if not
+if ! [[ ${PORT} =~ ^[0-9]+$ ]]; then
+	PORT=8000
 fi
 
 URL="http://localhost:${PORT}"
