@@ -32,16 +32,16 @@ public static unsafe class FileSystem
 
     public static bool IsDir(JsonNode? buf)
     {
-        return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0x4000;
+        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0x4000;
     }
 
     public static bool IsReg(JsonNode? buf)
     {
-        return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0x8000;
+        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0x8000;
     }
 
     public static bool IsLnk(JsonNode? buf)
     {
-        return (buf?["st_mode"]?.GetValue<ulong>() & 0xF000) == 0xA000;
+        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0xA000;
     }
 }

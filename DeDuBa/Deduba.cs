@@ -83,19 +83,19 @@ public class DedubaClass
         if (ls == null)
             return null;
         var od = new double[13];
-        od[0] = ls["st_dev"]?.GetValue<ulong>() ?? 0;
-        od[1] = ls["st_ino"]?.GetValue<ulong>() ?? 0;
-        od[2] = ls["st_mode"]?.GetValue<ulong>() ?? 0;
-        od[3] = ls["st_nlink"]?.GetValue<ulong>() ?? 0;
-        od[4] = ls["st_uid"]?.GetValue<ulong>() ?? 0;
-        od[5] = ls["st_gid"]?.GetValue<ulong>() ?? 0;
-        od[6] = ls["st_rdev"]?.GetValue<ulong>() ?? 0;
-        od[7] = ls["st_size"]?.GetValue<ulong>() ?? 0;
+        od[0] = GetU64(ls["st_dev"]);
+        od[1] = GetU64(ls["st_ino"]);
+        od[2] = GetU64(ls["st_mode"]);
+        od[3] = GetU64(ls["st_nlink"]);
+        od[4] = GetU64(ls["st_uid"]);
+        od[5] = GetU64(ls["st_gid"]);
+        od[6] = GetU64(ls["st_rdev"]);
+        od[7] = GetU64(ls["st_size"]);
         od[8] = ls["st_atim"]?.GetValue<double>() ?? 0;
         od[9] = ls["st_mtim"]?.GetValue<double>() ?? 0;
         od[10] = ls["st_ctim"]?.GetValue<double>() ?? 0;
-        od[11] = ls["st_blksize"]?.GetValue<ulong>() ?? 0;
-        od[12] = ls["st_blocks"]?.GetValue<ulong>() ?? 0;
+        od[11] = GetU64(ls["st_blksize"]);
+        od[12] = GetU64(ls["st_blocks"]);
         return od;
     }
 
@@ -156,10 +156,16 @@ public class DedubaClass
                 // @ARGV = map { canonpath realpath $_ } @ARGV;
                 try
                 {
-                    argv = argv.Select(FileSystem.Canonicalizefilename)
-                        .Select(node => node["path"]?.ToString())
-                        .Select(path => path != null ? Path.GetFullPath(path) : "")
-                        .ToArray();
+                    Utilities.ConWrite($"Before: {Utilities.Dumper(Utilities.D(argv))}");
+                    Utilities.ConWrite(
+                        $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
+                    );
+                    argv =
+                    [
+                        .. argv.Select(FileSystem.Canonicalizefilename)
+                            .Select(node => node["path"]?.ToString())
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                    ];
                 }
                 catch (Exception ex)
                 {
@@ -167,7 +173,8 @@ public class DedubaClass
                     throw;
                 }
 
-                Utilities.ConWrite($"Filtered: {Utilities.Dumper(Utilities.D(argv))}");
+                Utilities.ConWrite($"Filtered:");
+                Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
 
                 foreach (var root in argv)
                 {
@@ -182,7 +189,7 @@ public class DedubaClass
                         throw;
                     }
 
-                    var i = st["st_dev"]?.GetValue<ulong>() ?? 0;
+                    var i = GetU64(st["st_dev"]);
                     Devices.TryAdd(i, 0);
                     Devices[i]++;
                 }
@@ -470,7 +477,7 @@ public class DedubaClass
         } while ((dynamic)value > 0);
 
         buf[^1] &= 0x7F; /* clear continue bit */
-        return new string(buf.Skip(inIndex).Select(b => (char)b).ToArray());
+        return new string([.. buf.Skip(inIndex).Select(b => (char)b)]);
     }
 
     private static ulong Unpack_w(string value, ref int s)
@@ -673,7 +680,7 @@ public class DedubaClass
 
     private static string Save_data(string data)
     {
-        var hashBytes = SHA512.HashData(data.ToArray().Select(x => (byte)x).ToArray());
+        var hashBytes = SHA512.HashData([.. data.ToArray().Select(x => (byte)x)]);
         var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         var outFile = Hash2Fn(hash);
 
@@ -738,9 +745,7 @@ public class DedubaClass
                     break;
 
                 hashes.Add(
-                    Save_data(
-                        new string(data.AsSpan(0, n12).ToArray().Select(x => (char)x).ToArray())
-                    )
+                    Save_data(new string([.. data.AsSpan(0, n12).ToArray().Select(x => (char)x)]))
                 );
                 size -= n12;
                 _ds += n12;
@@ -801,7 +806,7 @@ public class DedubaClass
                 Utilities.Error(entry, nameof(FileSystem.LStat), ex);
             }
 
-            var stDev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
+            var stDev = GetU64(statBuf?["st_dev"]);
             if (Utilities.Testing)
                 Utilities.ConWrite(Utilities.Dumper(Utilities.D(stDev)));
             if (
@@ -822,15 +827,11 @@ public class DedubaClass
                 // 7 size     total size of file, in bytes
                 // 8 atime    last access time in seconds since the epoch
                 // 9 mtime    last modify time in seconds since the epoch
-                // 10 ctime    inode change time in seconds since the epoch (*)
-                // 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
-                // 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
+                // # 10 ctime    inode change time in seconds since the epoch (*)
+                // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
+                // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
                 var fsfid = Sdpack(
-                    new List<object?>
-                    {
-                        statBuf?["st_dev"]?.GetValue<ulong>() ?? 0,
-                        statBuf?["st_ino"]?.GetValue<ulong>(),
-                    },
+                    new List<object?> { GetU64(statBuf?["st_dev"]), GetU64(statBuf?["st_ino"]) },
                     "fsfid"
                 );
                 var old = Fs2Ino.ContainsKey(fsfid);
@@ -846,10 +847,11 @@ public class DedubaClass
                                 if (Utilities.Testing)
                                     Console.Write($"\t{entries.Length} entries");
                                 Backup_worker(
-                                    entries
-                                        .Where(x => !x.StartsWith(".."))
-                                        .Select(x => Path.Combine(entry, x))
-                                        .ToArray()
+                                    [
+                                        .. entries
+                                            .Where(x => !x.StartsWith(".."))
+                                            .Select(x => Path.Combine(entry, x)),
+                                    ]
                                 );
                                 if (Utilities.Testing)
                                     Console.WriteLine($"\tdone {entry}");
@@ -880,15 +882,14 @@ public class DedubaClass
                     MemoryStream mem;
                     if (FileSystem.IsReg(statBuf))
                     {
-                        // ReSharper disable once ConstantConditionalAccessQualifier
-                        var size = statBuf?["st_size"]?.GetValue<ulong>();
+                        var size = GetU64(statBuf?["st_size"]);
                         if (size != 0)
                             try
                             {
                                 if (Utilities.Testing)
                                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(entry)));
                                 var fileStream = File.OpenRead(entry);
-                                hashes = Save_file(fileStream, (long?)size ?? 0, entry).ToArray();
+                                hashes = [.. Save_file(fileStream, (long)size, entry)];
                             }
                             catch (Exception ex)
                             {
@@ -924,7 +925,7 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = Save_file(mem1!, size, $"{entry} $data readlink").ToArray();
+                        hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
                         _ds = dataIslink.Length;
                     }
                     else if (FileSystem.IsDir(statBuf))
@@ -949,13 +950,13 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = Save_file(mem, size, $"{entry} $data $dirtmp").ToArray();
+                        hashes = [.. Save_file(mem, size, $"{entry} $data $dirtmp")];
                         _ds = dataIsdir.Length;
                     }
 
                     if (Utilities.Testing)
                         Utilities.ConWrite($"data: {Utilities.Dumper(Utilities.D(hashes))}");
-                    inode = inode.Append(hashes).ToList();
+                    inode = [.. inode, hashes];
                     var data = Sdpack(inode, "inode");
                     if (Utilities.Testing)
                         Utilities.ConWrite(Utilities.Dumper(Utilities.D(data)));
@@ -971,7 +972,7 @@ public class DedubaClass
                     }
 
                     // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
-                    hashes = Save_file(mem, data.Length, $"{entry} $data @inode").ToArray();
+                    hashes = [.. Save_file(mem, data.Length, $"{entry} $data @inode")];
                     var ino = Sdpack(hashes.ToArray(), "fileid");
                     Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = DateTime.Now.Subtract(start);
@@ -983,12 +984,11 @@ public class DedubaClass
                         Utilities.ConWrite(
                             $"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}"
                         );
-                    report =
-                        $"[{statBuf?["st_size"]?.GetValue<ulong>():d} -> {_packsum:d}: {needed:c}s]";
+                    report = $"[{GetU64(statBuf?["st_size"]):d} -> {_packsum:d}: {needed:c}s]";
                 }
                 else
                 {
-                    report = $"[{statBuf?["st_size"]?.GetValue<ulong>():d} -> duplicate]";
+                    report = $"[{GetU64(statBuf?["st_size"]):d} -> duplicate]";
                 }
 
                 if (!Dirtmp.ContainsKey(dir))
@@ -1009,5 +1009,39 @@ public class DedubaClass
             if (Utilities.Testing)
                 Utilities.ConWrite($"{"_".Repeat(80)}\n");
         }
+    }
+
+    // Helper to safely read unsigned 64-bit values from JsonNode
+    private static ulong GetU64(JsonNode? node)
+    {
+        if (node is null)
+            return 0;
+        try
+        {
+            return node.GetValue<ulong>();
+        }
+        catch { }
+        try
+        {
+            return unchecked((ulong)node.GetValue<long>());
+        }
+        catch { }
+        try
+        {
+            var d = node.GetValue<double>();
+            if (d >= 0)
+                return (ulong)d;
+        }
+        catch { }
+        try
+        {
+            var s = node.GetValue<string>();
+            if (ulong.TryParse(s, out var u))
+                return u;
+            if (long.TryParse(s, out var l))
+                return unchecked((ulong)l);
+        }
+        catch { }
+        return 0;
     }
 }

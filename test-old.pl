@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 
 use 5.018;
-no warnings qw( experimental::smartmatch );
+no warnings qw( deprecated::smartmatch experimental::smartmatch );
 
 use Data::Dumper::Simple;
 $Data::Dumper::Useqq    = 1;
@@ -564,7 +564,8 @@ sub backup_worker(@) {
 print "\n\nMain program\n";
 
 @ARGV = map { canonpath realpath $_ } @ARGV;
-print "Filtered; ", Dumper(@ARGV);
+print "Filtered:\n";
+print Dumper(@ARGV);
 
 for my $root (@ARGV) {
     my @st = lstat $root;
