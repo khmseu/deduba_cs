@@ -3,7 +3,7 @@
     {
       "src": [
         {
-          "cwd": "..",
+          "src": "..",
           "files": [
             "DeDuBa/DeDuBa.csproj",
             "OsCalls/OsCalls.csproj",

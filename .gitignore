@@ -483,6 +483,8 @@ artest*.diff
 DeDuBa/aaaa.cs
 DeDuBa/xxx.*
 docs/_site/
+docs/api/.manifest
+docs/api/*.yml
 docs/doxygen/html/
 inspectcode.xml
 perl
