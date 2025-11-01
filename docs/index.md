@@ -4,7 +4,7 @@ Welcome to the DeDuBa deduplicating backup system documentation.
 
 ## Documentation Sections
 
-### [C# API Reference](api/)
+### [C# API Reference](xref:DeDuBa)
 
 Browse the complete C# API documentation for DeDuBa, OsCalls, and UtilitiesLibrary. Generated from XML comments via DocFX.
 
@@ -27,5 +27,5 @@ Architecture guides and developer documentation.
 ## Quick Links
 
 - **Getting Started**: See [Introduction](articles/intro.md)
-- **Architecture**: Check the [Copilot Instructions](.github/copilot-instructions.md) for system overview
+- **Architecture**: Check the [Copilot Instructions](https://github.com/khmseu/deduba_cs/blob/master/.github/copilot-instructions.md) for system overview
 - **Build**: Run `dotnet build` (includes C++ shim via Makefile)

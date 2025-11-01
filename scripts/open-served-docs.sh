@@ -59,8 +59,9 @@ export DISPLAY="${DISPLAY:-:0}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
 # Method 1: xdg-open (Linux standard)
-if command -v xdg-open "${blind}"; then
-	${nohup} xdg-open "${URL}" "${blind}" &
+if command -v xdg-open >/dev/null 2>&1; then
+	# shellcheck disable=SC2086
+	${nohup} xdg-open "${URL}" ${blind} &
 	disown
 	echo "Browser launch requested (xdg-open)"
 	sleep "${wait}"
@@ -68,8 +69,9 @@ if command -v xdg-open "${blind}"; then
 fi
 
 # Method 2: macOS open
-if command -v open "${blind}"; then
-	${nohup} open "${URL}" "${blind}" &
+if command -v open >/dev/null 2>&1; then
+	# shellcheck disable=SC2086
+	${nohup} open "${URL}" ${blind} &
 	disown
 	echo "Browser launch requested (open)"
 	sleep "${wait}"
@@ -78,8 +80,9 @@ fi
 
 # Method 3: Direct browser invocation
 for browser in firefox chromium-browser google-chrome chrome; do
-	if command -v "${browser}" "${blind}"; then
-		${nohup} "${browser}" "${URL}" "${blind}" &
+	if command -v "${browser}" >/dev/null 2>&1; then
+		# shellcheck disable=SC2086
+		${nohup} "${browser}" "${URL}" ${blind} &
 		disown
 		echo "Browser launch requested (${browser})"
 		sleep "${wait}"
