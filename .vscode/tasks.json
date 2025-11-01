@@ -95,10 +95,15 @@
       },
       "problemMatcher": [
         {
+          "owner": "serve-docs",
+          "fileLocation": "absolute",
+          "pattern": [
+            { "regexp": ".^" }
+          ],
           "background": {
             "activeOnStart": true,
-            "beginsPattern": ".*",
-            "endsPattern": "Serving HTTP on"
+            "beginsPattern": ".+",
+            "endsPattern": "Serving .* on http://localhost:.*"
           }
         }
       ]
