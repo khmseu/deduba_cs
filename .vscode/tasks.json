@@ -68,6 +68,29 @@
       "args": ["-lc", "${workspaceFolder}/generate-docs.sh"],
       "group": "build",
       "problemMatcher": []
+    },
+    {
+      "label": "Docs: Open site",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "xdg-open '${workspaceFolder}/docs/_site/index.html' || open '${workspaceFolder}/docs/_site/index.html' || echo 'Open docs/_site/index.html in your browser.'"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: Serve site (local)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd '${workspaceFolder}/docs/_site' && python3 -m http.server 8080"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
     }
   ]
 }
