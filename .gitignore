@@ -477,10 +477,12 @@ inc/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
+*.code-profile
+artest.diff
+artest*.diff
 DeDuBa/aaaa.cs
 DeDuBa/xxx.*
-artest.diff
+docs/_site/
+docs/doxygen/html/
 inspectcode.xml
 perl
-artest*.diff
-*.code-profile

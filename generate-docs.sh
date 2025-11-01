@@ -13,7 +13,7 @@ command -v docfx >/dev/null 2>&1 || { echo "Error: docfx not found in PATH" >&2;
 command -v dotnet >/dev/null 2>&1 || { echo "Error: dotnet not found in PATH" >&2; exit 1; }
 
 export DOTNET_ROOT="${HOME}/.dotnet"
-export PATH="${DOTNET_ROOT}:${PATH}"
+export PATH="${HOME}/.dotnet/tools:${DOTNET_ROOT}:${PATH}"
 
 echo "==> Building C# projects to produce XML docs"
 ( cd "$ROOT_DIR" && dotnet build "$ROOT_DIR/DeDuBa/DeDuBa.csproj" )
