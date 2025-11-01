@@ -1,4 +1,8 @@
-- name: Introduction
-  href: articles/intro.md
-- name: API Reference
+- name: Home
+  href: index.md
+- name: C# API Reference
   href: api/
+- name: C++ API (Doxygen)
+  href: doxygen/html/index.html
+- name: Articles
+  href: articles/intro.md
