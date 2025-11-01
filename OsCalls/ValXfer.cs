@@ -19,11 +19,17 @@ public static unsafe class ValXfer
     public enum TypeT
     {
         // ReSharper disable UnusedMember.Global
+        /// <summary>Operation completed successfully.</summary>
         IsOk = 0,
+        /// <summary>Error occurred (errno set).</summary>
         IsError,
+        /// <summary>Current value is a 64-bit integer.</summary>
         IsNumber,
+        /// <summary>Current value is a UTF-8 string.</summary>
         IsString,
+        /// <summary>Current value is a nested complex structure.</summary>
         IsComplex,
+        /// <summary>Current value is a POSIX timespec.</summary>
         IsTimeSpec,
     }
 
@@ -161,8 +167,11 @@ public static unsafe class ValXfer
     public struct HandleT
     {
         private readonly void* handler;
+        /// <summary>First user data pointer passed to the handler.</summary>
         public readonly void* data1;
+        /// <summary>Second user data pointer passed to the handler.</summary>
         public readonly void* data2;
+        /// <summary>Current iteration index (incremented by GetNextValue).</summary>
         public Int64 index;
     }
 
@@ -172,7 +181,9 @@ public static unsafe class ValXfer
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct TimeSpecT
     {
+        /// <summary>Seconds since epoch.</summary>
         public readonly long TvSec;
+        /// <summary>Nanoseconds component.</summary>
         public readonly long TvNsec;
     }
 
@@ -184,16 +195,23 @@ public static unsafe class ValXfer
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ValueT
     {
+        /// <summary>Iteration handle and state.</summary>
         public readonly HandleT Handle;
+        /// <summary>Timespec value when Type == IsTimeSpec.</summary>
         public readonly TimeSpecT TimeSpec;
+        /// <summary>Integer value when Type == IsNumber.</summary>
         public readonly Int64 Number;
 
+        /// <summary>Field/key name or "[]" for array items.</summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly IntPtr Name;
 
+        /// <summary>String value pointer when Type == IsString.</summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly IntPtr String;
+        /// <summary>Nested structure pointer when Type == IsComplex.</summary>
         public readonly ValueT* Complex;
+        /// <summary>Discriminator indicating which field is valid.</summary>
         public readonly TypeT Type;
     }
 }
