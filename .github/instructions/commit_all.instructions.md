@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # Commit All Changes
@@ -17,6 +17,7 @@ When the user requests to commit changes (or says "commit all", "check in", "che
    - References file names or key changes for clarity
 
 **Example commit messages:**
+
 - `style: apply CSharpier formatting to test files and utilities`
 - `fix: resolve docs generation task exit 126 and update gitignore`
 - `refactor: apply C# naming conventions to private methods`
