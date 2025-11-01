@@ -1,29 +1,54 @@
 {
-  "metadata": [
-    {
-      "src": [
+    "metadata": [
         {
-          "src": "..",
-          "files": [
-            "DeDuBa/DeDuBa.csproj",
-            "OsCalls/OsCalls.csproj",
-            "UtilitiesLibrary/UtilitiesLibrary.csproj"
-          ]
+            "src": [
+                {
+                    "src": "..",
+                    "files": [
+                        "DeDuBa/DeDuBa.csproj",
+                        "OsCalls/OsCalls.csproj",
+                        "UtilitiesLibrary/UtilitiesLibrary.csproj"
+                    ]
+                }
+            ],
+            "dest": "api",
+            "properties": {
+                "TargetFramework": "net8.0"
+            }
         }
-      ],
-      "dest": "api",
-      "properties": {
-        "TargetFramework": "net8.0"
-      }
-    }
-  ],
-  "build": {
-    "content": [
-      { "files": ["index.md"] },
-      { "files": ["api/**.yml", "api/index.md"] },
-      { "files": ["articles/**.md", "toc.yml"] }
     ],
-    "resource": [{ "files": ["images/**"] }, { "files": ["doxygen/**"] }],
-    "dest": "_site"
-  }
+    "build": {
+        "content": [
+            {
+                "files": [
+                    "index.md"
+                ]
+            },
+            {
+                "files": [
+                    "api/**.yml",
+                    "api/index.md"
+                ]
+            },
+            {
+                "files": [
+                    "articles/**.md",
+                    "toc.yml"
+                ]
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "images/**"
+                ]
+            },
+            {
+                "files": [
+                    "doxygen/**"
+                ]
+            }
+        ],
+        "dest": "_site"
+    }
 }
