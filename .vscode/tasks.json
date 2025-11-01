@@ -91,16 +91,12 @@
       "group": "test",
       "isBackground": true,
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Format: Trunk + CSharpier",
       "type": "shell",
       "command": "bash",
-      "args": [
-        "-lc",
-        "trunk check -ay; dotnet tool run csharpier format ."
-      ],
+      "args": ["-lc", "trunk check -ay; dotnet tool run csharpier format ."],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
