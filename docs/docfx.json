@@ -16,10 +16,11 @@
   ],
   "build": {
     "content": [
+      { "files": ["index.md"] },
       { "files": ["api/**.yml", "api/index.md"] },
       { "files": ["articles/**.md", "toc.yml"] }
     ],
-    "resource": [ { "files": ["images/**"] } ],
+    "resource": [ { "files": ["images/**"] }, { "files": ["doxygen/**"] } ],
     "dest": "_site"
   }
 }
