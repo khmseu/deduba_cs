@@ -20,7 +20,7 @@
       { "files": ["api/**.yml", "api/index.md"] },
       { "files": ["articles/**.md", "toc.yml"] }
     ],
-    "resource": [ { "files": ["images/**"] }, { "files": ["doxygen/**"] } ],
+    "resource": [{ "files": ["images/**"] }, { "files": ["doxygen/**"] }],
     "dest": "_site"
   }
 }

@@ -65,7 +65,7 @@
       "label": "Docs: Generate all (Doxygen + DocFX)",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "bash '${workspaceFolder}/generate-docs.sh'"],
+      "args": ["-lc", "'${workspaceFolder}/generate-docs.sh'"],
       "group": "build",
       "problemMatcher": []
     },

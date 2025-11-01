@@ -22,7 +22,7 @@ for i in cs pl; do
 	LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0
 	# strace -omist-$i -fvs333 -y -yy -t \#
 	script -c "'time' -v  timeout -s USR1 1m ${arexe[${i}]} -- ${files}" "${i}.tmp" &>/dev/null
-	
+
 	# Split pipeline to preserve error handling
 	perl -f logfilter.pl "${arts[${i}]}" <"${i}.tmp" >"${i}.filtered" || exit 1
 	sed -e '0,/Main program/ d' <"${i}.filtered" >"${i}.log" || exit 1
