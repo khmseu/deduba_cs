@@ -13,6 +13,11 @@ using UtilitiesLibrary;
 namespace DeDuBa;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+/// <summary>
+/// Main backup logic (C# port of the original Perl implementation).
+/// Traverses files/directories, serializes metadata using custom pack format, and stores
+/// content-addressed chunks in DATA/ with SHA-512 hashing and BZip2 compression.
+/// </summary>
 public class DedubaClass
 {
     private const long Chunksize = 1024 * 1024 * 1024;
@@ -99,6 +104,10 @@ public class DedubaClass
         return od;
     }
 
+    /// <summary>
+    /// Entry point for running a backup on the provided list of paths.
+    /// </summary>
+    /// <param name="argv">Input paths to back up. Paths are canonicalized and validated.</param>
     public static void Backup(string[] argv)
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
@@ -461,6 +470,10 @@ public class DedubaClass
         return Path.Combine(_dataPath, prefix, hash);
     }
 
+    /// <summary>
+    /// Variable-length integer encoder (7-bit continuation) used by the custom pack format.
+    /// Only encodes non-negative values.
+    /// </summary>
     private static string pack_w<TNum>(TNum value)
         where TNum : INumber<TNum>
     {
@@ -480,6 +493,11 @@ public class DedubaClass
         return new string([.. buf.Skip(inIndex).Select(b => (char)b)]);
     }
 
+    /// <summary>
+    /// Decodes a variable-length integer from a string starting at the given offset.
+    /// </summary>
+    /// <param name="value">Encoded data.</param>
+    /// <param name="s">Reference index updated to the first byte after the integer.</param>
     private static ulong Unpack_w(string value, ref int s)
     {
         ulong auv = 0;
@@ -496,6 +514,9 @@ public class DedubaClass
         );
     }
 
+    /// <summary>
+    /// Decodes a variable-length integer from a complete string, ensuring no trailing data.
+    /// </summary>
     private static ulong Unpack_w(string value)
     {
         var s = 0;
@@ -516,6 +537,9 @@ public class DedubaClass
     //
 
     // Überladung für Nullable-Typen
+    /// <summary>
+    /// Serializes a possibly-null value: returns 'u' for null, otherwise dispatches to <see cref="Sdpack(object?, string)"/>.
+    /// </summary>
     private static string SdpackNull(object? v, string name)
     {
         if (name == null)
@@ -529,6 +553,9 @@ public class DedubaClass
     }
 
     // Überladung für Stringtypen
+    /// <summary>
+    /// Serializes a string value with 's' prefix.
+    /// </summary>
     private static string SdpackString(string v, string name)
     {
         if (name == null)
@@ -543,6 +570,9 @@ public class DedubaClass
     }
 
     // Überladung für nicht-String-Werttypen
+    /// <summary>
+    /// Serializes a numeric value with 'n' (non-negative) or 'N' (negative) prefix.
+    /// </summary>
     private static string SdpackNum<T>(T v, string name)
         where T : struct
     {
@@ -559,6 +589,9 @@ public class DedubaClass
     }
 
     // Überladung für Enumerables
+    /// <summary>
+    /// Serializes a sequence (list) with 'l' prefix followed by packed lengths and items.
+    /// </summary>
     private static string SdpackSeq<T>(T v, string name)
         where T : IEnumerable
     {
@@ -579,6 +612,9 @@ public class DedubaClass
     }
 
     // Überladung für Objekte (Fallback)
+    /// <summary>
+    /// Fallback for unsupported types; throws an exception with type information.
+    /// </summary>
     private static string SdpackOther(object? v, string name)
     {
         if (name == null)
@@ -588,6 +624,9 @@ public class DedubaClass
         throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}", name);
     }
 
+    /// <summary>
+    /// Serializes a value using the compact custom format used by the archive.
+    /// </summary>
     private static string Sdpack(object? v, string name)
     {
         if (name == null)
@@ -634,6 +673,9 @@ public class DedubaClass
     }
 
     // ReSharper disable once UnusedMember.Global
+    /// <summary>
+    /// Parses a serialized value produced by <see cref="Sdpack(object?, string)"/>.
+    /// </summary>
     private static object? Sdunpack(string value)
     {
         var p = value.Substring(0, 1);
@@ -668,16 +710,25 @@ public class DedubaClass
         }
     }
 
+    /// <summary>
+    /// Expands a UID into [uid, name] using the user database.
+    /// </summary>
     private static object[] Usr(uint uid)
     {
         return [uid, UserGroupDatabase.GetPwUid(uid)["pw_name"]?.ToString() ?? uid.ToString()];
     }
 
+    /// <summary>
+    /// Expands a GID into [gid, name] using the group database.
+    /// </summary>
     private static object[] Grp(uint gid)
     {
         return [gid, UserGroupDatabase.GetGrGid(gid)["gr_name"]?.ToString() ?? gid.ToString()];
     }
 
+    /// <summary>
+    /// Hashes and writes a data chunk into the content-addressable store if not already present.
+    /// </summary>
     private static string Save_data(string data)
     {
         var hashBytes = SHA512.HashData([.. data.ToArray().Select(x => (byte)x)]);
@@ -722,6 +773,9 @@ public class DedubaClass
         return hash;
     }
 
+    /// <summary>
+    /// Reads a file/stream in fixed-size chunks, stores them via <see cref="Save_data"/>, and returns their hashes.
+    /// </summary>
     private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
         if (Utilities.Testing)
@@ -761,6 +815,9 @@ public class DedubaClass
     }
 
     // ##############################################################################
+    /// <summary>
+    /// Processes a set of filesystem entries, recursing into directories and emitting inode records.
+    /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
         Utilities.ConWrite(
@@ -1011,7 +1068,10 @@ public class DedubaClass
         }
     }
 
-    // Helper to safely read unsigned 64-bit values from JsonNode
+    /// <summary>
+    /// Helper to safely read unsigned 64-bit values from a <see cref="JsonNode"/> that may contain
+    /// ulong/long/double/string representations coming from the native layer.
+    /// </summary>
     private static ulong GetU64(JsonNode? node)
     {
         if (node is null)

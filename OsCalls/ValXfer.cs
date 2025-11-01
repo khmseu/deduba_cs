@@ -5,8 +5,17 @@ using UtilitiesLibrary;
 
 namespace OsCalls;
 
+/// <summary>
+/// Bridge for transferring native values from the C++ shim into managed <see cref="JsonNode"/>s.
+/// The native side exposes a cursor-like API where <see cref="GetNextValue"/> advances over a
+/// sequence of values (arrays or key/value objects). This class interprets those sequences and
+/// materializes them as JSON using <see cref="ToNode"/>.
+/// </summary>
 public static unsafe class ValXfer
 {
+    /// <summary>
+    /// Value discriminator reported by the native layer for the current cursor position.
+    /// </summary>
     public enum TypeT
     {
         // ReSharper disable UnusedMember.Global
@@ -21,6 +30,14 @@ public static unsafe class ValXfer
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
     private static extern bool GetNextValue(ValueT* value);
 
+    /// <summary>
+    /// Converts a native <see cref="ValueT"/> stream into a <see cref="JsonNode"/>.
+    /// </summary>
+    /// <param name="value">Pointer to a value cursor initialized by native code.</param>
+    /// <param name="file">Logical file/resource for error reporting.</param>
+    /// <param name="op">Operation name (native API) for error reporting.</param>
+    /// <returns>A populated JsonArray or JsonObject depending on the native sequence.</returns>
+    /// <exception cref="Win32Exception">If the native layer signaled an error.</exception>
     public static JsonNode ToNode(ValueT* value, string file, string op)
     {
         if (value == null)
@@ -137,6 +154,9 @@ public static unsafe class ValXfer
         }
     }
 
+    /// <summary>
+    /// Native iteration handle used by the shim to keep state across calls to <see cref="GetNextValue"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct HandleT
     {
@@ -146,6 +166,9 @@ public static unsafe class ValXfer
         public Int64 index;
     }
 
+    /// <summary>
+    /// Native timespec representation (seconds + nanoseconds) passed through from POSIX APIs.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct TimeSpecT
     {
@@ -153,6 +176,11 @@ public static unsafe class ValXfer
         public readonly long TvNsec;
     }
 
+    /// <summary>
+    /// Native value record describing the current node in the traversal.
+    /// Depending on <see cref="Type"/>, either <see cref="Number"/>, <see cref="String"/>, <see cref="Complex"/>
+    /// or <see cref="TimeSpec"/> is populated.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ValueT
     {

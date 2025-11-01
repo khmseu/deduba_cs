@@ -5,8 +5,18 @@ using System.Text.Json.Serialization;
 
 namespace UtilitiesLibrary;
 
+/// <summary>
+/// Shared utility helpers for logging, diagnostics and pretty-printing structured data.
+/// </summary>
 public class Utilities
 {
+    /// <summary>
+    /// Creates a name/value pair that preserves the original expression name for diagnostics.
+    /// Useful with <see cref="Dumper"/> to produce labeled debug output.
+    /// </summary>
+    /// <param name="value">The value to capture.</param>
+    /// <param name="name">Caller-supplied expression name (auto-filled by compiler).</param>
+    /// <returns>A labeled <see cref="KeyValuePair{TKey,TValue}"/> suitable for dumping.</returns>
     public static KeyValuePair<string, object?> D(
         object? value,
         [CallerArgumentExpression(nameof(value))] string name = ""
@@ -31,6 +41,12 @@ public class Utilities
 
     private static readonly JsonSerializerOptions SerializerOptions = GenSerializerOptions();
 
+    /// <summary>
+    /// Serializes the provided labeled values into a multi-line, human-readable string using JSON.
+    /// Intended for debug logging and structured trace output.
+    /// </summary>
+    /// <param name="values">One or more labeled values produced by <see cref="D"/>.</param>
+    /// <returns>A concatenated string where each line is "name = json".</returns>
     public static string Dumper(params KeyValuePair<string, object?>[] values)
     {
         string[] ret = [];
@@ -52,6 +68,15 @@ public class Utilities
     // ############################################################################
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
+    /// <summary>
+    /// Logs a generic error using a synthetic exception and caller info.
+    /// Prefer the overload that accepts an <see cref="Exception"/> when available.
+    /// </summary>
+    /// <param name="file">Logical file or resource name related to the error.</param>
+    /// <param name="op">Operation being performed when the error occurred.</param>
+    /// <param name="filePath">Auto-supplied caller file path.</param>
+    /// <param name="lineNumber">Auto-supplied caller line number.</param>
+    /// <param name="callerMemberName">Auto-supplied caller member name.</param>
     public static void Error(
         string file,
         string op,
@@ -70,9 +95,25 @@ public class Utilities
         );
     }
 
+    /// <summary>
+    /// When true, also writes diagnostic output to the console in addition to the log file.
+    /// </summary>
     public static bool Testing = true;
+
+    /// <summary>
+    /// Log stream used by the backup process. When null, errors will be rethrown.
+    /// </summary>
     public static StreamWriter? _log;
 
+    /// <summary>
+    /// Logs an error with full exception details, including inner exceptions, stack, and attached data.
+    /// </summary>
+    /// <param name="file">Logical file or resource name related to the error.</param>
+    /// <param name="op">Operation being performed when the error occurred.</param>
+    /// <param name="ex">The exception that was raised.</param>
+    /// <param name="filePath">Auto-supplied caller file path.</param>
+    /// <param name="lineNumber">Auto-supplied caller line number.</param>
+    /// <param name="callerMemberName">Auto-supplied caller member name.</param>
     public static void Error(
         string file,
         string op,
@@ -93,6 +134,13 @@ public class Utilities
             throw new Exception(msg, ex);
     }
 
+    /// <summary>
+    /// Writes a warning message to the console with caller context.
+    /// </summary>
+    /// <param name="msg">Warning text.</param>
+    /// <param name="filePath">Auto-supplied caller file path.</param>
+    /// <param name="lineNumber">Auto-supplied caller line number.</param>
+    /// <param name="callerMemberName">Auto-supplied caller member name.</param>
     public static void Warn(
         string msg,
         [CallerFilePath] string filePath = "",
@@ -103,6 +151,13 @@ public class Utilities
         ConWrite($"WARN: {msg}\n", filePath, lineNumber, callerMemberName);
     }
 
+    /// <summary>
+    /// Writes a structured message to the console including precise caller context.
+    /// </summary>
+    /// <param name="msg">Text to write.</param>
+    /// <param name="filePath">Auto-supplied caller file path.</param>
+    /// <param name="lineNumber">Auto-supplied caller line number.</param>
+    /// <param name="callerMemberName">Auto-supplied caller member name.</param>
     public static void ConWrite(
         string msg,
         [CallerFilePath] string filePath = "",
