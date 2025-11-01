@@ -97,9 +97,7 @@
         {
           "owner": "serve-docs",
           "fileLocation": "absolute",
-          "pattern": [
-            { "regexp": ".^" }
-          ],
+          "pattern": [{ "regexp": ".^" }],
           "background": {
             "activeOnStart": true,
             "beginsPattern": ".+",
