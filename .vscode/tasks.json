@@ -44,6 +44,22 @@
       },
       "problemMatcher": "$msCompile",
       "detail": "Build the DeDuBa.csproj project using dotnet build"
+    },
+    {
+      "label": "Docs: Doxygen (C++)",
+      "type": "shell",
+      "command": "doxygen",
+      "args": ["${workspaceFolder}/docs/Doxyfile"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: DocFX site (C#)",
+      "type": "shell",
+      "command": "docfx",
+      "args": ["${workspaceFolder}/docs/docfx.json"],
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }

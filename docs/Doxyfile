@@ -1,0 +1,23 @@
+# Doxygen configuration for DeDuBa C++ interop headers
+# Generate HTML documentation under docs/doxygen
+
+PROJECT_NAME           = "DeDuBa Interop (C++)"
+OUTPUT_DIRECTORY       = ./doxygen
+CREATE_SUBDIRS         = NO
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+GENERATE_XML           = NO
+RECURSIVE              = YES
+FULL_PATH_NAMES        = NO
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+JAVADOC_AUTOBRIEF      = YES
+MULTILINE_CPP_IS_BRIEF = YES
+CASE_SENSE_NAMES       = NO
+
+# Source inputs (relative to this Doxyfile in docs/)
+INPUT                  = ../OsCallsShim/include
+FILE_PATTERNS          = *.h

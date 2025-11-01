@@ -1,0 +1,25 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "cwd": "..",
+          "files": [
+            "DeDuBa/DeDuBa.csproj",
+            "OsCalls/OsCalls.csproj",
+            "UtilitiesLibrary/UtilitiesLibrary.csproj"
+          ]
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": ["api/**.yml", "api/index.md"] },
+      { "files": ["articles/**.md", "toc.yml"] }
+    ],
+    "resource": [ { "files": ["images/**"] } ],
+    "dest": "_site"
+  }
+}
