@@ -60,6 +60,14 @@
       "args": ["${workspaceFolder}/docs/docfx.json"],
       "group": "build",
       "problemMatcher": []
+    },
+    {
+      "label": "Docs: Generate all (Doxygen + DocFX)",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "${workspaceFolder}/generate-docs.sh"],
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }
