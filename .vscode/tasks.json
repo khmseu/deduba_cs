@@ -116,7 +116,15 @@
       "label": "Docs: Open served URL",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "'${workspaceFolder}/scripts/open-served-docs.sh'"],
+      "args": ["-c", "${workspaceFolder}/scripts/open-served-docs.sh"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "DISPLAY": "${env:DISPLAY}",
+          "DBUS_SESSION_BUS_ADDRESS": "${env:DBUS_SESSION_BUS_ADDRESS}",
+          "SITE_DIR": "${workspaceFolder}/docs/_site"
+        }
+      },
       "group": "test",
       "problemMatcher": []
     },
