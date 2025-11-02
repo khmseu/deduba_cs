@@ -5,6 +5,10 @@ set -o pipefail
 export DOTNET_ROOT="${HOME}/.dotnet"
 export PATH="${DOTNET_ROOT}:${PATH}"
 
+# Display version being tested
+VERSION=$(dotnet minver -v e 2>/dev/null || echo "dev")
+echo "Testing DeDuBa version: ${VERSION}"
+
 rm -rfv -- ../ARCHIVE?/ *.tmp *.log
 
 declare -A arexe

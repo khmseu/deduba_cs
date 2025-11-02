@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Automatic git-based versioning via MinVer -->
+    <!-- Version will be calculated from git tags (e.g., 0.1.0-alpha.5+sha.abc1234) -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerVerbosity>normal</MinVerVerbosity>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

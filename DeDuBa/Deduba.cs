@@ -111,6 +111,7 @@ public class DedubaClass
     public static void Backup(string[] argv)
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+        Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
         _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE3" : "/archive/backup";
         _dataPath = Path.Combine(_archive, "DATA");

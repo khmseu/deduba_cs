@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -24,6 +25,19 @@ public class Utilities
     )
     {
         return new KeyValuePair<string, object?>(name, value);
+    }
+
+    /// <summary>
+    /// Retrieves the version string from the calling assembly's InformationalVersion attribute.
+    /// This includes the semantic version and git commit hash when using MinVer.
+    /// </summary>
+    /// <returns>Version string (e.g., "0.1.0-alpha.5+sha.abc1234") or "unknown" if not available.</returns>
+    public static string GetVersion()
+    {
+        var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        var version = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion ?? "unknown";
+        return version;
     }
 
     private static JsonSerializerOptions GenSerializerOptions()
