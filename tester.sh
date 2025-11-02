@@ -3,10 +3,10 @@
 set -o pipefail
 
 export DOTNET_ROOT="${HOME}/.dotnet"
-export PATH="${DOTNET_ROOT}:${PATH}"
+export PATH="${DOTNET_ROOT}:${DOTNET_ROOT}/tools:${PATH}"
 
 # Display version being tested
-VERSION=$(dotnet minver -v e 2>/dev/null || echo "dev")
+VERSION=$(minver -v e 2>/dev/null || echo "dev")
 echo "Testing DeDuBa version: ${VERSION}"
 
 rm -rfv -- ../ARCHIVE?/ *.tmp *.log
