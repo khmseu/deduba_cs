@@ -10,7 +10,7 @@ rm -rfv -- ../ARCHIVE?/ *.tmp *.log
 declare -A arexe
 declare -A arts
 
-arexe[cs]='dotnet run --project=DeDuBa'
+arexe[cs]='dotnet run --project=DeDuBa --no-build'
 arts[cs]='\d+\s\d\d\.\d\d\.\d\d\d\d\s\d\d:\d\d:\d\d'
 
 arexe[pl]='./test-old.pl'

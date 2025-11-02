@@ -31,7 +31,7 @@ public class DedubaClass
 
     // private static readonly Dictionary<string, string> Settings = new();
     private static long _ds;
-    private static readonly Dictionary<string, List<object>> Dirtmp = new();
+    private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
     private static readonly Dictionary<ulong, int> Devices = [];
     private static readonly Dictionary<string, string?> Fs2Ino = [];
@@ -542,8 +542,7 @@ public class DedubaClass
     /// </summary>
     private static string SdpackNull(object? v, string name)
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v?.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
@@ -558,8 +557,7 @@ public class DedubaClass
     /// </summary>
     private static string SdpackString(string v, string name)
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
@@ -576,8 +574,7 @@ public class DedubaClass
     private static string SdpackNum<T>(T v, string name)
         where T : struct
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
@@ -595,8 +592,7 @@ public class DedubaClass
     private static string SdpackSeq<T>(T v, string name)
         where T : IEnumerable
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
@@ -617,8 +613,7 @@ public class DedubaClass
     /// </summary>
     private static string SdpackOther(object? v, string name)
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v?.GetType();
 
         throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}", name);
@@ -629,8 +624,7 @@ public class DedubaClass
     /// </summary>
     private static string Sdpack(object? v, string name)
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         var t = v?.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
@@ -678,8 +672,8 @@ public class DedubaClass
     /// </summary>
     private static object? Sdunpack(string value)
     {
-        var p = value.Substring(0, 1);
-        var d = value.Substring(1);
+        var p = value[..1];
+        var d = value[1..];
         switch (p)
         {
             case "u":
@@ -988,7 +982,7 @@ public class DedubaClass
                     else if (FileSystem.IsDir(statBuf))
                     {
                         var dataIsdir = Sdpack(
-                            Dirtmp.TryGetValue(entry, out var value) ? value : new List<object>(),
+                            Dirtmp.TryGetValue(entry, out var value) ? value : [],
                             "dir"
                         );
                         Dirtmp.Remove(entry);
@@ -1049,7 +1043,7 @@ public class DedubaClass
                 }
 
                 if (!Dirtmp.ContainsKey(dir))
-                    Dirtmp[dir] = new List<object>();
+                    Dirtmp[dir] = [];
                 if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
                     Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
                 Utilities._log?.Write(
