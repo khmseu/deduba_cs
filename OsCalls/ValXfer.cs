@@ -166,6 +166,90 @@ public static unsafe class ValXfer
     }
 
     /// <summary>
+    /// Managed snapshot of a single native <see cref="ValueT"/> structure.
+    /// This mirrors the layout of <see cref="ValueT"/> into safe managed fields and
+    /// decodes pointer-based strings into <see cref="string"/>. For <see cref="TypeT.IsComplex"/>,
+    /// the nested <see cref="ValueT"/> can optionally be captured recursively (depth-limited).
+    /// </summary>
+    public sealed class ValueObject
+    {
+        /// <summary>
+        /// Managed snapshot of the native iteration handle embedded in <see cref="ValueT"/>.
+        /// </summary>
+        public sealed class HandleObject
+        {
+            /// <summary>Current iteration index as reported by the native handle.</summary>
+            public long Index { get; set; }
+
+            /// <summary>First user data pointer associated with the native handle (as unsigned integer).</summary>
+            public ulong Data1 { get; set; }
+
+            /// <summary>Second user data pointer associated with the native handle (as unsigned integer).</summary>
+            public ulong Data2 { get; set; }
+        }
+
+        /// <summary>Iteration handle snapshot.</summary>
+        public HandleObject Handle { get; set; } = new();
+
+        /// <summary>Timespec components.</summary>
+        public long TvSec { get; set; }
+
+        /// <summary>Nanoseconds component of the timespec when <see cref="Type"/> is <see cref="TypeT.IsTimeSpec"/>.</summary>
+        public long TvNsec { get; set; }
+
+        /// <summary>Numeric value when <see cref="Type"/> is <see cref="TypeT.IsNumber"/>.</summary>
+        public long Number { get; set; }
+
+        /// <summary>Field/key name ("[]" for array items).</summary>
+        public string? Name { get; set; }
+
+        /// <summary>String value when <see cref="Type"/> is <see cref="TypeT.IsString"/>.</summary>
+        public string? String { get; set; }
+
+        /// <summary>Nested structure (optional, see <see cref="ToObject(ValueT*, int)"/>).</summary>
+        public ValueObject? Complex { get; set; }
+
+        /// <summary>Discriminator indicating which field is valid.</summary>
+        public TypeT Type { get; set; }
+    }
+
+    /// <summary>
+    /// Create a managed snapshot for a single native <see cref="ValueT"/> pointer.
+    /// </summary>
+    /// <param name="value">Pointer to the native value to convert.</param>
+    /// <param name="maxDepth">Maximum recursion depth for <see cref="TypeT.IsComplex"/> (default: 1).</param>
+    /// <returns>A managed <see cref="ValueObject"/> with fields corresponding to <see cref="ValueT"/>.</returns>
+    public static ValueObject ToObject(ValueT* value, int maxDepth = 1)
+    {
+        if (value == null)
+            throw new ArgumentNullException(nameof(value));
+
+        var vo = new ValueObject
+        {
+            Handle = new ValueObject.HandleObject
+            {
+                Index = value->Handle.index,
+                Data1 = (ulong)value->Handle.data1,
+                Data2 = (ulong)value->Handle.data2,
+            },
+            TvSec = value->TimeSpec.TvSec,
+            TvNsec = value->TimeSpec.TvNsec,
+            Number = value->Number,
+            Name = value->Name != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->Name) : null,
+            String = value->String != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->String) : null,
+            Type = value->Type,
+            Complex = null,
+        };
+
+        if (value->Type == TypeT.IsComplex && value->Complex != null && maxDepth > 0)
+        {
+            vo.Complex = ToObject(value->Complex, maxDepth - 1);
+        }
+
+        return vo;
+    }
+
+    /// <summary>
     /// Native iteration handle used by the shim to keep state across calls to <see cref="GetNextValue"/>.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,13 +28,14 @@ public class Utilities
 
     private static JsonSerializerOptions GenSerializerOptions()
     {
-        JsonSerializerOptions Options = new JsonSerializerOptions()
+        JsonSerializerOptions Options = new()
         {
             IgnoreReadOnlyFields = false,
             IgnoreReadOnlyProperties = false,
             IncludeFields = true,
             // ReferenceHandler = ReferenceHandler.Preserve,
             WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
         Options.Converters.Add(new JsonStringEnumConverter());
         return Options;
@@ -54,12 +56,12 @@ public class Utilities
             try
             {
                 var jsonOutput = JsonSerializer.Serialize(kvp.Value, SerializerOptions);
-                ret = ret.Append($"{kvp.Key} = {jsonOutput}\n").ToArray();
+                ret = [.. ret, $"{kvp.Key} = {jsonOutput}\n"];
             }
             catch (Exception ex)
             {
                 Error(kvp.Key, nameof(JsonSerializer.Serialize), ex);
-                ret = ret.Append($"{kvp.Key} = {ex.Message}\n").ToArray();
+                ret = [.. ret, $"{kvp.Key} = {ex.Message}\n"];
             }
 
         return string.Join("", ret);
