@@ -536,173 +536,30 @@ public class DedubaClass
     //
     // packed: w/a strings, w/w unsigned numbers, w/(a) lists
     //
-
-    // Überladung für Nullable-Typen
-    /// <summary>
-    /// Serializes a possibly-null value: returns 'u' for null, otherwise dispatches to <see cref="Sdpack(object?, string)"/>.
-    /// </summary>
-    private static string SdpackNull(object? v, string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        var t = v?.GetType();
-        if (name.Length > 0 && Utilities.Testing)
-            Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}"
-            );
-        return v is null ? "u" : Sdpack(v, name);
-    }
-
-    // Überladung für Stringtypen
-    /// <summary>
-    /// Serializes a string value with 's' prefix.
-    /// </summary>
-    private static string SdpackString(string v, string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing)
-            Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}"
-            );
-
-        return "s" + v;
-    }
-
-    // Überladung für nicht-String-Werttypen
-    /// <summary>
-    /// Serializes a numeric value with 'n' (non-negative) or 'N' (negative) prefix.
-    /// </summary>
-    private static string SdpackNum<T>(T v, string name)
-        where T : struct
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing)
-            Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}"
-            );
-
-        var intValue = Convert.ToInt64(v);
-        return intValue >= 0 ? "n" + pack_w((ulong)intValue) : "N" + pack_w((ulong)-intValue);
-    }
-
-    // Überladung für Enumerables
-    /// <summary>
-    /// Serializes a sequence (list) with 'l' prefix followed by packed lengths and items.
-    /// </summary>
-    private static string SdpackSeq<T>(T v, string name)
-        where T : IEnumerable
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        var t = v.GetType();
-        if (name.Length > 0 && Utilities.Testing)
-            Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(t.FullName), Utilities.D(v))}"
-            );
-
-        var ary = new List<string>();
-        foreach (var item in v)
-            ary.Add(Sdpack(item, ""));
-        return "l"
-            + pack_w((ulong)ary.Count)
-            + string.Join("", ary.Select(x => pack_w((ulong)x.Length) + x));
-    }
-
-    // Überladung für Objekte (Fallback)
-    /// <summary>
-    /// Fallback for unsupported types; throws an exception with type information.
-    /// </summary>
-    private static string SdpackOther(object? v, string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        var t = v?.GetType();
-
-        throw new ArgumentException($"unexpected type {t?.FullName ?? "unknown"}", name);
-    }
+    // Delegated to StructuredData class for implementation
 
     /// <summary>
     /// Serializes a value using the compact custom format used by the archive.
+    /// Delegates to <see cref="StructuredData.PackString"/> for implementation.
     /// </summary>
     private static string Sdpack(object? v, string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-        var t = v?.GetType();
         if (name.Length > 0 && Utilities.Testing)
             Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(t?.FullName), Utilities.D(v))}"
+                $"{name}: {Utilities.Dumper(Utilities.D(v?.GetType().FullName), Utilities.D(v))}"
             );
-
-        switch (v)
-        {
-            case null:
-                return SdpackNull(v, name);
-            case string s:
-                return SdpackString(s, name);
-            case Int128 int128:
-                return SdpackNum(int128, name);
-            case long int64:
-                return SdpackNum(int64, name);
-            case int int32:
-                return SdpackNum(int32, name);
-            case short int16:
-                return SdpackNum(int16, name);
-            case sbyte int8:
-                return SdpackNum(int8, name);
-            case UInt128 uint128:
-                return SdpackNum(uint128, name);
-            case ulong uint64:
-                return SdpackNum(uint64, name);
-            case uint uint32:
-                return SdpackNum(uint32, name);
-            case ushort uint16:
-                return SdpackNum(uint16, name);
-            case byte uint8:
-                return SdpackNum(uint8, name);
-            case double @double:
-                return SdpackNum(@double, name);
-            case IEnumerable en:
-                return SdpackSeq(en, name);
-            default:
-                return SdpackOther(v, name);
-        }
+        return StructuredData.PackString(v, name);
     }
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>
     /// Parses a serialized value produced by <see cref="Sdpack(object?, string)"/>.
+    /// Delegates to <see cref="StructuredData.UnpackString"/> for implementation.
     /// </summary>
     private static object? Sdunpack(string value)
     {
-        var p = value[..1];
-        var d = value[1..];
-        switch (p)
-        {
-            case "u":
-                return null;
-            case "s":
-                return d;
-            case "n":
-                return Unpack_w(d);
-            case "N":
-                return -(long)Unpack_w(d);
-            case "l":
-                var unpackedList = new List<object?>();
-                var s = 0;
-                var n = Unpack_w(d, ref s);
-                while (n-- > 0)
-                {
-                    var il = Unpack_w(d, ref s);
-                    unpackedList.Add(Sdunpack(d.Substring(s, (int)il)));
-                }
-
-                if (s < d.Length)
-                    throw new InvalidOperationException(
-                        "Junk after compressed integer in " + nameof(Sdunpack)
-                    );
-                return unpackedList.ToArray();
-            default:
-                throw new InvalidOperationException("unexpected type " + p);
-        }
+        return StructuredData.UnpackString(value);
     }
 
     /// <summary>
@@ -1011,7 +868,11 @@ public class DedubaClass
                     inode = [.. inode, hashes];
                     var data = Sdpack(inode, "inode");
                     if (Utilities.Testing)
+                    {
                         Utilities.ConWrite(Utilities.Dumper(Utilities.D(data)));
+                        var updata = Sdunpack(data);
+                        Utilities.ConWrite(Utilities.Dumper(Utilities.D(updata)));
+                    }
                     try
                     {
                         var dataBytes = Encoding.UTF8.GetBytes(data);
