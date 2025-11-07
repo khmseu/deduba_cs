@@ -21,6 +21,34 @@ namespace DeDuBa;
 /// </summary>
 public class DedubaClass
 {
+    // Represents inode metadata collected for a filesystem entry prior to packing.
+    private sealed class InodeData
+    {
+        public long Mode { get; init; }
+        public long NLink { get; init; }
+        public uint Uid { get; init; }
+        public string UserName { get; init; } = string.Empty;
+        public uint Gid { get; init; }
+        public string GroupName { get; init; } = string.Empty;
+        public long RDev { get; init; }
+        public long Size { get; init; }
+        public double MTime { get; init; }
+        public double CTime { get; init; }
+        public IEnumerable<string> Hashes { get; set; } = Array.Empty<string>();
+
+        // Preserve original JSON packing shape: [ [mode,nlink], [uid,name], [gid,name], [rdev,size,mtime,ctime], hashes ]
+        public object ToArray()
+        {
+            return new List<object>
+            {
+                new object?[] { Mode, NLink },
+                new object?[] { (ulong)Uid, UserName },
+                new object?[] { (ulong)Gid, GroupName },
+                new object?[] { RDev, Size, MTime, CTime },
+                Hashes.ToArray(),
+            };
+        }
+    }
     private const long Chunksize = 1024 * 1024 * 1024;
 
     private static string? _startTimestamp;
@@ -34,7 +62,7 @@ public class DedubaClass
     private static long _ds;
     private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
-    private static readonly Dictionary<ulong, int> Devices = [];
+    private static readonly Dictionary<long, int> Devices = [];
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
@@ -180,7 +208,7 @@ public class DedubaClass
                         throw;
                     }
 
-                    var i = st["st_dev"]?.GetValue<ulong>() ?? 0;
+                    var i = st["st_dev"]?.GetValue<long>() ?? 0;
                     Devices.TryAdd(i, 0);
                     Devices[i]++;
                 }
@@ -693,7 +721,7 @@ public class DedubaClass
                 Utilities.Error(entry, nameof(FileSystem.LStat), ex);
             }
 
-            var stDev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
+            var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
             if (Utilities.Testing)
                 Utilities.ConWrite(Utilities.Dumper(Utilities.D(stDev)));
             if (
@@ -723,8 +751,8 @@ public class DedubaClass
                 var fsfid = Sdpack(
                     new List<object?>
                     {
-                        statBuf?["st_dev"]?.GetValue<ulong>() ?? 0,
-                        statBuf?["st_ino"]?.GetValue<ulong>() ?? 0,
+                        statBuf?["st_dev"]?.GetValue<long>() ?? 0,
+                        statBuf?["st_ino"]?.GetValue<long>() ?? 0,
                     },
                     "fsfid"
                 );
@@ -757,29 +785,25 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
-                    var inode = new List<object>
+                    var inodeData = new InodeData
                     {
-                        new object?[]
-                        {
-                            statBuf?["st_mode"]?.GetValue<ulong>() ?? 0,
-                            statBuf?["st_nlink"]?.GetValue<ulong>() ?? 0,
-                        },
-                        Usr(Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<ulong>() ?? 0)),
-                        Grp(Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<ulong>() ?? 0)),
-                        new object?[]
-                        {
-                            statBuf?["st_rdev"]?.GetValue<ulong>() ?? 0,
-                            statBuf?["st_size"]?.GetValue<ulong>() ?? 0,
-                            statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
-                            statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
-                        },
+                        Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
+                        NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
+                        Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
+                        UserName = UserGroupDatabase.GetPwUid(Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0))["pw_name"]?.ToString() ?? Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0).ToString(),
+                        Gid = Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0),
+                        GroupName = UserGroupDatabase.GetGrGid(Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0))["gr_name"]?.ToString() ?? Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0).ToString(),
+                        RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
+                        Size = statBuf?["st_size"]?.GetValue<long>() ?? 0,
+                        MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
+                        CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
                     };
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
                     if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
                     {
-                        var size = statBuf?["st_size"]?.GetValue<ulong>() ?? 0;
+                        var size = statBuf?["st_size"]?.GetValue<long>() ?? 0;
                         if (size != 0)
                             try
                             {
@@ -853,8 +877,8 @@ public class DedubaClass
 
                     if (Utilities.Testing)
                         Utilities.ConWrite($"data: {Utilities.Dumper(Utilities.D(hashes))}");
-                    inode = [.. inode, hashes];
-                    var data = Sdpack(inode, "inode");
+                    inodeData.Hashes = hashes;
+                    var data = Sdpack(inodeData.ToArray(), "inode");
                     if (Utilities.Testing)
                     {
                         Utilities.ConWrite(Utilities.Dumper(Utilities.D(data)));
@@ -874,7 +898,7 @@ public class DedubaClass
 
                     // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
                     hashes = [.. Save_file(mem, data.Length, $"{entry} $data @inode")];
-                    var ino = Sdpack(hashes.ToArray(), "fileid");
+                    var ino = Sdpack(hashes, "fileid");
                     Fs2Ino[fsfid] = ino;
                     TimeSpan? needed = DateTime.Now.Subtract(start);
                     var speed =
@@ -886,11 +910,11 @@ public class DedubaClass
                             $"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}"
                         );
                     report =
-                        $"[{statBuf?["st_size"]?.GetValue<ulong>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
+                        $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
                 }
                 else
                 {
-                    report = $"[{statBuf?["st_size"]?.GetValue<ulong>() ?? 0:d} -> duplicate]";
+                    report = $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> duplicate]";
                 }
 
                 if (!Dirtmp.ContainsKey(dir))
