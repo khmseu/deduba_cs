@@ -84,26 +84,6 @@ public class DedubaClass
     // # 10 ctime    inode change time in seconds since the epoch (*)
     // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
     // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-    private static double[]? Ls2Od(JsonNode? ls)
-    {
-        if (ls == null)
-            return null;
-        var od = new double[13];
-        od[0] = GetU64(ls["st_dev"]);
-        od[1] = GetU64(ls["st_ino"]);
-        od[2] = GetU64(ls["st_mode"]);
-        od[3] = GetU64(ls["st_nlink"]);
-        od[4] = GetU64(ls["st_uid"]);
-        od[5] = GetU64(ls["st_gid"]);
-        od[6] = GetU64(ls["st_rdev"]);
-        od[7] = GetU64(ls["st_size"]);
-        od[8] = ls["st_atim"]?.GetValue<double>() ?? 0;
-        od[9] = ls["st_mtim"]?.GetValue<double>() ?? 0;
-        od[10] = ls["st_ctim"]?.GetValue<double>() ?? 0;
-        od[11] = GetU64(ls["st_blksize"]);
-        od[12] = GetU64(ls["st_blocks"]);
-        return od;
-    }
 
     /// <summary>
     /// Entry point for running a backup on the provided list of paths.
@@ -722,7 +702,23 @@ public class DedubaClass
                 && Path.GetRelativePath(_dataPath, entry).StartsWith("..")
             )
             {
-                Utilities.ConWrite($"stat: {Utilities.Dumper(Utilities.D(Ls2Od(statBuf)))}");
+                Utilities.ConWrite(
+                    $"stat: {Utilities.Dumper(Utilities.D(statBuf == null ? null : new double[] {
+                    GetU64(statBuf["st_dev"]),
+                    GetU64(statBuf["st_ino"]),
+                    GetU64(statBuf["st_mode"]),
+                    GetU64(statBuf["st_nlink"]),
+                    GetU64(statBuf["st_uid"]),
+                    GetU64(statBuf["st_gid"]),
+                    GetU64(statBuf["st_rdev"]),
+                    GetU64(statBuf["st_size"]),
+                    statBuf["st_atim"]?.GetValue<double>() ?? 0,
+                    statBuf["st_mtim"]?.GetValue<double>() ?? 0,
+                    statBuf["st_ctim"]?.GetValue<double>() ?? 0,
+                    GetU64(statBuf["st_blksize"]),
+                    GetU64(statBuf["st_blocks"])
+                }))}"
+                );
 
                 // 0 dev      device number of filesystem
                 // 1 ino      inode number
@@ -770,7 +766,25 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
-                    var filteredInode = Ls2Od(statBuf);
+                    var filteredInode =
+                        statBuf == null
+                            ? null
+                            : new double[]
+                            {
+                                GetU64(statBuf["st_dev"]),
+                                GetU64(statBuf["st_ino"]),
+                                GetU64(statBuf["st_mode"]),
+                                GetU64(statBuf["st_nlink"]),
+                                GetU64(statBuf["st_uid"]),
+                                GetU64(statBuf["st_gid"]),
+                                GetU64(statBuf["st_rdev"]),
+                                GetU64(statBuf["st_size"]),
+                                statBuf["st_atim"]?.GetValue<double>() ?? 0,
+                                statBuf["st_mtim"]?.GetValue<double>() ?? 0,
+                                statBuf["st_ctim"]?.GetValue<double>() ?? 0,
+                                GetU64(statBuf["st_blksize"]),
+                                GetU64(statBuf["st_blocks"]),
+                            };
                     var inode = new List<object>
                     {
                         new object?[] { filteredInode?[2], filteredInode?[3] },
