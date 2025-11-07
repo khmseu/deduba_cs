@@ -73,6 +73,7 @@ namespace OsCalls
     /** Initialize a cursor with a handler and user data pointers. */
     void CreateHandle(ValueT* value, HandlerT* handler, void* data1, void* data2);
     }
+
     /** @} */
 } // namespace OsCalls
 

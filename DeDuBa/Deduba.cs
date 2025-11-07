@@ -1,4 +1,3 @@
-using System.Collections;
 using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -6,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
 using OsCalls;
@@ -15,49 +15,12 @@ namespace DeDuBa;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 /// <summary>
-/// Main backup logic (C# port of the original Perl implementation).
-/// Traverses files/directories, serializes metadata using custom pack format, and stores
-/// content-addressed chunks in DATA/ with SHA-512 hashing and BZip2 compression.
+///     Main backup logic (C# port of the original Perl implementation).
+///     Traverses files/directories, serializes metadata using custom pack format, and stores
+///     content-addressed chunks in DATA/ with SHA-512 hashing and BZip2 compression.
 /// </summary>
 public class DedubaClass
 {
-    // Represents inode metadata collected for a filesystem entry prior to packing.
-    private sealed class InodeData
-    {
-        [System.Text.Json.Serialization.JsonPropertyName("md")]
-        public long Mode { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("nl")]
-        public long NLink { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("ui")]
-        public uint Uid { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("un")]
-        public string UserName { get; init; } = string.Empty;
-
-        [System.Text.Json.Serialization.JsonPropertyName("gi")]
-        public uint Gid { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("gn")]
-        public string GroupName { get; init; } = string.Empty;
-
-        [System.Text.Json.Serialization.JsonPropertyName("rd")]
-        public long RDev { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("sz")]
-        public long Size { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("mt")]
-        public double MTime { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("ct")]
-        public double CTime { get; init; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("hs")]
-        public IEnumerable<string> Hashes { get; set; } = [];
-    }
-
     private const long Chunksize = 1024 * 1024 * 1024;
 
     private static string? _startTimestamp;
@@ -123,7 +86,7 @@ public class DedubaClass
     // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
 
     /// <summary>
-    /// Entry point for running a backup on the provided list of paths.
+    ///     Entry point for running a backup on the provided list of paths.
     /// </summary>
     /// <param name="argv">Input paths to back up. Paths are canonicalized and validated.</param>
     public static void Backup(string[] argv)
@@ -201,7 +164,7 @@ public class DedubaClass
                     throw;
                 }
 
-                Utilities.ConWrite($"Filtered:");
+                Utilities.ConWrite("Filtered:");
                 Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
 
                 foreach (var root in argv)
@@ -490,8 +453,8 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Variable-length integer encoder (7-bit continuation) used by the custom pack format.
-    /// Only encodes non-negative values.
+    ///     Variable-length integer encoder (7-bit continuation) used by the custom pack format.
+    ///     Only encodes non-negative values.
     /// </summary>
     private static string pack_w<TNum>(TNum value)
         where TNum : INumber<TNum>
@@ -513,7 +476,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Decodes a variable-length integer from a string starting at the given offset.
+    ///     Decodes a variable-length integer from a string starting at the given offset.
     /// </summary>
     /// <param name="value">Encoded data.</param>
     /// <param name="s">Reference index updated to the first byte after the integer.</param>
@@ -534,7 +497,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Decodes a variable-length integer from a complete string, ensuring no trailing data.
+    ///     Decodes a variable-length integer from a complete string, ensuring no trailing data.
     /// </summary>
     private static ulong Unpack_w(string value)
     {
@@ -555,7 +518,7 @@ public class DedubaClass
     // packed: JSON serialization format
 
     /// <summary>
-    /// Serializes a value using JSON format for storage in the archive.
+    ///     Serializes a value using JSON format for storage in the archive.
     /// </summary>
     private static string Sdpack(object? v, string name)
     {
@@ -571,7 +534,7 @@ public class DedubaClass
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>
-    /// Parses a serialized value produced by <see cref="Sdpack(object?, string)"/>.
+    ///     Parses a serialized value produced by <see cref="Sdpack(object?, string)" />.
     /// </summary>
     private static object? Sdunpack(string value)
     {
@@ -579,7 +542,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Expands a UID into [uid, name] using the user database.
+    ///     Expands a UID into [uid, name] using the user database.
     /// </summary>
     private static object[] Usr(uint uid)
     {
@@ -587,7 +550,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Expands a GID into [gid, name] using the group database.
+    ///     Expands a GID into [gid, name] using the group database.
     /// </summary>
     private static object[] Grp(uint gid)
     {
@@ -595,7 +558,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Hashes and writes a data chunk into the content-addressable store if not already present.
+    ///     Hashes and writes a data chunk into the content-addressable store if not already present.
     /// </summary>
     private static string Save_data(string data)
     {
@@ -642,7 +605,7 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Reads a file/stream in fixed-size chunks, stores them via <see cref="Save_data"/>, and returns their hashes.
+    ///     Reads a file/stream in fixed-size chunks, stores them via <see cref="Save_data" />, and returns their hashes.
     /// </summary>
     private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
@@ -684,7 +647,7 @@ public class DedubaClass
 
     // ##############################################################################
     /// <summary>
-    /// Processes a set of filesystem entries, recursing into directories and emitting inode records.
+    ///     Processes a set of filesystem entries, recursing into directories and emitting inode records.
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
@@ -743,7 +706,7 @@ public class DedubaClass
             {
                 Utilities.ConWrite(
                     $"stat: {Utilities.Dumper(Utilities.D(statBuf
-                ))}"
+                    ))}"
                 );
 
                 // 0 dev      device number of filesystem
@@ -837,7 +800,7 @@ public class DedubaClass
                                 if (Utilities.Testing)
                                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(entry)));
                                 var fileStream = File.OpenRead(entry);
-                                hashes = [.. Save_file(fileStream, (long)size, entry)];
+                                hashes = [.. Save_file(fileStream, size, entry)];
                             }
                             catch (Exception ex)
                             {
@@ -912,6 +875,7 @@ public class DedubaClass
                         var updata = Sdunpack(data);
                         Utilities.ConWrite(Utilities.Dumper(Utilities.D(updata)));
                     }
+
                     try
                     {
                         var dataBytes = Encoding.UTF8.GetBytes(data);
@@ -962,5 +926,42 @@ public class DedubaClass
             if (Utilities.Testing)
                 Utilities.ConWrite($"{"_".Repeat(80)}\n");
         }
+    }
+
+    // Represents inode metadata collected for a filesystem entry prior to packing.
+    private sealed class InodeData
+    {
+        [JsonPropertyName("md")]
+        public long Mode { get; init; }
+
+        [JsonPropertyName("nl")]
+        public long NLink { get; init; }
+
+        [JsonPropertyName("ui")]
+        public uint Uid { get; init; }
+
+        [JsonPropertyName("un")]
+        public string UserName { get; init; } = string.Empty;
+
+        [JsonPropertyName("gi")]
+        public uint Gid { get; init; }
+
+        [JsonPropertyName("gn")]
+        public string GroupName { get; init; } = string.Empty;
+
+        [JsonPropertyName("rd")]
+        public long RDev { get; init; }
+
+        [JsonPropertyName("sz")]
+        public long Size { get; init; }
+
+        [JsonPropertyName("mt")]
+        public double MTime { get; init; }
+
+        [JsonPropertyName("ct")]
+        public double CTime { get; init; }
+
+        [JsonPropertyName("hs")]
+        public IEnumerable<string> Hashes { get; set; } = [];
     }
 }

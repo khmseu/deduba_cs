@@ -5,8 +5,8 @@ using static OsCalls.ValXfer;
 namespace OsCalls;
 
 /// <summary>
-/// Access to system user/group databases via native libc calls (getpwuid/getgrgid).
-/// Returned values are mapped into JSON using the <see cref="ValXfer"/> bridge.
+///     Access to system user/group databases via native libc calls (getpwuid/getgrgid).
+///     Returned values are mapped into JSON using the <see cref="ValXfer" /> bridge.
 /// </summary>
 public static unsafe class UserGroupDatabase
 {
@@ -17,7 +17,7 @@ public static unsafe class UserGroupDatabase
     private static extern ValueT* getgrgid(ulong gid);
 
     /// <summary>
-    /// Retrieves passwd database entry for a user id.
+    ///     Retrieves passwd database entry for a user id.
     /// </summary>
     /// <param name="uid">Numeric user id.</param>
     /// <returns>A JsonNode with typical fields like pw_name, pw_uid, pw_gid, etc.</returns>
@@ -27,7 +27,7 @@ public static unsafe class UserGroupDatabase
     }
 
     /// <summary>
-    /// Retrieves group database entry for a group id.
+    ///     Retrieves group database entry for a group id.
     /// </summary>
     /// <param name="gid">Numeric group id.</param>
     /// <returns>A JsonNode with fields like gr_name, gr_gid, etc.</returns>
