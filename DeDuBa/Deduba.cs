@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
@@ -534,13 +535,10 @@ public class DedubaClass
     //
     // unpacked: [ ... [ ... ] ... 'string' \number ... ]
     //
-    // packed: w/a strings, w/w unsigned numbers, w/(a) lists
-    //
-    // Delegated to StructuredData class for implementation
+    // packed: JSON serialization format
 
     /// <summary>
-    /// Serializes a value using the compact custom format used by the archive.
-    /// Delegates to <see cref="StructuredData.PackString"/> for implementation.
+    /// Serializes a value using JSON format for storage in the archive.
     /// </summary>
     private static string Sdpack(object? v, string name)
     {
@@ -549,17 +547,16 @@ public class DedubaClass
             Utilities.ConWrite(
                 $"{name}: {Utilities.Dumper(Utilities.D(v?.GetType().FullName), Utilities.D(v))}"
             );
-        return StructuredData.PackString(v, name);
+        return JsonSerializer.Serialize(v);
     }
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>
     /// Parses a serialized value produced by <see cref="Sdpack(object?, string)"/>.
-    /// Delegates to <see cref="StructuredData.UnpackString"/> for implementation.
     /// </summary>
     private static object? Sdunpack(string value)
     {
-        return StructuredData.UnpackString(value);
+        return JsonSerializer.Deserialize<object>(value);
     }
 
     /// <summary>
