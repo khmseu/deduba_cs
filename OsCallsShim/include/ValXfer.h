@@ -43,6 +43,7 @@ namespace OsCalls
         IsString,
         IsComplex,
         IsTimeSpec,
+        IsBoolean,
     };
 
     // Define the TValue struct
@@ -58,6 +59,7 @@ namespace OsCalls
         int64_t Number;
         const char* String;
         ValueT* Complex;
+        bool Boolean;
     };
 
     /**

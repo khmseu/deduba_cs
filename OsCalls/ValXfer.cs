@@ -36,6 +36,9 @@ public static unsafe class ValXfer
 
         /// <summary>Current value is a POSIX timespec.</summary>
         IsTimeSpec,
+
+        /// <summary>Current value is a boolean.</summary>
+        IsBoolean,
     }
 
     [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
@@ -90,6 +93,9 @@ public static unsafe class ValXfer
                                 + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
                         );
                         break;
+                    case TypeT.IsBoolean:
+                        array.Add(value->Boolean);
+                        break;
                     default:
                         throw new ArgumentException(
                             $"{op} Invalid ValueT type {value->Type:G}.{value->Handle.index}",
@@ -122,6 +128,9 @@ public static unsafe class ValXfer
                     obj[name] =
                         value->TimeSpec.TvSec
                         + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000);
+                    break;
+                case TypeT.IsBoolean:
+                    obj[name] = value->Boolean;
                     break;
                 default:
                     throw new ArgumentException(
@@ -158,7 +167,8 @@ public static unsafe class ValXfer
                         Utilities.D(value->Number),
                         Utilities.D((ulong)value->String),
                         Utilities.D((ulong)value->Complex),
-                        Utilities.D(value->TimeSpec)
+                        Utilities.D(value->TimeSpec),
+                        Utilities.D(value->Boolean)
                     )
                 );
 #pragma warning restore CS0162 // Unerreichbarer Code wurde entdeckt.
@@ -206,6 +216,9 @@ public static unsafe class ValXfer
         /// <summary>String value when <see cref="Type"/> is <see cref="TypeT.IsString"/>.</summary>
         public string? String { get; set; }
 
+        /// <summary>Boolean value when <see cref="Type"/> is <see cref="TypeT.IsBoolean"/>.</summary>
+        public bool Boolean { get; set; }
+
         /// <summary>Nested structure (optional, see <see cref="ToObject(ValueT*, int)"/>).</summary>
         public ValueObject? Complex { get; set; }
 
@@ -237,6 +250,7 @@ public static unsafe class ValXfer
             Number = value->Number,
             Name = value->Name != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->Name) : null,
             String = value->String != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->String) : null,
+            Boolean = value->Boolean,
             Type = value->Type,
             Complex = null,
         };
@@ -310,5 +324,9 @@ public static unsafe class ValXfer
 
         /// <summary>Nested structure pointer when Type == IsComplex.</summary>
         public readonly ValueT* Complex;
+
+        /// <summary>Boolean value when Type == IsBoolean.</summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public readonly bool Boolean;
     }
 }

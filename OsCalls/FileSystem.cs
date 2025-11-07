@@ -49,33 +49,5 @@ public static unsafe class FileSystem
         return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
 
-    /// <summary>
-    /// Tests whether a stat buffer represents a directory.
-    /// </summary>
-    /// <param name="buf">JSON stat buffer from <see cref="LStat"/>.</param>
-    /// <returns>True if directory, false otherwise.</returns>
-    public static bool IsDir(JsonNode? buf)
-    {
-        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0x4000;
-    }
-
-    /// <summary>
-    /// Tests whether a stat buffer represents a regular file.
-    /// </summary>
-    /// <param name="buf">JSON stat buffer from <see cref="LStat"/>.</param>
-    /// <returns>True if regular file, false otherwise.</returns>
-    public static bool IsReg(JsonNode? buf)
-    {
-        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0x8000;
-    }
-
-    /// <summary>
-    /// Tests whether a stat buffer represents a symbolic link.
-    /// </summary>
-    /// <param name="buf">JSON stat buffer from <see cref="LStat"/>.</param>
-    /// <returns>True if symlink, false otherwise.</returns>
-    public static bool IsLnk(JsonNode? buf)
-    {
-        return (buf?["st_mode"]?.GetValue<long>() & 0xF000) == 0xA000;
-    }
+    // Inlined former convenience predicates (IsDir/IsReg/IsLnk) directly at call sites for minor perf/readability tweaks.
 }

@@ -733,7 +733,7 @@ public class DedubaClass
                 if (!old)
                 {
                     Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (FileSystem.IsDir(statBuf))
+                    if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
                         while (true)
                             try
                             {
@@ -777,7 +777,7 @@ public class DedubaClass
                     string[] hashes = [];
                     _ds = 0;
                     MemoryStream mem;
-                    if (FileSystem.IsReg(statBuf))
+                    if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
                     {
                         var size = statBuf?["st_size"]?.GetValue<ulong>() ?? 0;
                         if (size != 0)
@@ -794,7 +794,7 @@ public class DedubaClass
                                 continue;
                             }
                     }
-                    else if (FileSystem.IsLnk(statBuf))
+                    else if (statBuf?["S_ISLNK"]?.GetValue<bool>() ?? false)
                     {
                         string? dataIslink;
                         try
@@ -825,7 +825,7 @@ public class DedubaClass
                         hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
                         _ds = dataIslink.Length;
                     }
-                    else if (FileSystem.IsDir(statBuf))
+                    else if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
                     {
                         var dataIsdir = Sdpack(
                             Dirtmp.TryGetValue(entry, out var value) ? value : [],

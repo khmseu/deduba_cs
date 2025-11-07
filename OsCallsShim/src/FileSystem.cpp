@@ -36,51 +36,66 @@ namespace OsCalls
             value->Number = stbuf->st_mode;
             return true;
         case 3:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISDIR";
+            value->Boolean = S_ISDIR(stbuf->st_mode);
+            return true;
+        case 4:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISREG";
+            value->Boolean = S_ISREG(stbuf->st_mode);
+            return true;
+        case 5:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISLNK";
+            value->Boolean = S_ISLNK(stbuf->st_mode);
+            return true;
+        case 6:
             value->Type = TypeT::IsNumber;
             value->Name = "st_nlink";
             value->Number = stbuf->st_nlink;
             return true;
-        case 4:
+        case 7:
             value->Type = TypeT::IsNumber;
             value->Name = "st_uid";
             value->Number = stbuf->st_uid;
             return true;
-        case 5:
+        case 8:
             value->Type = TypeT::IsNumber;
             value->Name = "st_gid";
             value->Number = stbuf->st_gid;
             return true;
-        case 6:
+        case 9:
             value->Type = TypeT::IsNumber;
             value->Name = "st_rdev";
             value->Number = stbuf->st_rdev;
             return true;
-        case 7:
+        case 10:
             value->Type = TypeT::IsNumber;
             value->Name = "st_size";
             value->Number = stbuf->st_size;
             return true;
-        case 8:
+        case 11:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_atim";
             value->TimeSpec = stbuf->st_atim;
             return true;
-        case 9:
+        case 12:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_mtim";
             value->TimeSpec = stbuf->st_mtim;
             return true;
-        case 10:
+        case 13:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_ctim";
             value->TimeSpec = stbuf->st_ctim;
             return true;
-        case 11:
+        case 14:
             value->Type = TypeT::IsNumber;
             value->Name = "st_blksize";
             value->Number = stbuf->st_blksize;
             return true;
-        case 12:
+        case 15:
             value->Type = TypeT::IsNumber;
             value->Name = "st_blocks";
             value->Number = stbuf->st_blocks;
