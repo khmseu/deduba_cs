@@ -703,21 +703,8 @@ public class DedubaClass
             )
             {
                 Utilities.ConWrite(
-                    $"stat: {Utilities.Dumper(Utilities.D(statBuf == null ? null : new double[] {
-                    GetU64(statBuf["st_dev"]),
-                    GetU64(statBuf["st_ino"]),
-                    GetU64(statBuf["st_mode"]),
-                    GetU64(statBuf["st_nlink"]),
-                    GetU64(statBuf["st_uid"]),
-                    GetU64(statBuf["st_gid"]),
-                    GetU64(statBuf["st_rdev"]),
-                    GetU64(statBuf["st_size"]),
-                    statBuf["st_atim"]?.GetValue<double>() ?? 0,
-                    statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-                    statBuf["st_ctim"]?.GetValue<double>() ?? 0,
-                    GetU64(statBuf["st_blksize"]),
-                    GetU64(statBuf["st_blocks"])
-                }))}"
+                    $"stat: {Utilities.Dumper(Utilities.D(statBuf
+                ))}"
                 );
 
                 // 0 dev      device number of filesystem
@@ -766,36 +753,17 @@ public class DedubaClass
 
                     _packsum = 0;
                     // lstat(entry);
-                    var filteredInode =
-                        statBuf == null
-                            ? null
-                            : new double[]
-                            {
-                                GetU64(statBuf["st_dev"]),
-                                GetU64(statBuf["st_ino"]),
-                                GetU64(statBuf["st_mode"]),
-                                GetU64(statBuf["st_nlink"]),
-                                GetU64(statBuf["st_uid"]),
-                                GetU64(statBuf["st_gid"]),
-                                GetU64(statBuf["st_rdev"]),
-                                GetU64(statBuf["st_size"]),
-                                statBuf["st_atim"]?.GetValue<double>() ?? 0,
-                                statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-                                statBuf["st_ctim"]?.GetValue<double>() ?? 0,
-                                GetU64(statBuf["st_blksize"]),
-                                GetU64(statBuf["st_blocks"]),
-                            };
                     var inode = new List<object>
                     {
-                        new object?[] { filteredInode?[2], filteredInode?[3] },
-                        Usr(Convert.ToUInt32(filteredInode?[4])),
-                        Grp(Convert.ToUInt32(filteredInode?[5])),
+                        new object?[] { GetU64(statBuf?["st_mode"]), GetU64(statBuf?["st_nlink"]) },
+                        Usr(Convert.ToUInt32(GetU64(statBuf?["st_uid"]))),
+                        Grp(Convert.ToUInt32(GetU64(statBuf?["st_gid"]))),
                         new object?[]
                         {
-                            filteredInode?[6],
-                            filteredInode?[7],
-                            filteredInode?[9],
-                            filteredInode?[10],
+                            GetU64(statBuf?["st_rdev"]),
+                            GetU64(statBuf?["st_size"]),
+                            statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
+                            statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
                         },
                     };
                     string[] hashes = [];
