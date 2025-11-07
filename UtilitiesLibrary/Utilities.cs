@@ -8,17 +8,19 @@ using System.Text.Json.Serialization;
 namespace UtilitiesLibrary;
 
 /// <summary>
-/// Shared utility helpers for logging, diagnostics and pretty-printing structured data.
+///     Shared utility helpers for logging, diagnostics and pretty-printing structured data.
 /// </summary>
 public class Utilities
 {
+    private static readonly JsonSerializerOptions SerializerOptions = GenSerializerOptions();
+
     /// <summary>
-    /// Creates a name/value pair that preserves the original expression name for diagnostics.
-    /// Useful with <see cref="Dumper"/> to produce labeled debug output.
+    ///     Creates a name/value pair that preserves the original expression name for diagnostics.
+    ///     Useful with <see cref="Dumper" /> to produce labeled debug output.
     /// </summary>
     /// <param name="value">The value to capture.</param>
     /// <param name="name">Caller-supplied expression name (auto-filled by compiler).</param>
-    /// <returns>A labeled <see cref="KeyValuePair{TKey,TValue}"/> suitable for dumping.</returns>
+    /// <returns>A labeled <see cref="KeyValuePair{TKey,TValue}" /> suitable for dumping.</returns>
     public static KeyValuePair<string, object?> D(
         object? value,
         [CallerArgumentExpression(nameof(value))] string name = ""
@@ -28,8 +30,8 @@ public class Utilities
     }
 
     /// <summary>
-    /// Retrieves the version string from the calling assembly's InformationalVersion attribute.
-    /// This includes the semantic version and git commit hash when using MinVer.
+    ///     Retrieves the version string from the calling assembly's InformationalVersion attribute.
+    ///     This includes the semantic version and git commit hash when using MinVer.
     /// </summary>
     /// <returns>Version string (e.g., "0.1.0-alpha.5+sha.abc1234") or "unknown" if not available.</returns>
     public static string GetVersion()
@@ -56,13 +58,11 @@ public class Utilities
         return Options;
     }
 
-    private static readonly JsonSerializerOptions SerializerOptions = GenSerializerOptions();
-
     /// <summary>
-    /// Serializes the provided labeled values into a multi-line, human-readable string using JSON.
-    /// Intended for debug logging and structured trace output.
+    ///     Serializes the provided labeled values into a multi-line, human-readable string using JSON.
+    ///     Intended for debug logging and structured trace output.
     /// </summary>
-    /// <param name="values">One or more labeled values produced by <see cref="D"/>.</param>
+    /// <param name="values">One or more labeled values produced by <see cref="D" />.</param>
     /// <returns>A concatenated string where each line is "name = json".</returns>
     public static string Dumper(params KeyValuePair<string, object?>[] values)
     {
@@ -86,8 +86,8 @@ public class Utilities
     // errors
     // ReSharper disable ExplicitCallerInfoArgument
     /// <summary>
-    /// Logs a generic error using a synthetic exception and caller info.
-    /// Prefer the overload that accepts an <see cref="Exception"/> when available.
+    ///     Logs a generic error using a synthetic exception and caller info.
+    ///     Prefer the overload that accepts an <see cref="Exception" /> when available.
     /// </summary>
     /// <param name="file">Logical file or resource name related to the error.</param>
     /// <param name="op">Operation being performed when the error occurred.</param>
@@ -113,17 +113,17 @@ public class Utilities
     }
 
     /// <summary>
-    /// When true, also writes diagnostic output to the console in addition to the log file.
+    ///     When true, also writes diagnostic output to the console in addition to the log file.
     /// </summary>
     public static bool Testing = true;
 
     /// <summary>
-    /// Log stream used by the backup process. When null, errors will be rethrown.
+    ///     Log stream used by the backup process. When null, errors will be rethrown.
     /// </summary>
     public static StreamWriter? _log;
 
     /// <summary>
-    /// Logs an error with full exception details, including inner exceptions, stack, and attached data.
+    ///     Logs an error with full exception details, including inner exceptions, stack, and attached data.
     /// </summary>
     /// <param name="file">Logical file or resource name related to the error.</param>
     /// <param name="op">Operation being performed when the error occurred.</param>
@@ -152,7 +152,7 @@ public class Utilities
     }
 
     /// <summary>
-    /// Writes a warning message to the console with caller context.
+    ///     Writes a warning message to the console with caller context.
     /// </summary>
     /// <param name="msg">Warning text.</param>
     /// <param name="filePath">Auto-supplied caller file path.</param>
@@ -169,7 +169,7 @@ public class Utilities
     }
 
     /// <summary>
-    /// Writes a structured message to the console including precise caller context.
+    ///     Writes a structured message to the console including precise caller context.
     /// </summary>
     /// <param name="msg">Text to write.</param>
     /// <param name="filePath">Auto-supplied caller file path.</param>
