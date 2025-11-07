@@ -58,8 +58,6 @@ export LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/De
 # Run with test archive
 dotnet run --project=DeDuBa -- <files-to-backup>
 
-# Comparative testing (C# vs Perl)
-./tester.sh  # Runs both implementations, generates diff report
 ```
 
 **Debug configurations** (`.vscode/launch.json`):
@@ -71,7 +69,7 @@ Both require `LD_LIBRARY_PATH` set correctly. Use platform input prompt (linux-x
 
 ### Testing Architecture
 
-`tester.sh` runs **both** C# and original Perl implementations, comparing log outputs via `logfilter.pl` to verify correctness during the port. Diffs are saved as `artest<date>.diff`.
+Historical note: The comparative test harness for Perl versus C# has been retired after migration to unified JSON encoding. Scripts `tester.sh`, `logfilter.pl`, and the Perl reference implementation were removed to simplify the workflow.
 
 ## Project-Specific Conventions
 

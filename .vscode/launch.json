@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "args": ["tester.sh"],
+      "args": [],
       "cwd": "${workspaceFolder}",
       "environment": [
         {
@@ -43,7 +43,7 @@
       "type": "cppdbg"
     },
     {
-      "args": ["tester.sh"],
+      "args": [],
       "console": "internalConsole",
       "cwd": "${workspaceFolder}",
       "env": {
