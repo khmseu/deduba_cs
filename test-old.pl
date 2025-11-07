@@ -384,7 +384,7 @@ sub backup_worker(@);
 
 sub backup_worker(@) {
     my @sorted = sort @_;
-    print Dumper( @_, @sorted );
+    print "### backup_worker ###\n", Dumper( @_, @sorted );
     for my $entry ( sort @_ ) {
         my ( $volume, $directories, $file ) = splitpath $entry, 0;
         print "\n", __LINE__, ' ', scalar localtime, ' ', "=" x 80, "\n"

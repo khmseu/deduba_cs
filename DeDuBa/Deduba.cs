@@ -672,6 +672,7 @@ public class DedubaClass
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
+        Utilities.ConWrite("### backup_worker ###");
         Utilities.ConWrite(
             $"Debug 1: {nameof(Backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup))})"
         );

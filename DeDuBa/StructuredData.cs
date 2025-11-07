@@ -24,8 +24,7 @@ public static class StructuredData
     /// <returns>Packed byte array</returns>
     public static byte[] Pack(object value, string name = "")
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
 
         if (Testing && !string.IsNullOrEmpty(name))
             Console.WriteLine(
@@ -68,7 +67,7 @@ public static class StructuredData
     /// </summary>
     /// <param name="data">Packed byte array</param>
     /// <returns>Unpacked object (string, numeric reference, array, or null)</returns>
-    public static object Unpack(byte[] data)
+    public static object? Unpack(byte[] data)
     {
         if (data == null || data.Length == 0)
             throw new ArgumentException("Data cannot be null or empty");
@@ -126,13 +125,16 @@ public static class StructuredData
             || type == typeof(ulong)
             || type == typeof(ushort)
             || type == typeof(sbyte)
+            || type == typeof(double) // handle double by rounding to nearest 64-bit integer (Banker's rounding)
         )
         {
+            // Convert.ToInt64(double) uses MidpointRounding.ToEven, matching .NET default rounding behavior
             numValue = Convert.ToInt64(value);
             return true;
         }
-
-        return false;
+        if (type == typeof(string) || type.IsArray)
+            return false;
+        throw new ArgumentException($"Unexpected type: {type.Name}");
     }
 
     /// <summary>
