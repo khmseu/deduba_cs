@@ -94,7 +94,7 @@ public class DedubaClass
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
         Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
-        _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE3" : "/archive/backup";
+        _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
         _dataPath = Path.Combine(_archive, "DATA");
         // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
         try
