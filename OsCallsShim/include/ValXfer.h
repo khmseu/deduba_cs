@@ -52,12 +52,12 @@ namespace OsCalls
     struct ValueT
     {
         HandleT Handle;
+        TypeT Type;
         timespec TimeSpec;
         int64_t Number;
         const char* Name;
         const char* String;
         ValueT* Complex;
-        TypeT Type;
     };
 
     /**

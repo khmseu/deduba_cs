@@ -291,6 +291,9 @@ public static unsafe class ValXfer
         /// <summary>Iteration handle and state.</summary>
         public readonly HandleT Handle;
 
+        /// <summary>Discriminator indicating which field is valid.</summary>
+        public readonly TypeT Type;
+
         /// <summary>Timespec value when Type == IsTimeSpec.</summary>
         public readonly TimeSpecT TimeSpec;
 
@@ -307,8 +310,5 @@ public static unsafe class ValXfer
 
         /// <summary>Nested structure pointer when Type == IsComplex.</summary>
         public readonly ValueT* Complex;
-
-        /// <summary>Discriminator indicating which field is valid.</summary>
-        public readonly TypeT Type;
     }
 }
