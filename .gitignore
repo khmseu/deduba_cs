@@ -487,5 +487,6 @@ docs/api/.manifest
 docs/api/*.yml
 docs/doxygen/html/
 inspectcode.xml
-perl
 nohup.out
+perl
+test.ansi

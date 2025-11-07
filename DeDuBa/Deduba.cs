@@ -24,31 +24,40 @@ public class DedubaClass
     // Represents inode metadata collected for a filesystem entry prior to packing.
     private sealed class InodeData
     {
+        [System.Text.Json.Serialization.JsonPropertyName("md")]
         public long Mode { get; init; }
-        public long NLink { get; init; }
-        public uint Uid { get; init; }
-        public string UserName { get; init; } = string.Empty;
-        public uint Gid { get; init; }
-        public string GroupName { get; init; } = string.Empty;
-        public long RDev { get; init; }
-        public long Size { get; init; }
-        public double MTime { get; init; }
-        public double CTime { get; init; }
-        public IEnumerable<string> Hashes { get; set; } = Array.Empty<string>();
 
-        // Preserve original JSON packing shape: [ [mode,nlink], [uid,name], [gid,name], [rdev,size,mtime,ctime], hashes ]
-        public object ToArray()
-        {
-            return new List<object>
-            {
-                new object?[] { Mode, NLink },
-                new object?[] { (ulong)Uid, UserName },
-                new object?[] { (ulong)Gid, GroupName },
-                new object?[] { RDev, Size, MTime, CTime },
-                Hashes.ToArray(),
-            };
-        }
+        [System.Text.Json.Serialization.JsonPropertyName("nl")]
+        public long NLink { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("ui")]
+        public uint Uid { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("un")]
+        public string UserName { get; init; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("gi")]
+        public uint Gid { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gn")]
+        public string GroupName { get; init; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("rd")]
+        public long RDev { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("sz")]
+        public long Size { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("mt")]
+        public double MTime { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("ct")]
+        public double CTime { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("hs")]
+        public IEnumerable<string> Hashes { get; set; } = [];
     }
+
     private const long Chunksize = 1024 * 1024 * 1024;
 
     private static string? _startTimestamp;
@@ -555,6 +564,8 @@ public class DedubaClass
             Utilities.ConWrite(
                 $"{name}: {Utilities.Dumper(Utilities.D(v?.GetType().FullName), Utilities.D(v))}"
             );
+        if (v is InodeData inode)
+            return JsonSerializer.Serialize(inode, typeof(InodeData));
         return JsonSerializer.Serialize(v);
     }
 
@@ -790,9 +801,25 @@ public class DedubaClass
                         Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
                         NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
                         Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
-                        UserName = UserGroupDatabase.GetPwUid(Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0))["pw_name"]?.ToString() ?? Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0).ToString(),
+                        UserName =
+                            UserGroupDatabase
+                                .GetPwUid(
+                                    Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
+                                )["pw_name"]
+                                ?.ToString()
+                            ?? Convert
+                                .ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
+                                .ToString(),
                         Gid = Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0),
-                        GroupName = UserGroupDatabase.GetGrGid(Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0))["gr_name"]?.ToString() ?? Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0).ToString(),
+                        GroupName =
+                            UserGroupDatabase
+                                .GetGrGid(
+                                    Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
+                                )["gr_name"]
+                                ?.ToString()
+                            ?? Convert
+                                .ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
+                                .ToString(),
                         RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
                         Size = statBuf?["st_size"]?.GetValue<long>() ?? 0,
                         MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
@@ -878,7 +905,7 @@ public class DedubaClass
                     if (Utilities.Testing)
                         Utilities.ConWrite($"data: {Utilities.Dumper(Utilities.D(hashes))}");
                     inodeData.Hashes = hashes;
-                    var data = Sdpack(inodeData.ToArray(), "inode");
+                    var data = Sdpack(inodeData, "inode");
                     if (Utilities.Testing)
                     {
                         Utilities.ConWrite(Utilities.Dumper(Utilities.D(data)));
