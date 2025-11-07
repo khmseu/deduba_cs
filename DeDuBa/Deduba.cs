@@ -180,7 +180,7 @@ public class DedubaClass
                         throw;
                     }
 
-                    var i = GetU64(st["st_dev"]);
+                    var i = st["st_dev"]?.GetValue<ulong>() ?? 0;
                     Devices.TryAdd(i, 0);
                     Devices[i]++;
                 }
@@ -693,7 +693,7 @@ public class DedubaClass
                 Utilities.Error(entry, nameof(FileSystem.LStat), ex);
             }
 
-            var stDev = GetU64(statBuf?["st_dev"]);
+            var stDev = statBuf?["st_dev"]?.GetValue<ulong>() ?? 0;
             if (Utilities.Testing)
                 Utilities.ConWrite(Utilities.Dumper(Utilities.D(stDev)));
             if (
@@ -721,7 +721,11 @@ public class DedubaClass
                 // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                 // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
                 var fsfid = Sdpack(
-                    new List<object?> { GetU64(statBuf?["st_dev"]), GetU64(statBuf?["st_ino"]) },
+                    new List<object?>
+                    {
+                        statBuf?["st_dev"]?.GetValue<ulong>() ?? 0,
+                        statBuf?["st_ino"]?.GetValue<ulong>() ?? 0,
+                    },
                     "fsfid"
                 );
                 var old = Fs2Ino.ContainsKey(fsfid);
@@ -755,13 +759,17 @@ public class DedubaClass
                     // lstat(entry);
                     var inode = new List<object>
                     {
-                        new object?[] { GetU64(statBuf?["st_mode"]), GetU64(statBuf?["st_nlink"]) },
-                        Usr(Convert.ToUInt32(GetU64(statBuf?["st_uid"]))),
-                        Grp(Convert.ToUInt32(GetU64(statBuf?["st_gid"]))),
                         new object?[]
                         {
-                            GetU64(statBuf?["st_rdev"]),
-                            GetU64(statBuf?["st_size"]),
+                            statBuf?["st_mode"]?.GetValue<ulong>() ?? 0,
+                            statBuf?["st_nlink"]?.GetValue<ulong>() ?? 0,
+                        },
+                        Usr(Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<ulong>() ?? 0)),
+                        Grp(Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<ulong>() ?? 0)),
+                        new object?[]
+                        {
+                            statBuf?["st_rdev"]?.GetValue<ulong>() ?? 0,
+                            statBuf?["st_size"]?.GetValue<ulong>() ?? 0,
                             statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
                             statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
                         },
@@ -771,7 +779,7 @@ public class DedubaClass
                     MemoryStream mem;
                     if (FileSystem.IsReg(statBuf))
                     {
-                        var size = GetU64(statBuf?["st_size"]);
+                        var size = statBuf?["st_size"]?.GetValue<ulong>() ?? 0;
                         if (size != 0)
                             try
                             {
@@ -877,11 +885,12 @@ public class DedubaClass
                         Utilities.ConWrite(
                             $"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}"
                         );
-                    report = $"[{GetU64(statBuf?["st_size"]):d} -> {_packsum:d}: {needed:c}s]";
+                    report =
+                        $"[{statBuf?["st_size"]?.GetValue<ulong>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
                 }
                 else
                 {
-                    report = $"[{GetU64(statBuf?["st_size"]):d} -> duplicate]";
+                    report = $"[{statBuf?["st_size"]?.GetValue<ulong>() ?? 0:d} -> duplicate]";
                 }
 
                 if (!Dirtmp.ContainsKey(dir))
@@ -902,42 +911,5 @@ public class DedubaClass
             if (Utilities.Testing)
                 Utilities.ConWrite($"{"_".Repeat(80)}\n");
         }
-    }
-
-    /// <summary>
-    /// Helper to safely read unsigned 64-bit values from a <see cref="JsonNode"/> that may contain
-    /// ulong/long/double/string representations coming from the native layer.
-    /// </summary>
-    private static ulong GetU64(JsonNode? node)
-    {
-        if (node is null)
-            return 0;
-        try
-        {
-            return node.GetValue<ulong>();
-        }
-        catch { }
-        try
-        {
-            return unchecked((ulong)node.GetValue<long>());
-        }
-        catch { }
-        try
-        {
-            var d = node.GetValue<double>();
-            if (d >= 0)
-                return (ulong)d;
-        }
-        catch { }
-        try
-        {
-            var s = node.GetValue<string>();
-            if (ulong.TryParse(s, out var u))
-                return u;
-            if (long.TryParse(s, out var l))
-                return unchecked((ulong)l);
-        }
-        catch { }
-        return 0;
     }
 }
