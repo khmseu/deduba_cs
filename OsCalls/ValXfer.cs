@@ -291,6 +291,10 @@ public static unsafe class ValXfer
         /// <summary>Iteration handle and state.</summary>
         public readonly HandleT Handle;
 
+        /// <summary>Field/key name or "[]" for array items.</summary>
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public readonly IntPtr Name;
+
         /// <summary>Discriminator indicating which field is valid.</summary>
         public readonly TypeT Type;
 
@@ -299,10 +303,6 @@ public static unsafe class ValXfer
 
         /// <summary>Integer value when Type == IsNumber.</summary>
         public readonly Int64 Number;
-
-        /// <summary>Field/key name or "[]" for array items.</summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)]
-        public readonly IntPtr Name;
 
         /// <summary>String value pointer when Type == IsString.</summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
