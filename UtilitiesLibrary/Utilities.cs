@@ -45,7 +45,7 @@ public class Utilities
 
     private static JsonSerializerOptions GenSerializerOptions()
     {
-        JsonSerializerOptions Options = new()
+        JsonSerializerOptions options = new()
         {
             IgnoreReadOnlyFields = false,
             IgnoreReadOnlyProperties = false,
@@ -54,8 +54,8 @@ public class Utilities
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
-        Options.Converters.Add(new JsonStringEnumConverter());
-        return Options;
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class Utilities
     /// <summary>
     ///     Log stream used by the backup process. When null, errors will be rethrown.
     /// </summary>
-    public static StreamWriter? _log;
+    public static StreamWriter? Log;
 
     /// <summary>
     ///     Logs an error with full exception details, including inner exceptions, stack, and attached data.
@@ -145,8 +145,8 @@ public class Utilities
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n{Dumper(D(ex.Data))}\n";
         if (Testing)
             ConWrite(msg, filePath, lineNumber, callerMemberName);
-        if (_log != null)
-            _log.Write(msg);
+        if (Log != null)
+            Log.Write(msg);
         else
             throw new Exception(msg, ex);
     }

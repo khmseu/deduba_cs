@@ -184,48 +184,47 @@ public static unsafe class ValXfer
     public sealed class ValueObject
     {
         /// <summary>Iteration handle snapshot.</summary>
-        public HandleObject Handle { get; set; } = new();
+        public HandleObject Handle { get; init; } = new();
 
         /// <summary>Timespec components.</summary>
-        public long TvSec { get; set; }
+        public long TvSec { get; init; }
 
         /// <summary>Nanoseconds component of the timespec when <see cref="Type" /> is <see cref="TypeT.IsTimeSpec" />.</summary>
-        public long TvNsec { get; set; }
+        public long TvNsec { get; init; }
 
         /// <summary>Numeric value when <see cref="Type" /> is <see cref="TypeT.IsNumber" />.</summary>
-        public long Number { get; set; }
+        public long Number { get; init; }
 
         /// <summary>Field/key name ("[]" for array items).</summary>
-        public string? Name { get; set; }
+        public string? Name { get; init; }
 
         /// <summary>String value when <see cref="Type" /> is <see cref="TypeT.IsString" />.</summary>
-        public string? String { get; set; }
+        public string? String { get; init; }
 
         /// <summary>Boolean value when <see cref="Type" /> is <see cref="TypeT.IsBoolean" />.</summary>
-        public bool Boolean { get; set; }
+        public bool Boolean { get; init; }
 
         /// <summary>Nested structure (optional, see <see cref="ToObject(ValueT*, int)" />).</summary>
         public ValueObject? Complex { get; set; }
 
         /// <summary>Discriminator indicating which field is valid.</summary>
-        public TypeT Type { get; set; }
+        public TypeT Type { get; init; }
 
         /// <summary>
         ///     Returns a string representation of this value based on its <see cref="Type" />.
         /// </summary>
         public override string ToString()
         {
-            var handleInfo = $"[{Handle.Index}]";
             return Type switch
             {
-                TypeT.IsNumber => $"{handleInfo} {Name}: {Number}",
-                TypeT.IsString => $"{handleInfo} {Name}: \"{String}\"",
-                TypeT.IsBoolean => $"{handleInfo} {Name}: {Boolean}",
-                TypeT.IsTimeSpec => $"{handleInfo} {Name}: {TvSec}.{TvNsec:D9}s",
-                TypeT.IsComplex => $"{handleInfo} {Name}: [Complex]",
-                TypeT.IsError => $"{handleInfo} {Name}: [Error {Number}]",
-                TypeT.IsOk => $"{handleInfo} {Name}: [OK]",
-                _ => $"{handleInfo} {Name}: [Unknown type {Type}]",
+                TypeT.IsNumber => $"[{Handle}] {Name}: {Number}",
+                TypeT.IsString => $"[{Handle}] {Name}: \"{String}\"",
+                TypeT.IsBoolean => $"[{Handle}] {Name}: {Boolean}",
+                TypeT.IsTimeSpec => $"[{Handle}] {Name}: {TvSec}.{TvNsec:D9}s",
+                TypeT.IsComplex => $"[{Handle}] {Name}: [{Complex}]",
+                TypeT.IsError => $"[{Handle}] {Name}: [Error {Number}]",
+                TypeT.IsOk => $"[{Handle}] {Name}: [OK]",
+                _ => $"[{Handle}] {Name}: [Unknown type {Type}]",
             };
         }
 
@@ -235,13 +234,13 @@ public static unsafe class ValXfer
         public sealed class HandleObject
         {
             /// <summary>Current iteration index as reported by the native handle.</summary>
-            public long Index { get; set; }
+            public long Index { get; init; }
 
             /// <summary>First user data pointer associated with the native handle (as unsigned integer).</summary>
-            public ulong Data1 { get; set; }
+            public ulong Data1 { get; init; }
 
             /// <summary>Second user data pointer associated with the native handle (as unsigned integer).</summary>
-            public ulong Data2 { get; set; }
+            public ulong Data2 { get; init; }
 
             /// <summary>
             ///     Returns a compact string representation for diagnostics.

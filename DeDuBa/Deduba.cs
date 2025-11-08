@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -126,7 +124,7 @@ public class DedubaClass
         {
             try
             {
-                Utilities._log = new StreamWriter(logname);
+                Utilities.Log = new StreamWriter(logname);
             }
             catch (Exception ex)
             {
@@ -135,7 +133,7 @@ public class DedubaClass
             } // STDOUT->autoflush(1);
 
             // STDERR->autoflush(1);
-            Utilities._log.AutoFlush = true;
+            Utilities.Log.AutoFlush = true;
 
             //#############################################################################
             // Main program
@@ -244,18 +242,18 @@ public class DedubaClass
                 // untie %preflist;
                 // unlink "$tmpp.arlist", "$tmpp.preflist";
 
-                Utilities._log?.Close();
+                Utilities.Log.Close();
 
                 Utilities.ConWrite("Backup done\n");
             }
             catch (Exception ex)
             {
-                Utilities.Error(logname, nameof(Utilities._log.Close), ex);
+                Utilities.Error(logname, nameof(Utilities.Log.Close), ex);
             }
         }
         finally
         {
-            Utilities._log?.Close();
+            Utilities.Log?.Close();
         }
     }
 
@@ -453,29 +451,6 @@ public class DedubaClass
     }
 
     /// <summary>
-    ///     Variable-length integer encoder (7-bit continuation) used by the custom pack format.
-    ///     Only encodes non-negative values.
-    /// </summary>
-    private static string pack_w<TNum>(TNum value)
-        where TNum : INumber<TNum>
-    {
-        if (TNum.IsNegative(value))
-            throw new InvalidOperationException(
-                "Cannot compress negative numbers in " + nameof(pack_w)
-            );
-        var buf = new byte[Marshal.SizeOf(typeof(TNum)) * 8 / 7 + 1];
-        var inIndex = buf.Length;
-        do
-        {
-            buf[--inIndex] = (byte)(((dynamic)value & 0x7F) | 0x80);
-            value = (TNum)((dynamic)value >> 7);
-        } while ((dynamic)value > 0);
-
-        buf[^1] &= 0x7F; /* clear continue bit */
-        return new string([.. buf.Skip(inIndex).Select(b => (char)b)]);
-    }
-
-    /// <summary>
     ///     Decodes a variable-length integer from a string starting at the given offset.
     /// </summary>
     /// <param name="value">Encoded data.</param>
@@ -539,22 +514,6 @@ public class DedubaClass
     private static object? Sdunpack(string value)
     {
         return JsonSerializer.Deserialize<object>(value);
-    }
-
-    /// <summary>
-    ///     Expands a UID into [uid, name] using the user database.
-    /// </summary>
-    private static object[] Usr(uint uid)
-    {
-        return [uid, UserGroupDatabase.GetPwUid(uid)["pw_name"]?.ToString() ?? uid.ToString()];
-    }
-
-    /// <summary>
-    ///     Expands a GID into [gid, name] using the group database.
-    /// </summary>
-    private static object[] Grp(uint gid)
-    {
-        return [gid, UserGroupDatabase.GetGrGid(gid)["gr_name"]?.ToString() ?? gid.ToString()];
     }
 
     /// <summary>
@@ -793,7 +752,7 @@ public class DedubaClass
                     MemoryStream mem;
                     if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
                     {
-                        var size = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                        var size = statBuf["st_size"]?.GetValue<long>() ?? 0;
                         if (size != 0)
                             try
                             {
@@ -912,7 +871,7 @@ public class DedubaClass
                     Dirtmp[dir] = [];
                 if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
                     Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
-                Utilities._log?.Write(
+                Utilities.Log?.Write(
                     $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
                 );
                 if (Utilities.Testing)
@@ -963,5 +922,15 @@ public class DedubaClass
 
         [JsonPropertyName("hs")]
         public IEnumerable<string> Hashes { get; set; } = [];
+
+        /// <summary>
+        ///     Returns a compact string representation for diagnostics.
+        /// </summary>
+        public override string ToString()
+        {
+            var hashCount = Hashes.Count();
+            var hashInfo = hashCount > 0 ? $"{hashCount} hash(es)" : "no hashes";
+            return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo}]";
+        }
     }
 }
