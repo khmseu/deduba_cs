@@ -601,173 +601,196 @@ public class DedubaClass
             _statusQueueTotal += filesToBackup.Length;
             foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
             {
-            var volume = Path.GetPathRoot(entry);
-            var directories = Path.GetDirectoryName(entry);
-            var file = Path.GetFileName(entry);
-            var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
-            var name = file;
-            JsonNode? statBuf = null;
+                var volume = Path.GetPathRoot(entry);
+                var directories = Path.GetDirectoryName(entry);
+                var file = Path.GetFileName(entry);
+                var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
+                var name = file;
+                JsonNode? statBuf = null;
 
-            // $dir is the current directory name,
-            // $name is the current filename within that directory
-            // $entry is the complete pathname to the file.
-            var start = DateTime.Now;
-            try
-            {
-                statBuf = FileSystem.LStat(entry);
-                if (statBuf == null)
-                    throw new Win32Exception("null statBuf");
-                // var sb = statBuf.Value;
-                // Utilities.ConWrite(
-                //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
-            }
-            catch (Exception ex)
-            {
-                Utilities.Error(entry, nameof(FileSystem.LStat), ex);
-            }
-
-            var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
-            if (
-                Devices.ContainsKey(stDev)
-                && _dataPath != null
-                && Path.GetRelativePath(_dataPath, entry).StartsWith("..")
-            )
-            {
-                // 0 dev      device number of filesystem
-                // 1 ino      inode number
-                // 2 mode     file mode  (type and permissions)
-                // 3 nlink    number of (hard) links to the file
-                // 4 uid      numeric user ID of file's owner
-                // 5 gid      numeric group ID of file's owner
-                // 6 rdev     the device identifier (special files only)
-                // 7 size     total size of file, in bytes
-                // 8 atime    last access time in seconds since the epoch
-                // 9 mtime    last modify time in seconds since the epoch
-                // # 10 ctime    inode change time in seconds since the epoch (*)
-                // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
-                // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                var fsfid = Sdpack(
-                    new List<object?>
-                    {
-                        statBuf?["st_dev"]?.GetValue<long>() ?? 0,
-                        statBuf?["st_ino"]?.GetValue<long>() ?? 0,
-                    },
-                    "fsfid"
-                );
-                var old = Fs2Ino.ContainsKey(fsfid);
-                string report;
-                if (!old)
+                // $dir is the current directory name,
+                // $name is the current filename within that directory
+                // $entry is the complete pathname to the file.
+                var start = DateTime.Now;
+                try
                 {
-                    Fs2Ino[fsfid] = Sdpack(null, "");
-                    if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                        while (true)
-                            try
-                            {
-                                var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                                // Enqueue children into total queue before processing them
-                                _statusQueueTotal += entries.Length;
-                                Backup_worker(
-                                    [
-                                        .. entries
-                                            .Where(x => !x.StartsWith(".."))
-                                            .Select(x => Path.Combine(entry, x)),
-                                    ]
-                                );
-                            }
-                            catch (Exception ex)
-                            {
-                                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
-                            }
+                    statBuf = FileSystem.LStat(entry);
+                    if (statBuf == null)
+                        throw new Win32Exception("null statBuf");
+                    // var sb = statBuf.Value;
+                    // Utilities.ConWrite(
+                    //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
+                }
+                catch (Exception ex)
+                {
+                    Utilities.Error(entry, nameof(FileSystem.LStat), ex);
+                }
 
-                    _packsum = 0;
-                    // lstat(entry);
-                    var inodeData = new InodeData
+                var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
+                if (
+                    Devices.ContainsKey(stDev)
+                    && _dataPath != null
+                    && Path.GetRelativePath(_dataPath, entry).StartsWith("..")
+                )
+                {
+                    // 0 dev      device number of filesystem
+                    // 1 ino      inode number
+                    // 2 mode     file mode  (type and permissions)
+                    // 3 nlink    number of (hard) links to the file
+                    // 4 uid      numeric user ID of file's owner
+                    // 5 gid      numeric group ID of file's owner
+                    // 6 rdev     the device identifier (special files only)
+                    // 7 size     total size of file, in bytes
+                    // 8 atime    last access time in seconds since the epoch
+                    // 9 mtime    last modify time in seconds since the epoch
+                    // # 10 ctime    inode change time in seconds since the epoch (*)
+                    // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
+                    // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
+                    var fsfid = Sdpack(
+                        new List<object?>
+                        {
+                            statBuf?["st_dev"]?.GetValue<long>() ?? 0,
+                            statBuf?["st_ino"]?.GetValue<long>() ?? 0,
+                        },
+                        "fsfid"
+                    );
+                    var old = Fs2Ino.ContainsKey(fsfid);
+                    string report;
+                    if (!old)
                     {
-                        Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
-                        NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
-                        Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
-                        UserName =
-                            UserGroupDatabase
-                                .GetPwUid(
-                                    Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
-                                )["pw_name"]
-                                ?.ToString()
-                            ?? Convert
-                                .ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
-                                .ToString(),
-                        Gid = Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0),
-                        GroupName =
-                            UserGroupDatabase
-                                .GetGrGid(
-                                    Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
-                                )["gr_name"]
-                                ?.ToString()
-                            ?? Convert
-                                .ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
-                                .ToString(),
-                        RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
-                        Size = statBuf?["st_size"]?.GetValue<long>() ?? 0,
-                        MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
-                        CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
-                    };
-                    string[] hashes = [];
-                    _ds = 0;
-                    MemoryStream mem;
-                    if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
-                    {
-                        var size = statBuf["st_size"]?.GetValue<long>() ?? 0;
-                        if (size != 0)
+                        Fs2Ino[fsfid] = Sdpack(null, "");
+                        if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
+                            while (true)
+                                try
+                                {
+                                    var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
+                                    // Enqueue children into total queue before processing them
+                                    _statusQueueTotal += entries.Length;
+                                    Backup_worker(
+                                        [
+                                            .. entries
+                                                .Where(x => !x.StartsWith(".."))
+                                                .Select(x => Path.Combine(entry, x)),
+                                        ]
+                                    );
+                                }
+                                catch (Exception ex)
+                                {
+                                    Utilities.Error(
+                                        entry,
+                                        nameof(Directory.GetFileSystemEntries),
+                                        ex
+                                    );
+                                }
+
+                        _packsum = 0;
+                        // lstat(entry);
+                        var inodeData = new InodeData
+                        {
+                            Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
+                            NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
+                            Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
+                            UserName =
+                                UserGroupDatabase
+                                    .GetPwUid(
+                                        Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
+                                    )["pw_name"]
+                                    ?.ToString()
+                                ?? Convert
+                                    .ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
+                                    .ToString(),
+                            Gid = Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0),
+                            GroupName =
+                                UserGroupDatabase
+                                    .GetGrGid(
+                                        Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
+                                    )["gr_name"]
+                                    ?.ToString()
+                                ?? Convert
+                                    .ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
+                                    .ToString(),
+                            RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
+                            Size = statBuf?["st_size"]?.GetValue<long>() ?? 0,
+                            MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
+                            CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
+                        };
+                        string[] hashes = [];
+                        _ds = 0;
+                        MemoryStream mem;
+                        if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
+                        {
+                            var size = statBuf["st_size"]?.GetValue<long>() ?? 0;
+                            if (size != 0)
+                                try
+                                {
+                                    var fileStream = File.OpenRead(entry);
+                                    hashes = [.. Save_file(fileStream, size, entry)];
+                                }
+                                catch (Exception ex)
+                                {
+                                    Utilities.Error(entry, nameof(File.OpenRead), ex);
+                                    continue;
+                                }
+                        }
+                        else if (statBuf?["S_ISLNK"]?.GetValue<bool>() ?? false)
+                        {
+                            string? dataIslink;
                             try
                             {
-                                var fileStream = File.OpenRead(entry);
-                                hashes = [.. Save_file(fileStream, size, entry)];
+                                dataIslink = FileSystem.ReadLink(entry).GetValue<string>();
                             }
                             catch (Exception ex)
                             {
-                                Utilities.Error(entry, nameof(File.OpenRead), ex);
+                                Utilities.Error(entry, nameof(FileSystem.ReadLink), ex);
                                 continue;
                             }
-                    }
-                    else if (statBuf?["S_ISLNK"]?.GetValue<bool>() ?? false)
-                    {
-                        string? dataIslink;
-                        try
-                        {
-                            dataIslink = FileSystem.ReadLink(entry).GetValue<string>();
+
+                            var size = dataIslink.Length;
+                            MemoryStream? mem1 = null;
+                            try
+                            {
+                                var dataBytes = Encoding.UTF8.GetBytes(dataIslink);
+                                mem1 = new MemoryStream(dataBytes);
+                            }
+                            catch (Exception ex)
+                            {
+                                Utilities.Error(entry, nameof(MemoryStream), ex);
+                            }
+
+                            // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
+                            hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
+                            _ds = dataIslink.Length;
                         }
-                        catch (Exception ex)
+                        else if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
                         {
-                            Utilities.Error(entry, nameof(FileSystem.ReadLink), ex);
-                            continue;
+                            var dataIsdir = Sdpack(
+                                Dirtmp.TryGetValue(entry, out var value) ? value : [],
+                                "dir"
+                            );
+                            Dirtmp.Remove(entry);
+                            var size = dataIsdir.Length;
+                            try
+                            {
+                                var dataBytes = Encoding.UTF8.GetBytes(dataIsdir);
+                                mem = new MemoryStream(dataBytes);
+                            }
+                            catch (Exception ex)
+                            {
+                                Utilities.Error(entry, nameof(MemoryStream), ex);
+                                continue;
+                            }
+
+                            // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
+                            hashes = [.. Save_file(mem, size, $"{entry} $data $dirtmp")];
+                            _ds = dataIsdir.Length;
                         }
 
-                        var size = dataIslink.Length;
-                        MemoryStream? mem1 = null;
-                        try
-                        {
-                            var dataBytes = Encoding.UTF8.GetBytes(dataIslink);
-                            mem1 = new MemoryStream(dataBytes);
-                        }
-                        catch (Exception ex)
-                        {
-                            Utilities.Error(entry, nameof(MemoryStream), ex);
-                        }
+                        inodeData.Hashes = hashes;
+                        var data = Sdpack(inodeData, "inode");
 
-                        // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
-                        _ds = dataIslink.Length;
-                    }
-                    else if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                    {
-                        var dataIsdir = Sdpack(
-                            Dirtmp.TryGetValue(entry, out var value) ? value : [],
-                            "dir"
-                        );
-                        Dirtmp.Remove(entry);
-                        var size = dataIsdir.Length;
                         try
                         {
-                            var dataBytes = Encoding.UTF8.GetBytes(dataIsdir);
+                            var dataBytes = Encoding.UTF8.GetBytes(data);
                             mem = new MemoryStream(dataBytes);
                         }
                         catch (Exception ex)
@@ -776,79 +799,60 @@ public class DedubaClass
                             continue;
                         }
 
-                        // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                        hashes = [.. Save_file(mem, size, $"{entry} $data $dirtmp")];
-                        _ds = dataIsdir.Length;
+                        // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
+                        hashes = [.. Save_file(mem, data.Length, $"{entry} $data @inode")];
+                        var ino = Sdpack(hashes, "fileid");
+                        Fs2Ino[fsfid] = ino;
+                        TimeSpan? needed = DateTime.Now.Subtract(start);
+                        var speed =
+                            needed.Value.TotalSeconds > 0
+                                ? (double?)_ds / needed.Value.TotalSeconds
+                                : null;
+                        report =
+                            $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
                     }
-
-                    inodeData.Hashes = hashes;
-                    var data = Sdpack(inodeData, "inode");
-
-                    try
+                    else
                     {
-                        var dataBytes = Encoding.UTF8.GetBytes(data);
-                        mem = new MemoryStream(dataBytes);
-                    }
-                    catch (Exception ex)
-                    {
-                        Utilities.Error(entry, nameof(MemoryStream), ex);
-                        continue;
+                        report = $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> duplicate]";
                     }
 
-                    // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
-                    hashes = [.. Save_file(mem, data.Length, $"{entry} $data @inode")];
-                    var ino = Sdpack(hashes, "fileid");
-                    Fs2Ino[fsfid] = ino;
-                    TimeSpan? needed = DateTime.Now.Subtract(start);
-                    var speed =
-                        needed.Value.TotalSeconds > 0
-                            ? (double?)_ds / needed.Value.TotalSeconds
-                            : null;
-                    report =
-                        $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
+                    if (!Dirtmp.ContainsKey(dir))
+                        Dirtmp[dir] = [];
+                    if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
+                        Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
+                    Utilities.Log?.Write(
+                        $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
+                    );
+                    // File or directory completed -> update counters and status line
+                    var isDir = statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false;
+                    if (isDir)
+                        _statusDirsDone++;
+                    else
+                        _statusFilesDone++;
+                    var queuedRemaining = Math.Max(
+                        0,
+                        _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
+                    );
+                    // Percent for completed item is 100; for directory we don't compute size percent
+                    var sizeFinal = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                    var percentDone =
+                        sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
+                            ? 100.0
+                            : double.NaN;
+                    Utilities.Status(
+                        _statusFilesDone,
+                        _statusDirsDone,
+                        queuedRemaining,
+                        _statusBytesDone,
+                        entry,
+                        percentDone
+                    );
                 }
                 else
                 {
-                    report = $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> duplicate]";
+                    Utilities.Error(entry, "pruning");
                 }
-
-                if (!Dirtmp.ContainsKey(dir))
-                    Dirtmp[dir] = [];
-                if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
-                    Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
-                Utilities.Log?.Write(
-                    $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
-                );
-                // File or directory completed -> update counters and status line
-                var isDir = statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false;
-                if (isDir)
-                    _statusDirsDone++;
-                else
-                    _statusFilesDone++;
-                var queuedRemaining = Math.Max(
-                    0,
-                    _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
-                );
-                // Percent for completed item is 100; for directory we don't compute size percent
-                var sizeFinal = statBuf?["st_size"]?.GetValue<long>() ?? 0;
-                var percentDone =
-                    sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                        ? 100.0
-                        : double.NaN;
-                Utilities.Status(
-                    _statusFilesDone,
-                    _statusDirsDone,
-                    queuedRemaining,
-                    _statusBytesDone,
-                    entry,
-                    percentDone
-                );
             }
-            else
-            {
-                Utilities.Error(entry, "pruning");
-            }
-        }
         }
         finally
         {
