@@ -592,15 +592,15 @@ public class DedubaClass
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
-    // Suppress verbose debug output while running the worker; errors still print (colorized)
-    var prevTesting = Utilities.Testing;
-    Utilities.Testing = false;
-    try
-    {
-        // Initialize queue total for this invocation (accumulates for recursive calls)
-        _statusQueueTotal += filesToBackup.Length;
-        foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
+        // Suppress verbose debug output while running the worker; errors still print (colorized)
+        var prevTesting = Utilities.Testing;
+        Utilities.Testing = false;
+        try
         {
+            // Initialize queue total for this invocation (accumulates for recursive calls)
+            _statusQueueTotal += filesToBackup.Length;
+            foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
+            {
             var volume = Path.GetPathRoot(entry);
             var directories = Path.GetDirectoryName(entry);
             var file = Path.GetFileName(entry);
@@ -719,7 +719,6 @@ public class DedubaClass
                         if (size != 0)
                             try
                             {
-                                var sizeForPercent = statBuf?["st_size"]?.GetValue<long>() ?? 0;
                                 var fileStream = File.OpenRead(entry);
                                 hashes = [.. Save_file(fileStream, size, entry)];
                             }
