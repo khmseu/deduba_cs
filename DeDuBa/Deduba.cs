@@ -564,7 +564,7 @@ public class DedubaClass
                 // Update global byte counter and live status line
                 _statusBytesDone += n12;
                 var processed = total - size;
-                var percent = total > 0 ? (processed * 100.0) / total : double.NaN;
+                var percent = total > 0 ? processed * 100.0 / total : double.NaN;
                 var queuedRemaining = Math.Max(
                     0,
                     _statusQueueTotal - (_statusFilesDone + _statusDirsDone)

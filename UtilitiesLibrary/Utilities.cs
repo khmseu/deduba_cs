@@ -155,6 +155,7 @@ public class Utilities
             // Fallback if ANSI not supported
             Console.Write($"\n{msg}");
         }
+
         if (Log != null)
             Log.Write(msg);
         else
@@ -208,12 +209,13 @@ public class Utilities
     {
         string[] units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]; // enough for backup sizes
         double value = bytes;
-        int unit = 0;
+        var unit = 0;
         while (value >= 1024.0 && unit < units.Length - 1)
         {
             value /= 1024.0;
             unit++;
         }
+
         return unit == 0 ? $"{bytes} {units[unit]}" : $"{value:0.0} {units[unit]}";
     }
 
