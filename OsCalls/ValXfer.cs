@@ -211,6 +211,25 @@ public static unsafe class ValXfer
         public TypeT Type { get; set; }
 
         /// <summary>
+        ///     Returns a string representation of this value based on its <see cref="Type" />.
+        /// </summary>
+        public override string ToString()
+        {
+            var handleInfo = $"[{Handle.Index}]";
+            return Type switch
+            {
+                TypeT.IsNumber => $"{handleInfo} {Name}: {Number}",
+                TypeT.IsString => $"{handleInfo} {Name}: \"{String}\"",
+                TypeT.IsBoolean => $"{handleInfo} {Name}: {Boolean}",
+                TypeT.IsTimeSpec => $"{handleInfo} {Name}: {TvSec}.{TvNsec:D9}s",
+                TypeT.IsComplex => $"{handleInfo} {Name}: [Complex]",
+                TypeT.IsError => $"{handleInfo} {Name}: [Error {Number}]",
+                TypeT.IsOk => $"{handleInfo} {Name}: [OK]",
+                _ => $"{handleInfo} {Name}: [Unknown type {Type}]",
+            };
+        }
+
+        /// <summary>
         ///     Managed snapshot of the native iteration handle embedded in <see cref="ValueT" />.
         /// </summary>
         public sealed class HandleObject
@@ -223,6 +242,14 @@ public static unsafe class ValXfer
 
             /// <summary>Second user data pointer associated with the native handle (as unsigned integer).</summary>
             public ulong Data2 { get; set; }
+
+            /// <summary>
+            ///     Returns a compact string representation for diagnostics.
+            /// </summary>
+            public override string ToString()
+            {
+                return $"[{Index} d1=0x{Data1:x} d2=0x{Data2:x}]";
+            }
         }
     }
 
