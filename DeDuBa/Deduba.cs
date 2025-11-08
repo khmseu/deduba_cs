@@ -849,6 +849,7 @@ public class DedubaClass
                 Utilities.Error(entry, "pruning");
             }
         }
+        }
         finally
         {
             // Ensure Testing flag is restored after this worker scope
