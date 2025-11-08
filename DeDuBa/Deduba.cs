@@ -592,6 +592,11 @@ public class DedubaClass
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
+    // Suppress verbose debug output while running the worker; errors still print (colorized)
+    var prevTesting = Utilities.Testing;
+    Utilities.Testing = false;
+    try
+    {
         // Initialize queue total for this invocation (accumulates for recursive calls)
         _statusQueueTotal += filesToBackup.Length;
         foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
@@ -628,7 +633,6 @@ public class DedubaClass
                 && Path.GetRelativePath(_dataPath, entry).StartsWith("..")
             )
             {
-
                 // 0 dev      device number of filesystem
                 // 1 ino      inode number
                 // 2 mode     file mode  (type and permissions)
@@ -660,8 +664,8 @@ public class DedubaClass
                             try
                             {
                                 var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                                if (Utilities.Testing)
-                                    Console.Write($"\t{entries.Length} entries");
+                                // Enqueue children into total queue before processing them
+                                _statusQueueTotal += entries.Length;
                                 Backup_worker(
                                     [
                                         .. entries
@@ -669,8 +673,6 @@ public class DedubaClass
                                             .Select(x => Path.Combine(entry, x)),
                                     ]
                                 );
-                                if (Utilities.Testing)
-                                    Console.WriteLine($"\tdone {entry}");
                             }
                             catch (Exception ex)
                             {
@@ -830,9 +832,10 @@ public class DedubaClass
                 );
                 // Percent for completed item is 100; for directory we don't compute size percent
                 var sizeFinal = statBuf?["st_size"]?.GetValue<long>() ?? 0;
-                var percentDone = sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                    ? 100.0
-                    : double.NaN;
+                var percentDone =
+                    sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
+                        ? 100.0
+                        : double.NaN;
                 Utilities.Status(
                     _statusFilesDone,
                     _statusDirsDone,
@@ -846,6 +849,13 @@ public class DedubaClass
             {
                 Utilities.Error(entry, "pruning");
             }
+        }
+        finally
+        {
+            // Ensure Testing flag is restored after this worker scope
+            Utilities.Testing = prevTesting;
+            // Move to next line after status updates
+            Console.WriteLine();
         }
     }
 

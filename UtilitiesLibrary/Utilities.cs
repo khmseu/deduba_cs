@@ -196,6 +196,7 @@ public class Utilities
             $"\n{lineNumber} {DateTime.Now} <{Path.GetFileName(filePath)}:{lineNumber} {callerMemberName}> {msg}"
         );
     }
+
     // ReSharper enable ExplicitCallerInfoArgument
 
     // ############################################################################
@@ -220,7 +221,14 @@ public class Utilities
     ///     Writes a single updating status line with colorized segments.
     ///     Completed numbers are green, queued numbers are yellow.
     /// </summary>
-    public static void Status(long filesDone, long dirsDone, long queued, long bytes, string currentPath, double percent)
+    public static void Status(
+        long filesDone,
+        long dirsDone,
+        long queued,
+        long bytes,
+        string currentPath,
+        double percent
+    )
     {
         // ANSI colors
         const string green = "\u001b[32m";
@@ -229,13 +237,15 @@ public class Utilities
         const string clearToEol = "\u001b[K";
 
         var bytesText = HumanizeBytes(bytes);
-        var pctText = double.IsNaN(percent) || double.IsInfinity(percent) ? "-" : percent.ToString("0.0");
+        var pctText =
+            double.IsNaN(percent) || double.IsInfinity(percent) ? "-" : percent.ToString("0.0");
         // Keep the path reasonably short if extremely long
         var path = currentPath ?? string.Empty;
         if (path.Length > 140)
             path = "…" + path[^139..];
 
-        var line = $"{green}{filesDone} files {dirsDone} dirs{reset} | {yellow}{queued} queued{reset} | {green}{bytesText}{reset} | {path} {yellow}{pctText}%{reset}";
+        var line =
+            $"{green}{filesDone} files {dirsDone} dirs{reset} | {yellow}{queued} queued{reset} | {green}{bytesText}{reset} | {path} {yellow}{pctText}%{reset}";
         Console.Write($"\r{line}{clearToEol}");
     }
 }
