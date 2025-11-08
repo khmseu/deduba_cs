@@ -143,8 +143,18 @@ public class Utilities
         if (ex.InnerException != null)
             Error(file, op, ex.InnerException, filePath, lineNumber, callerMemberName);
         var msg = $"*** {file}: {op}: {ex.Message}\n{ex.StackTrace}\n{Dumper(D(ex.Data))}\n";
-        if (Testing)
-            ConWrite(msg, filePath, lineNumber, callerMemberName);
+        // Always write errors to console in red, regardless of Testing
+        try
+        {
+            const string red = "\u001b[31m";
+            const string reset = "\u001b[0m";
+            Console.Write($"\n{red}{msg}{reset}");
+        }
+        catch
+        {
+            // Fallback if ANSI not supported
+            Console.Write($"\n{msg}");
+        }
         if (Log != null)
             Log.Write(msg);
         else
@@ -187,4 +197,45 @@ public class Utilities
         );
     }
     // ReSharper enable ExplicitCallerInfoArgument
+
+    // ############################################################################
+    // Status line helpers
+    /// <summary>
+    ///     Formats a byte count using IEC units (KiB, MiB, GiB, TiB).
+    /// </summary>
+    public static string HumanizeBytes(long bytes)
+    {
+        string[] units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]; // enough for backup sizes
+        double value = bytes;
+        int unit = 0;
+        while (value >= 1024.0 && unit < units.Length - 1)
+        {
+            value /= 1024.0;
+            unit++;
+        }
+        return unit == 0 ? $"{bytes} {units[unit]}" : $"{value:0.0} {units[unit]}";
+    }
+
+    /// <summary>
+    ///     Writes a single updating status line with colorized segments.
+    ///     Completed numbers are green, queued numbers are yellow.
+    /// </summary>
+    public static void Status(long filesDone, long dirsDone, long queued, long bytes, string currentPath, double percent)
+    {
+        // ANSI colors
+        const string green = "\u001b[32m";
+        const string yellow = "\u001b[33m";
+        const string reset = "\u001b[0m";
+        const string clearToEol = "\u001b[K";
+
+        var bytesText = HumanizeBytes(bytes);
+        var pctText = double.IsNaN(percent) || double.IsInfinity(percent) ? "-" : percent.ToString("0.0");
+        // Keep the path reasonably short if extremely long
+        var path = currentPath ?? string.Empty;
+        if (path.Length > 140)
+            path = "…" + path[^139..];
+
+        var line = $"{green}{filesDone} files {dirsDone} dirs{reset} | {yellow}{queued} queued{reset} | {green}{bytesText}{reset} | {path} {yellow}{pctText}%{reset}";
+        Console.Write($"\r{line}{clearToEol}");
+    }
 }

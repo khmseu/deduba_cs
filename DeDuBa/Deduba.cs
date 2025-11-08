@@ -37,6 +37,13 @@ public class DedubaClass
     private static long _packsum;
 
     // ############################################################################
+    // Live status counters for console output
+    private static long _statusFilesDone;
+    private static long _statusDirsDone;
+    private static long _statusQueueTotal;
+    private static long _statusBytesDone;
+
+    // ############################################################################
     // Temporary on-disk hashes for backup data management
     // ############################################################################
     // arlist: hash -> part of filename between $data_path and actual file
@@ -450,41 +457,6 @@ public class DedubaClass
         return Path.Combine(_dataPath, prefix, hash);
     }
 
-    /// <summary>
-    ///     Decodes a variable-length integer from a string starting at the given offset.
-    /// </summary>
-    /// <param name="value">Encoded data.</param>
-    /// <param name="s">Reference index updated to the first byte after the integer.</param>
-    private static ulong Unpack_w(string value, ref int s)
-    {
-        ulong auv = 0;
-        while (s < value.Length)
-        {
-            var ch = (byte)value[s++];
-            auv = (auv << 7) | ((ulong)ch & 0x7f);
-            if (ch < 0x80)
-                return auv;
-        }
-
-        throw new InvalidOperationException(
-            "Unterminated compressed integer in " + nameof(Unpack_w)
-        );
-    }
-
-    /// <summary>
-    ///     Decodes a variable-length integer from a complete string, ensuring no trailing data.
-    /// </summary>
-    private static ulong Unpack_w(string value)
-    {
-        var s = 0;
-        var ret = Unpack_w(value, ref s);
-        if (s < value.Length)
-            throw new InvalidOperationException(
-                "Junk after compressed integer in " + nameof(Unpack_w)
-            );
-        return ret;
-    }
-
     // ############################################################################
     // Structured data
     //
@@ -568,11 +540,10 @@ public class DedubaClass
     /// </summary>
     private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
-        if (Utilities.Testing)
-            Utilities.ConWrite(
-                $"Save_file: {Utilities.Dumper(Utilities.D(size), Utilities.D(tag))}"
-            );
+        // Live progress for current path while saving
         var hashes = new List<string>();
+        var total = size;
+        var pathForStatus = (tag ?? "").Split(' ')[0];
 
         // my @layers = PerlIO::get_layers($file, details => 1);
         // print "\n", __LINE__, ' ', scalar localtime, ' input: ', Utilities.Dumper(@layers, $size) if TESTING;
@@ -581,10 +552,6 @@ public class DedubaClass
             {
                 var data = new byte[Chunksize];
                 var n12 = fileStream.Read(data, 0, (int)Math.Min(Chunksize, size));
-                if (Utilities.Testing)
-                    Utilities.ConWrite(
-                        $"chunk: {Utilities.Dumper(Utilities.D(size), Utilities.D(n12))}"
-                    );
                 if (n12 == 0)
                     break;
 
@@ -593,14 +560,29 @@ public class DedubaClass
                 );
                 size -= n12;
                 _ds += n12;
+
+                // Update global byte counter and live status line
+                _statusBytesDone += n12;
+                var processed = total - size;
+                var percent = total > 0 ? (processed * 100.0) / total : double.NaN;
+                var queuedRemaining = Math.Max(
+                    0,
+                    _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
+                );
+                Utilities.Status(
+                    _statusFilesDone,
+                    _statusDirsDone,
+                    queuedRemaining,
+                    _statusBytesDone,
+                    pathForStatus,
+                    percent
+                );
             }
             catch (Exception ex)
             {
-                Utilities.Error(tag, nameof(Stream.Read), ex);
+                Utilities.Error(tag ?? "", nameof(Stream.Read), ex);
             }
 
-        if (Utilities.Testing)
-            Utilities.ConWrite($"eof: {Utilities.Dumper(Utilities.D(size), Utilities.D(hashes))}");
         return hashes;
     }
 
@@ -610,24 +592,13 @@ public class DedubaClass
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
-        Utilities.ConWrite("### backup_worker ###");
-        Utilities.ConWrite(
-            $"Debug 1: {nameof(Backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup))})"
-        );
-        Utilities.ConWrite(
-            $"Debug 2: {nameof(Backup_worker)}({Utilities.Dumper(Utilities.D(filesToBackup.OrderBy(e => e, StringComparer.Ordinal)))})"
-        );
+        // Initialize queue total for this invocation (accumulates for recursive calls)
+        _statusQueueTotal += filesToBackup.Length;
         foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
         {
             var volume = Path.GetPathRoot(entry);
             var directories = Path.GetDirectoryName(entry);
             var file = Path.GetFileName(entry);
-            if (Utilities.Testing)
-                Utilities.ConWrite($"{"=".Repeat(80)}\n");
-            if (Utilities.Testing)
-                Utilities.ConWrite(
-                    $"{Utilities.Dumper(Utilities.D(entry), Utilities.D(volume), Utilities.D(directories), Utilities.D(file))}"
-                );
             var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
             var name = file;
             JsonNode? statBuf = null;
@@ -636,10 +607,6 @@ public class DedubaClass
             // $name is the current filename within that directory
             // $entry is the complete pathname to the file.
             var start = DateTime.Now;
-            if (Utilities.Testing)
-                Utilities.ConWrite(
-                    $"handle_file: {Utilities.Dumper(Utilities.D(dir), Utilities.D(name), Utilities.D(entry))}"
-                );
             try
             {
                 statBuf = FileSystem.LStat(entry);
@@ -655,18 +622,12 @@ public class DedubaClass
             }
 
             var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
-            if (Utilities.Testing)
-                Utilities.ConWrite(Utilities.Dumper(Utilities.D(stDev)));
             if (
                 Devices.ContainsKey(stDev)
                 && _dataPath != null
                 && Path.GetRelativePath(_dataPath, entry).StartsWith("..")
             )
             {
-                Utilities.ConWrite(
-                    $"stat: {Utilities.Dumper(Utilities.D(statBuf
-                    ))}"
-                );
 
                 // 0 dev      device number of filesystem
                 // 1 ino      inode number
@@ -756,8 +717,7 @@ public class DedubaClass
                         if (size != 0)
                             try
                             {
-                                if (Utilities.Testing)
-                                    Utilities.ConWrite(Utilities.Dumper(Utilities.D(entry)));
+                                var sizeForPercent = statBuf?["st_size"]?.GetValue<long>() ?? 0;
                                 var fileStream = File.OpenRead(entry);
                                 hashes = [.. Save_file(fileStream, size, entry)];
                             }
@@ -781,8 +741,6 @@ public class DedubaClass
                         }
 
                         var size = dataIslink.Length;
-                        if (Utilities.Testing)
-                            Utilities.ConWrite(Utilities.Dumper(Utilities.D(dataIslink)));
                         MemoryStream? mem1 = null;
                         try
                         {
@@ -806,8 +764,6 @@ public class DedubaClass
                         );
                         Dirtmp.Remove(entry);
                         var size = dataIsdir.Length;
-                        if (Utilities.Testing)
-                            Utilities.ConWrite(Utilities.Dumper(Utilities.D(dataIsdir)));
                         try
                         {
                             var dataBytes = Encoding.UTF8.GetBytes(dataIsdir);
@@ -824,16 +780,8 @@ public class DedubaClass
                         _ds = dataIsdir.Length;
                     }
 
-                    if (Utilities.Testing)
-                        Utilities.ConWrite($"data: {Utilities.Dumper(Utilities.D(hashes))}");
                     inodeData.Hashes = hashes;
                     var data = Sdpack(inodeData, "inode");
-                    if (Utilities.Testing)
-                    {
-                        Utilities.ConWrite(Utilities.Dumper(Utilities.D(data)));
-                        var updata = Sdunpack(data);
-                        Utilities.ConWrite(Utilities.Dumper(Utilities.D(updata)));
-                    }
 
                     try
                     {
@@ -855,10 +803,6 @@ public class DedubaClass
                         needed.Value.TotalSeconds > 0
                             ? (double?)_ds / needed.Value.TotalSeconds
                             : null;
-                    if (Utilities.Testing)
-                        Utilities.ConWrite(
-                            $"timing: {Utilities.Dumper(Utilities.D(_ds), Utilities.D(needed), Utilities.D(speed))}"
-                        );
                     report =
                         $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
                 }
@@ -874,16 +818,34 @@ public class DedubaClass
                 Utilities.Log?.Write(
                     $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
                 );
-                if (Utilities.Testing)
-                    Utilities.ConWrite($"{"_".Repeat(80)}\n");
+                // File or directory completed -> update counters and status line
+                var isDir = statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false;
+                if (isDir)
+                    _statusDirsDone++;
+                else
+                    _statusFilesDone++;
+                var queuedRemaining = Math.Max(
+                    0,
+                    _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
+                );
+                // Percent for completed item is 100; for directory we don't compute size percent
+                var sizeFinal = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                var percentDone = sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
+                    ? 100.0
+                    : double.NaN;
+                Utilities.Status(
+                    _statusFilesDone,
+                    _statusDirsDone,
+                    queuedRemaining,
+                    _statusBytesDone,
+                    entry,
+                    percentDone
+                );
             }
             else
             {
                 Utilities.Error(entry, "pruning");
             }
-
-            if (Utilities.Testing)
-                Utilities.ConWrite($"{"_".Repeat(80)}\n");
         }
     }
 
