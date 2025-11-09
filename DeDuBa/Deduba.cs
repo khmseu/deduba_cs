@@ -356,6 +356,15 @@ public class DedubaClass
         }
     }
 
+    /// <summary>
+    ///     Joins a storage prefix (e.g., "aa/bb") with a child segment (e.g., "cc") without introducing a leading slash.
+    ///     Ensures the result is never rooted, so Path.Combine(_dataPath, prefix, ...) stays under _dataPath.
+    /// </summary>
+    private static string JoinPrefix(string prefix, string segment)
+    {
+        return string.IsNullOrEmpty(prefix) ? segment : $"{prefix}/{segment}";
+    }
+
     // ############################################################################
     // find place for hashed file, or note we already have it
 
@@ -413,7 +422,7 @@ public class DedubaClass
                 {
                     CreateDirectoryWithLogging(Path.Combine(_dataPath, prefix, dir));
                     newDirs.Add(de);
-                    Preflist[$"{prefix}/{dir}"] = "";
+                    Preflist[JoinPrefix(prefix, dir)] = "";
                 }
             }
 
@@ -440,7 +449,7 @@ public class DedubaClass
                         continue;
                     }
 
-                    var newpfx = $"{prefix}/{dir}";
+                    var newpfx = JoinPrefix(prefix, dir);
                     Arlist[f] = newpfx;
                     Preflist.TryAdd(newpfx, "");
                     Preflist[newpfx] += $"{f}\0";
@@ -448,7 +457,7 @@ public class DedubaClass
 
             Preflist[prefix] = string.Join("\0", newDirs) + "\0";
             var dir2 = hash.Substring(plen, 2);
-            prefix = $"{prefix}/{dir2}";
+            prefix = JoinPrefix(prefix, dir2);
 
             // print "\n", __LINE__, ' ', scalar localtime, ' ',  "After reorg:\n" if TESTING;
             // while (my ($k, $v) = each %arlist) {
