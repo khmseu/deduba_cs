@@ -5,4 +5,4 @@
 export LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0:$LD_LIBRARY_PATH
 
 rm -rf ../ARCHIVE4/
-script -c "'time' -v  timeout -s USR1 1m dotnet run --project=DeDuBa --no-build -- $(echo *)" ../test.ansi &>/dev/null
+script -c "'time' -v  timeout -s USR1 1d dotnet run --project=DeDuBa --no-build -- $(echo *)" ../test.ansi 
