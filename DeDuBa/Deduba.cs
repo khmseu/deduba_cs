@@ -700,6 +700,7 @@ public class DedubaClass
                                                 .Select(x => Path.Combine(entry, x)),
                                         ]
                                     );
+                                    break;
                                 }
                                 catch (Exception ex)
                                 {
@@ -708,6 +709,7 @@ public class DedubaClass
                                         nameof(Directory.GetFileSystemEntries),
                                         ex
                                     );
+                                    break;
                                 }
 
                         _packsum = 0;
