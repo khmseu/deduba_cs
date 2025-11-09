@@ -343,6 +343,20 @@ public class DedubaClass
     }
 
     // ############################################################################
+    // Helper method to create directories with optional blue console output in test mode
+
+    private static void CreateDirectoryWithLogging(string path)
+    {
+        Directory.CreateDirectory(path);
+        if (Utilities.Testing)
+        {
+            const string blue = "\u001b[34m";
+            const string reset = "\u001b[0m";
+            Console.WriteLine($"{blue}Created directory: {path}{reset}");
+        }
+    }
+
+    // ############################################################################
     // find place for hashed file, or note we already have it
 
     private static string? Hash2Fn(string hash)
@@ -397,14 +411,7 @@ public class DedubaClass
                 var de = $"{dir}/";
                 if (!newDirs.Contains(de))
                 {
-                    var newPath = Path.Combine(_dataPath, prefix, dir);
-                    Directory.CreateDirectory(newPath);
-                    if (Utilities.Testing)
-                    {
-                        const string blue = "\u001b[34m";
-                        const string reset = "\u001b[0m";
-                        Console.WriteLine($"{blue}Created directory: {newPath}{reset}");
-                    }
+                    CreateDirectoryWithLogging(Path.Combine(_dataPath, prefix, dir));
                     newDirs.Add(de);
                     Preflist[$"{prefix}/{dir}"] = "";
                 }
@@ -417,14 +424,7 @@ public class DedubaClass
                     var de = $"{dir}/";
                     if (!newDirs.Contains(de))
                     {
-                        var newPath = Path.Combine(_dataPath, prefix, dir);
-                        Directory.CreateDirectory(newPath);
-                        if (Utilities.Testing)
-                        {
-                            const string blue = "\u001b[34m";
-                            const string reset = "\u001b[0m";
-                            Console.WriteLine($"{blue}Created directory: {newPath}{reset}");
-                        }
+                        CreateDirectoryWithLogging(Path.Combine(_dataPath, prefix, dir));
                         newDirs.Add(de);
                     }
 
@@ -522,15 +522,7 @@ public class DedubaClass
             {
                 var directory = Path.GetDirectoryName(outFile);
                 if (!string.IsNullOrEmpty(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                    if (Utilities.Testing)
-                    {
-                        const string blue = "\u001b[34m";
-                        const string reset = "\u001b[0m";
-                        Console.WriteLine($"{blue}Created directory: {directory}{reset}");
-                    }
-                }
+                    CreateDirectoryWithLogging(directory);
                 
                 var outputStream = File.Create(outFile);
                 var bzip2OutputStream = new BZip2OutputStream(outputStream);
