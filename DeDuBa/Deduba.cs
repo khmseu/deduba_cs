@@ -100,7 +100,9 @@ public class DedubaClass
         Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
         _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
-        Utilities.ConWrite($"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})");
+        Utilities.ConWrite(
+            $"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})"
+        );
         _dataPath = Path.Combine(_archive, "DATA");
         // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
         try
@@ -407,7 +409,8 @@ public class DedubaClass
         if (nlist > 255)
         {
             // dir becoming too large, move files into subdirs
-            Utilities.ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
+            if (Utilities.VerboseOutput)
+                Utilities.ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
             if (Utilities.VerboseOutput)
                 Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(list))}\n");
 
@@ -626,7 +629,7 @@ public class DedubaClass
     private static void Backup_worker(string[] filesToBackup)
     {
         // Suppress verbose debug output while running the worker; errors still print (colorized)
-        var prevVerboseOutput = Utilities.VerboseOutput;
+        // var prevVerboseOutput = Utilities.VerboseOutput;
         Utilities.VerboseOutput = false;
         try
         {
@@ -908,9 +911,10 @@ public class DedubaClass
         finally
         {
             // Ensure VerboseOutput flag is restored after this worker scope
-            Utilities.VerboseOutput = prevVerboseOutput;
+            // Utilities.VerboseOutput = prevVerboseOutput;
             // Move to next line after status updates
-            Console.WriteLine();
+            if (Utilities.VerboseOutput)
+                Console.WriteLine();
         }
     }
 
