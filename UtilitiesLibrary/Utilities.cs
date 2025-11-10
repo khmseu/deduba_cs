@@ -254,7 +254,7 @@ public class Utilities
             path = "…" + path[^139..];
 
         var line =
-            $"{green}{filesDone} files {dirsDone} dirs{reset} | {yellow}{queued} queued{reset} | {green}{bytesText}{reset} | {path} {yellow}{pctText}%{reset}";
+            $"{green}{filesDone} files {dirsDone} dirs{reset} | {yellow}{queued} queued{reset} | {green}{bytesText}{reset} | {yellow}{pctText}%{reset} {path}";
         Console.Write($"\r{line}{clearToEol}");
     }
 }
