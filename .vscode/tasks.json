@@ -139,7 +139,9 @@
           "PATH": "${env:HOME}/.dotnet:${env:HOME}/.dotnet/tools:${env:PATH}"
         }
       },
-      "group": { "kind": "build" },
+      "group": {
+        "kind": "build"
+      },
       "problemMatcher": []
     },
     {
@@ -168,6 +170,13 @@
         "showReuseMessage": true,
         "clear": false
       }
+    },
+    {
+      "label": "Pre-commit build validation",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "group": "build"
     }
   ]
 }
