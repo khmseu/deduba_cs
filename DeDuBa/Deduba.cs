@@ -100,6 +100,7 @@ public class DedubaClass
         Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
         _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
+        Utilities.ConWrite($"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})");
         _dataPath = Path.Combine(_archive, "DATA");
         // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
         try
@@ -153,9 +154,10 @@ public class DedubaClass
                 try
                 {
                     Utilities.ConWrite($"Before: {Utilities.Dumper(Utilities.D(argv))}");
-                    Utilities.ConWrite(
-                        $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
-                    );
+                    if (Utilities.VerboseOutput)
+                        Utilities.ConWrite(
+                            $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
+                        );
                     argv =
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
@@ -169,8 +171,11 @@ public class DedubaClass
                     throw;
                 }
 
-                Utilities.ConWrite("Filtered:");
-                Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
+                if (Utilities.VerboseOutput)
+                {
+                    Utilities.ConWrite("Filtered:");
+                    Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
+                }
 
                 foreach (var root in argv)
                 {
@@ -202,7 +207,7 @@ public class DedubaClass
 
                 Mkarlist(_dataPath);
 
-                if (Utilities.Testing)
+                if (Utilities.VerboseOutput)
                 {
                     Utilities.ConWrite("Before backup:\n");
                     foreach (var kvp in Arlist)
@@ -237,10 +242,10 @@ public class DedubaClass
 
                 // # my $status = unxz $input => $output [,OPTS] or print "\n", __LINE__, ' ', scalar localtime, ' ',  "\n", __ "unxz failed: $UnXzError\n" if TESTING;
 
-                if (Utilities.Testing)
+                if (Utilities.VerboseOutput)
                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(Dirtmp)));
 
-                if (Utilities.Testing)
+                if (Utilities.VerboseOutput)
                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
 
                 Utilities.ConWrite(Utilities.Dumper(Utilities.D(Bstats)));
@@ -287,15 +292,15 @@ public class DedubaClass
         {
             if (entry == _dataPath)
             {
-                if (Utilities.Testing)
+                if (Utilities.VerboseOutput)
                     Utilities.ConWrite($"+ {entry}");
                 try
                 {
                     var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (Utilities.Testing)
+                    if (Utilities.VerboseOutput)
                         Console.Write($"\t{entries.Length} entries");
                     Mkarlist(entries);
-                    if (Utilities.Testing)
+                    if (Utilities.VerboseOutput)
                         Console.WriteLine($"\tdone {entry}");
                 }
                 catch (Exception ex)
@@ -311,17 +316,17 @@ public class DedubaClass
             var file = match.Groups[2].Value;
             if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
             {
-                if (Utilities.Testing)
+                if (Utilities.VerboseOutput)
                     Utilities.ConWrite($"+ {entry}:{prefix}:{file}");
                 Preflist.TryAdd(prefix, "");
                 Preflist[prefix] += $"{file}/\0";
                 try
                 {
                     var dirEntries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (Utilities.Testing)
+                    if (Utilities.VerboseOutput)
                         Console.Write($"\t{dirEntries.Length} entries");
                     Mkarlist(dirEntries);
-                    if (Utilities.Testing)
+                    if (Utilities.VerboseOutput)
                         Console.WriteLine($"\tdone {entry}");
                 }
                 catch (Exception ex)
@@ -348,7 +353,7 @@ public class DedubaClass
     private static void CreateDirectoryWithLogging(string path)
     {
         Directory.CreateDirectory(path);
-        if (Utilities.Testing)
+        if (Utilities.VerboseOutput)
         {
             const string blue = "\u001b[34m";
             const string reset = "\u001b[0m";
@@ -370,7 +375,7 @@ public class DedubaClass
 
     private static string? Hash2Fn(string hash)
     {
-        if (Utilities.Testing)
+        if (Utilities.VerboseOutput)
             Utilities.ConWrite(Utilities.Dumper(Utilities.D(hash)));
 
         if (Arlist.TryGetValue(hash, out var value))
@@ -403,7 +408,7 @@ public class DedubaClass
         {
             // dir becoming too large, move files into subdirs
             Utilities.ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
-            if (Utilities.Testing)
+            if (Utilities.VerboseOutput)
                 Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(list))}\n");
 
             var depth = prefixList.Count;
@@ -470,7 +475,7 @@ public class DedubaClass
         }
         else
         {
-            if (Utilities.Testing)
+            if (Utilities.VerboseOutput)
                 Utilities.ConWrite($"+++ not too large: '{prefix}' entries = {list.Count}\n");
         }
 
@@ -493,7 +498,7 @@ public class DedubaClass
     private static string Sdpack(object? v, string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-        if (name.Length > 0 && Utilities.Testing)
+        if (name.Length > 0 && Utilities.VerboseOutput)
             Utilities.ConWrite(
                 $"{name}: {Utilities.Dumper(Utilities.D(v?.GetType().FullName), Utilities.D(v))}"
             );
@@ -532,7 +537,7 @@ public class DedubaClass
                 var directory = Path.GetDirectoryName(outFile);
                 if (!string.IsNullOrEmpty(directory))
                     CreateDirectoryWithLogging(directory);
-                
+
                 var outputStream = File.Create(outFile);
                 var bzip2OutputStream = new BZip2OutputStream(outputStream);
                 bzip2OutputStream.Write(data.Select(x => (byte)x).ToArray());
@@ -546,7 +551,7 @@ public class DedubaClass
             }
 
             _packsum += new FileInfo(outFile).Length;
-            if (Utilities.Testing)
+            if (Utilities.VerboseOutput)
                 Utilities.ConWrite(hash);
         }
         else
@@ -555,7 +560,7 @@ public class DedubaClass
             Bstats["duplicate_blocks"]++;
             Bstats.TryAdd("duplicate_bytes", 0);
             Bstats["duplicate_bytes"] += data.Length;
-            if (Utilities.Testing)
+            if (Utilities.VerboseOutput)
                 Utilities.ConWrite($"{hash} already exists");
         }
 
@@ -615,19 +620,32 @@ public class DedubaClass
 
     // ##############################################################################
     /// <summary>
-    ///     Processes a set of filesystem entries, recursing into directories and emitting inode records.
+    ///     Processes a set of filesystem entries, iterating through directories and emitting inode records.
+    ///     Uses a queue-based work queue to avoid recursion.
     /// </summary>
     private static void Backup_worker(string[] filesToBackup)
     {
         // Suppress verbose debug output while running the worker; errors still print (colorized)
-        var prevTesting = Utilities.Testing;
-        Utilities.Testing = false;
+        var prevVerboseOutput = Utilities.VerboseOutput;
+        Utilities.VerboseOutput = false;
         try
         {
-            // Initialize queue total for this invocation (accumulates for recursive calls)
-            _statusQueueTotal += filesToBackup.Length;
+            // Initialize work queue with initial files (FIFO queue for breadth-first traversal)
+            var workQueue = new Queue<string>();
+
+            // Enqueue initial files in order
             foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
             {
+                workQueue.Enqueue(entry);
+            }
+
+            _statusQueueTotal += filesToBackup.Length;
+
+            // Process work queue until empty
+            while (workQueue.Count > 0)
+            {
+                var entry = workQueue.Dequeue();
+
                 var volume = Path.GetPathRoot(entry);
                 var directories = Path.GetDirectoryName(entry);
                 var file = Path.GetFileName(entry);
@@ -691,15 +709,19 @@ public class DedubaClass
                                 try
                                 {
                                     var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                                    // Enqueue children into total queue before processing them
-                                    _statusQueueTotal += entries.Length;
-                                    Backup_worker(
-                                        [
-                                            .. entries
-                                                .Where(x => !x.StartsWith(".."))
-                                                .Select(x => Path.Combine(entry, x)),
-                                        ]
-                                    );
+                                    // Enqueue children into work queue and update total
+                                    var childEntries = entries
+                                        .Where(x => !x.StartsWith(".."))
+                                        .Select(x => Path.Combine(entry, x))
+                                        .OrderBy(x => x, StringComparer.Ordinal)
+                                        .ToList();
+
+                                    _statusQueueTotal += childEntries.Count;
+
+                                    foreach (var childEntry in childEntries)
+                                    {
+                                        workQueue.Enqueue(childEntry);
+                                    }
                                     break;
                                 }
                                 catch (Exception ex)
@@ -885,8 +907,8 @@ public class DedubaClass
         }
         finally
         {
-            // Ensure Testing flag is restored after this worker scope
-            Utilities.Testing = prevTesting;
+            // Ensure VerboseOutput flag is restored after this worker scope
+            Utilities.VerboseOutput = prevVerboseOutput;
             // Move to next line after status updates
             Console.WriteLine();
         }

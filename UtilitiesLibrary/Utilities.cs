@@ -113,9 +113,16 @@ public class Utilities
     }
 
     /// <summary>
-    ///     When true, also writes diagnostic output to the console in addition to the log file.
+    ///     When true, enables testing mode behaviors (e.g., using test archive path instead of production path).
+    ///     Does not control diagnostic output - see <see cref="VerboseOutput"/> instead.
     /// </summary>
     public static bool Testing = true;
+
+    /// <summary>
+    ///     When true, writes verbose diagnostic output to the console in addition to the log file.
+    ///     Controlled by --verbose/-v command-line option.
+    /// </summary>
+    public static bool VerboseOutput = false;
 
     /// <summary>
     ///     Log stream used by the backup process. When null, errors will be rethrown.
