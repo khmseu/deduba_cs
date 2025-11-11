@@ -14,9 +14,7 @@ namespace OsCalls
         case 0:
             if (value->Type == TypeT::IsOk)
             {
-                value->Type = TypeT::IsString;
-                value->Name = "pw_name";
-                value->String = pw->pw_name;
+                set_val(String, "pw_name", pw->pw_name);
                 return true;
             }
         // else fall through
@@ -26,34 +24,22 @@ namespace OsCalls
             delete value;
             return false;
         case 1:
-            value->Type = TypeT::IsString;
-            value->Name = "pw_passwd";
-            value->String = pw->pw_passwd;
+            set_val(String, "pw_passwd", pw->pw_passwd);
             return true;
         case 2:
-            value->Type = TypeT::IsNumber;
-            value->Name = "pw_uid";
-            value->Number = pw->pw_uid;
+            set_val(Number, "pw_uid", pw->pw_uid);
             return true;
         case 3:
-            value->Type = TypeT::IsNumber;
-            value->Name = "pw_gid";
-            value->Number = pw->pw_gid;
+            set_val(Number, "pw_gid", pw->pw_gid);
             return true;
         case 4:
-            value->Type = TypeT::IsString;
-            value->Name = "pw_gecos";
-            value->String = pw->pw_gecos;
+            set_val(String, "pw_gecos", pw->pw_gecos);
             return true;
         case 5:
-            value->Type = TypeT::IsString;
-            value->Name = "pw_dir";
-            value->String = pw->pw_dir;
+            set_val(String, "pw_dir", pw->pw_dir);
             return true;
         case 6:
-            value->Type = TypeT::IsString;
-            value->Name = "pw_shell";
-            value->String = pw->pw_shell;
+            set_val(String, "pw_shell", pw->pw_shell);
             return true;
         }
     }
@@ -66,9 +52,7 @@ namespace OsCalls
             delete value;
             return false;
         }
-        value->Type = TypeT::IsString;
-        value->Name = "[]";
-        value->String = mem[value->Handle.index];
+        set_val(String, "[]", mem[value->Handle.index]);
         return true;
     }
 
@@ -80,9 +64,7 @@ namespace OsCalls
         case 0:
             if (value->Type == TypeT::IsOk)
             {
-                value->Type = TypeT::IsString;
-                value->Name = "gr_name";
-                value->String = gr->gr_name;
+                set_val(String, "gr_name", gr->gr_name);
                 return true;
             }
         // else fall through
@@ -92,9 +74,7 @@ namespace OsCalls
             delete value;
             return false;
         case 1:
-            value->Type = TypeT::IsNumber;
-            value->Name = "gr_gid";
-            value->Number = gr->gr_gid;
+            set_val(Number, "gr_gid", gr->gr_gid);
             return true;
         case 2:
             value->Type = TypeT::IsComplex;
