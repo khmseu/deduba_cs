@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using static OsCalls.ValXfer;
@@ -8,13 +9,15 @@ namespace OsCalls;
 ///     Access to system user/group databases via native libc calls (getpwuid/getgrgid).
 ///     Returned values are mapped into JSON using the <see cref="ValXfer" /> bridge.
 /// </summary>
-public static unsafe class UserGroupDatabase
+public static unsafe partial class UserGroupDatabase
 {
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern ValueT* getpwuid(ulong uid);
+    [LibraryImport("libOsCallsShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* getpwuid(ulong uid);
 
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern ValueT* getgrgid(ulong gid);
+    [LibraryImport("libOsCallsShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* getgrgid(ulong gid);
 
     /// <summary>
     ///     Retrieves passwd database entry for a user id.

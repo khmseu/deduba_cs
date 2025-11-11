@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using static OsCalls.ValXfer;
@@ -8,16 +9,19 @@ namespace OsCalls;
 ///     Thin P/Invoke wrapper around native POSIX filesystem calls exposed by libOsCallsShim.so.
 ///     Converts native iterator-style ValueT streams into JSON nodes via <see cref="ValXfer.ToNode" />.
 /// </summary>
-public static unsafe class FileSystem
+public static unsafe partial class FileSystem
 {
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern ValueT* lstat(string path);
+    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* lstat(string path);
 
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern ValueT* readlink(string path);
+    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* readlink(string path);
 
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern ValueT* canonicalize_file_name(string path);
+    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* canonicalize_file_name(string path);
 
     /// <summary>
     ///     Gets file status for the supplied path (like POSIX lstat), without following symlinks.

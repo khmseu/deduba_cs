@@ -12,7 +12,6 @@ internal class Program
         // Parse command-line options
         var fileArgs = new List<string>();
         foreach (var arg in args)
-        {
             if (arg == "--verbose" || arg == "-v")
             {
                 Utilities.VerboseOutput = true;
@@ -30,7 +29,6 @@ internal class Program
             {
                 fileArgs.Add(arg);
             }
-        }
 
         DedubaClass.Backup([.. fileArgs]);
     }

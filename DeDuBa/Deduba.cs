@@ -240,6 +240,8 @@ public class DedubaClass
 
                 Backup_worker(argv);
 
+                Utilities.ConWrite("\n");
+
                 // ##############################################################################
 
                 // # my $status = unxz $input => $output [,OPTS] or print "\n", __LINE__, ' ', scalar localtime, ' ',  "\n", __ "unxz failed: $UnXzError\n" if TESTING;
@@ -638,9 +640,7 @@ public class DedubaClass
 
             // Enqueue initial files in order
             foreach (var entry in filesToBackup.OrderBy(e => e, StringComparer.Ordinal))
-            {
                 workQueue.Enqueue(entry);
-            }
 
             _statusQueueTotal += filesToBackup.Length;
 
@@ -722,9 +722,7 @@ public class DedubaClass
                                     _statusQueueTotal += childEntries.Count;
 
                                     foreach (var childEntry in childEntries)
-                                    {
                                         workQueue.Enqueue(childEntry);
-                                    }
                                     break;
                                 }
                                 catch (Exception ex)

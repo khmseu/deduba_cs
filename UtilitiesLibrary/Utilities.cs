@@ -114,7 +114,7 @@ public class Utilities
 
     /// <summary>
     ///     When true, enables testing mode behaviors (e.g., using test archive path instead of production path).
-    ///     Does not control diagnostic output - see <see cref="VerboseOutput"/> instead.
+    ///     Does not control diagnostic output - see <see cref="VerboseOutput" /> instead.
     /// </summary>
     public static bool Testing = true;
 

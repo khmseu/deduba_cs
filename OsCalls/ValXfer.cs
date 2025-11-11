@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using UtilitiesLibrary;
@@ -11,7 +12,7 @@ namespace OsCalls;
 ///     sequence of values (arrays or key/value objects). This class interprets those sequences and
 ///     materializes them as JSON using <see cref="ToNode" />.
 /// </summary>
-public static unsafe class ValXfer
+public static unsafe partial class ValXfer
 {
     /// <summary>
     ///     Value discriminator reported by the native layer for the current cursor position.
@@ -41,8 +42,10 @@ public static unsafe class ValXfer
         IsBoolean,
     }
 
-    [DllImport("libOsCallsShim.so", CallingConvention = CallingConvention.Cdecl)]
-    private static extern bool GetNextValue(ValueT* value);
+    [LibraryImport("libOsCallsShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetNextValue(ValueT* value);
 
     /// <summary>
     ///     Converts a native <see cref="ValueT" /> stream into a <see cref="JsonNode" />.
