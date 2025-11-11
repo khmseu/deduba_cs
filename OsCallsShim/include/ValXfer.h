@@ -62,6 +62,13 @@ namespace OsCalls
         bool Boolean;
     };
 
+    #define set_val(typ,name,val) \
+        do { \
+            value->Type = TypeT::Is##typ; \
+            value->Name = name; \
+            value->typ = val; \
+        } while(0)
+
     /**
      * @name Cursor operations
      * Functions exported with C linkage for consumption via P/Invoke.
