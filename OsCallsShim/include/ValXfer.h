@@ -62,7 +62,7 @@ namespace OsCalls
         bool Boolean;
     };
 
-    #define set_val(typ,name,val) \
+#define set_val(typ,name,val) \
         do { \
             value->Type = TypeT::Is##typ; \
             value->Name = name; \

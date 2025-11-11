@@ -737,9 +737,28 @@ public class DedubaClass
 
                         _packsum = 0;
                         // lstat(entry);
+                        var flags = new List<string>();
+                        // Dynamically extract all file type flags (S_IS* and S_TYPEIS* macros)
+                        if (statBuf is JsonObject statObj)
+                            foreach (var kvp in statObj)
+                            {
+                                var key = kvp.Key;
+                                // Match S_IS* or S_TYPEIS* boolean fields
+                                if (key.StartsWith("S_IS") || key.StartsWith("S_TYPEIS"))
+                                    if (kvp.Value?.GetValue<bool>() ?? false)
+                                    {
+                                        // Transform flag name: remove prefix and convert to lowercase
+                                        var flagName = key.StartsWith("S_TYPEIS")
+                                            ? key[8..].ToLowerInvariant()
+                                            : key[4..].ToLowerInvariant();
+                                        flags.Add(flagName);
+                                    }
+                            }
+
                         var inodeData = new InodeData
                         {
                             Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
+                            Flags = flags,
                             NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
                             Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
                             UserName =
@@ -921,6 +940,9 @@ public class DedubaClass
     {
         [JsonPropertyName("md")]
         public long Mode { get; init; }
+
+        [JsonPropertyName("fl")]
+        public required List<string> Flags { get; init; }
 
         [JsonPropertyName("nl")]
         public long NLink { get; init; }
