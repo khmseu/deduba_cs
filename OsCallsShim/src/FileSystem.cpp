@@ -37,65 +37,137 @@ namespace OsCalls
             return true;
         case 3:
             value->Type = TypeT::IsBoolean;
-            value->Name = "S_ISDIR";
-            value->Boolean = S_ISDIR(stbuf->st_mode);
+            value->Name = "S_ISBLK";
+#ifdef S_ISBLK
+            value->Boolean = S_ISBLK(stbuf->st_mode);
+#else
+            value->Boolean = false;
+#endif
             return true;
         case 4:
             value->Type = TypeT::IsBoolean;
-            value->Name = "S_ISREG";
-            value->Boolean = S_ISREG(stbuf->st_mode);
+            value->Name = "S_ISCHR";
+#ifdef S_ISCHR
+            value->Boolean = S_ISCHR(stbuf->st_mode);
+#else
+            value->Boolean = false;
+#endif
             return true;
         case 5:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISDIR";
+            value->Boolean = S_ISDIR(stbuf->st_mode);
+            return true;
+        case 6:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISFIFO";
+#ifdef S_ISFIFO
+            value->Boolean = S_ISFIFO(stbuf->st_mode);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 7:
             value->Type = TypeT::IsBoolean;
             value->Name = "S_ISLNK";
             value->Boolean = S_ISLNK(stbuf->st_mode);
             return true;
-        case 6:
+        case 8:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISREG";
+            value->Boolean = S_ISREG(stbuf->st_mode);
+            return true;
+        case 9:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_ISSOCK";
+#ifdef S_ISSOCK
+            value->Boolean = S_ISSOCK(stbuf->st_mode);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 10:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_TYPEISMQ";
+#ifdef S_TYPEISMQ
+            value->Boolean = S_TYPEISMQ(stbuf);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 11:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_TYPEISSEM";
+#ifdef S_TYPEISSEM
+            value->Boolean = S_TYPEISSEM(stbuf);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 12:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_TYPEISSHM";
+#ifdef S_TYPEISSHM
+            value->Boolean = S_TYPEISSHM(stbuf);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 13:
+            value->Type = TypeT::IsBoolean;
+            value->Name = "S_TYPEISTMO";
+#ifdef S_TYPEISTMO
+            value->Boolean = S_TYPEISTMO(stbuf);
+#else
+            value->Boolean = false;
+#endif
+            return true;
+        case 14:
             value->Type = TypeT::IsNumber;
             value->Name = "st_nlink";
             value->Number = stbuf->st_nlink;
             return true;
-        case 7:
+        case 15:
             value->Type = TypeT::IsNumber;
             value->Name = "st_uid";
             value->Number = stbuf->st_uid;
             return true;
-        case 8:
+        case 16:
             value->Type = TypeT::IsNumber;
             value->Name = "st_gid";
             value->Number = stbuf->st_gid;
             return true;
-        case 9:
+        case 17:
             value->Type = TypeT::IsNumber;
             value->Name = "st_rdev";
             value->Number = stbuf->st_rdev;
             return true;
-        case 10:
+        case 18:
             value->Type = TypeT::IsNumber;
             value->Name = "st_size";
             value->Number = stbuf->st_size;
             return true;
-        case 11:
+        case 19:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_atim";
             value->TimeSpec = stbuf->st_atim;
             return true;
-        case 12:
+        case 20:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_mtim";
             value->TimeSpec = stbuf->st_mtim;
             return true;
-        case 13:
+        case 21:
             value->Type = TypeT::IsTimeSpec;
             value->Name = "st_ctim";
             value->TimeSpec = stbuf->st_ctim;
             return true;
-        case 14:
+        case 22:
             value->Type = TypeT::IsNumber;
             value->Name = "st_blksize";
             value->Number = stbuf->st_blksize;
             return true;
-        case 15:
+        case 23:
             value->Type = TypeT::IsNumber;
             value->Name = "st_blocks";
             value->Number = stbuf->st_blocks;
