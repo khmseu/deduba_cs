@@ -7,45 +7,57 @@
 namespace OsCalls
 {
     /**
+     * @brief Context structure for llistxattr iteration
+     */
+    struct XattrListContext
+    {
+        char* buffer;     // Original buffer start
+        char* current;    // Current position
+        char* end;        // End of buffer (buffer + size)
+    };
+
+    /**
      * @brief Handler for llistxattr that returns an array of attribute names.
-     * The data1 pointer contains the buffer start with null-separated attribute names.
-     * The data2 pointer stores the original buffer pointer for cleanup.
+     * The data1 pointer contains a XattrListContext structure.
      */
     bool handle_llistxattr(ValueT* value)
     {
-        auto current = reinterpret_cast<const char*>(value->Handle.data1);
-        auto buffer_start = reinterpret_cast<char*>(value->Handle.data2);
+        auto ctx = reinterpret_cast<XattrListContext*>(value->Handle.data1);
 
         // First call after initialization
         if (value->Type == TypeT::IsOk)
         {
-            // If we have data, set up for array iteration
-            if (current != nullptr && *current != '\0')
+            // If we have data and haven't reached the end
+            if (ctx != nullptr && ctx->current < ctx->end && *ctx->current != '\0')
             {
                 value->Name = "[]";
-                set_val(String, "[]", current);
+                set_val(String, "[]", ctx->current);
                 
                 // Move to next attribute name
-                size_t len = strlen(current) + 1;
-                value->Handle.data1 = reinterpret_cast<void*>(const_cast<char*>(current + len));
+                size_t len = strlen(ctx->current) + 1;
+                ctx->current += len;
                 return true;
             }
         }
         
         // Subsequent calls - check if there's more data
-        if (current != nullptr && *current != '\0')
+        if (ctx != nullptr && ctx->current < ctx->end && *ctx->current != '\0')
         {
-            set_val(String, "[]", current);
+            set_val(String, "[]", ctx->current);
             
             // Move to next attribute name
-            size_t len = strlen(current) + 1;
-            value->Handle.data1 = reinterpret_cast<void*>(const_cast<char*>(current + len));
+            size_t len = strlen(ctx->current) + 1;
+            ctx->current += len;
             return true;
         }
 
         // Cleanup on completion
-        if (buffer_start != nullptr)
-            free(buffer_start);
+        if (ctx != nullptr)
+        {
+            if (ctx->buffer != nullptr)
+                free(ctx->buffer);
+            delete ctx;
+        }
         delete value;
         return false;
     }
@@ -83,6 +95,8 @@ namespace OsCalls
         auto en = errno;
         
         char* buffer = nullptr;
+        XattrListContext* ctx = nullptr;
+        
         if (buflen > 0)
         {
             // Allocate buffer and get the attribute names
@@ -90,11 +104,22 @@ namespace OsCalls
             errno = 0;
             buflen = ::llistxattr(path, buffer, buflen);
             en = errno;
+            
+            if (buflen >= 0)
+            {
+                // Create context structure
+                ctx = new XattrListContext{buffer, buffer, buffer + buflen};
+            }
+            else
+            {
+                // Error occurred, clean up
+                free(buffer);
+                buffer = nullptr;
+            }
         }
         
         auto v = new ValueT();
-        // Store current position in data1, original buffer in data2 for cleanup
-        CreateHandle(v, handle_llistxattr, buffer, buffer);
+        CreateHandle(v, handle_llistxattr, ctx, nullptr);
         
         if (buflen >= 0)
             v->Type = TypeT::IsOk;
