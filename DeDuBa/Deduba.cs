@@ -695,103 +695,92 @@ public class DedubaClass
                     // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                     // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
                     var fsfid = Sdpack(
-                        new List<object?>
-                        {
-                            statBuf?["st_dev"]?.GetValue<long>() ?? 0,
-                            statBuf?["st_ino"]?.GetValue<long>() ?? 0,
-                        },
+                        new List<object?> { stDev, statBuf?["st_ino"]?.GetValue<long>() ?? 0 },
                         "fsfid"
                     );
                     var old = Fs2Ino.ContainsKey(fsfid);
+                    // Always compute the file-type flags from statBuf so subsequent code
+                    // can consult them without directly accessing statBuf S_IS* fields.
+                    var flags = new HashSet<string>();
+                    if (statBuf is JsonObject statObj)
+                        foreach (var kvp in statObj)
+                        {
+                            var key = kvp.Key;
+                            // Match S_IS* or S_TYPEIS* boolean fields
+                            if (key.StartsWith("S_IS") || key.StartsWith("S_TYPEIS"))
+                                if (kvp.Value?.GetValue<bool>() ?? false)
+                                {
+                                    // Transform flag name: remove prefix and convert to lowercase
+                                    var flagName = key.StartsWith("S_TYPEIS")
+                                        ? key[8..].ToLowerInvariant()
+                                        : key[4..].ToLowerInvariant();
+                                    flags.Add(flagName);
+                                }
+                        }
                     string report;
-                    if (!old)
+                    long fileSize = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                    if (old)
+                    {
+                        report = $"[{fileSize:d} -> duplicate]";
+                    }
+                    else
                     {
                         Fs2Ino[fsfid] = Sdpack(null, "");
-                        if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                            while (true)
-                                try
-                                {
-                                    var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                                    // Enqueue children into work queue and update total
-                                    var childEntries = entries
-                                        .Where(x => !x.StartsWith(".."))
-                                        .Select(x => Path.Combine(entry, x))
-                                        .OrderBy(x => x, StringComparer.Ordinal)
-                                        .ToList();
+                        if (flags.Contains("dir"))
+                            try
+                            {
+                                var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
+                                // Enqueue children into work queue and update total
+                                var childEntries = entries
+                                    .Where(x => !x.StartsWith(".."))
+                                    .Select(x => Path.Combine(entry, x))
+                                    .OrderBy(x => x, StringComparer.Ordinal)
+                                    .ToList();
 
-                                    _statusQueueTotal += childEntries.Count;
+                                _statusQueueTotal += childEntries.Count;
 
-                                    foreach (var childEntry in childEntries)
-                                        workQueue.Enqueue(childEntry);
-                                    break;
-                                }
-                                catch (Exception ex)
-                                {
-                                    Utilities.Error(
-                                        entry,
-                                        nameof(Directory.GetFileSystemEntries),
-                                        ex
-                                    );
-                                    break;
-                                }
+                                foreach (var childEntry in childEntries)
+                                    workQueue.Enqueue(childEntry);
+                            }
+                            catch (Exception ex)
+                            {
+                                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                            }
 
                         _packsum = 0;
                         // lstat(entry);
-                        var flags = new List<string>();
-                        // Dynamically extract all file type flags (S_IS* and S_TYPEIS* macros)
-                        if (statBuf is JsonObject statObj)
-                            foreach (var kvp in statObj)
-                            {
-                                var key = kvp.Key;
-                                // Match S_IS* or S_TYPEIS* boolean fields
-                                if (key.StartsWith("S_IS") || key.StartsWith("S_TYPEIS"))
-                                    if (kvp.Value?.GetValue<bool>() ?? false)
-                                    {
-                                        // Transform flag name: remove prefix and convert to lowercase
-                                        var flagName = key.StartsWith("S_TYPEIS")
-                                            ? key[8..].ToLowerInvariant()
-                                            : key[4..].ToLowerInvariant();
-                                        flags.Add(flagName);
-                                    }
-                            }
 
+                        long groupId = statBuf?["st_gid"]?.GetValue<long>() ?? 0;
+                        long userId = statBuf?["st_uid"]?.GetValue<long>() ?? 0;
                         var inodeData = new InodeData
                         {
                             FileId = Sdunpack(fsfid) as JsonElement?,
                             Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
                             Flags = flags,
                             NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
-                            Uid = Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0),
+                            Uid = Convert.ToInt64(userId),
                             UserName =
                                 UserGroupDatabase
-                                    .GetPwUid(
-                                        Convert.ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
-                                    )["pw_name"]
+                                    .GetPwUid(Convert.ToInt64(userId))["pw_name"]
                                     ?.ToString()
-                                ?? Convert
-                                    .ToUInt32(statBuf?["st_uid"]?.GetValue<long>() ?? 0)
-                                    .ToString(),
-                            Gid = Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0),
+                                ?? Convert.ToInt64(userId).ToString(),
+                            Gid = Convert.ToInt64(groupId),
                             GroupName =
                                 UserGroupDatabase
-                                    .GetGrGid(
-                                        Convert.ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
-                                    )["gr_name"]
+                                    .GetGrGid(Convert.ToInt64(groupId))["gr_name"]
                                     ?.ToString()
-                                ?? Convert
-                                    .ToUInt32(statBuf?["st_gid"]?.GetValue<long>() ?? 0)
-                                    .ToString(),
+                                ?? Convert.ToInt64(groupId).ToString(),
                             RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
-                            Size = statBuf?["st_size"]?.GetValue<long>() ?? 0,
+                            Size = fileSize,
                             MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
                             CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
                         };
                         string[] hashes = [];
                         _ds = 0;
                         MemoryStream mem;
-                        if (statBuf?["S_ISREG"]?.GetValue<bool>() ?? false)
+                        if (flags.Contains("reg"))
                         {
-                            var size = statBuf["st_size"]?.GetValue<long>() ?? 0;
+                            var size = fileSize;
                             if (size != 0)
                                 try
                                 {
@@ -804,7 +793,7 @@ public class DedubaClass
                                     continue;
                                 }
                         }
-                        else if (statBuf?["S_ISLNK"]?.GetValue<bool>() ?? false)
+                        else if (flags.Contains("lnk"))
                         {
                             string? dataIslink;
                             try
@@ -833,7 +822,7 @@ public class DedubaClass
                             hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
                             _ds = dataIslink.Length;
                         }
-                        else if (statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
+                        else if (flags.Contains("dir"))
                         {
                             var dataIsdir = Sdpack(
                                 Dirtmp.TryGetValue(entry, out var value) ? value : [],
@@ -880,12 +869,7 @@ public class DedubaClass
                             needed.Value.TotalSeconds > 0
                                 ? (double?)_ds / needed.Value.TotalSeconds
                                 : null;
-                        report =
-                            $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> {_packsum:d}: {needed:c}s]";
-                    }
-                    else
-                    {
-                        report = $"[{statBuf?["st_size"]?.GetValue<long>() ?? 0:d} -> duplicate]";
+                        report = $"[{fileSize:d} -> {_packsum:d}: {needed:c}s]";
                     }
 
                     if (!Dirtmp.ContainsKey(dir))
@@ -896,7 +880,7 @@ public class DedubaClass
                         $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
                     );
                     // File or directory completed -> update counters and status line
-                    var isDir = statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false;
+                    var isDir = flags.Contains("dir");
                     if (isDir)
                         _statusDirsDone++;
                     else
@@ -906,11 +890,8 @@ public class DedubaClass
                         _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
                     );
                     // Percent for completed item is 100; for directory we don't compute size percent
-                    var sizeFinal = statBuf?["st_size"]?.GetValue<long>() ?? 0;
-                    var percentDone =
-                        sizeFinal > 0 && !(statBuf?["S_ISDIR"]?.GetValue<bool>() ?? false)
-                            ? 100.0
-                            : double.NaN;
+                    var sizeFinal = fileSize;
+                    var percentDone = sizeFinal > 0 && !flags.Contains("dir") ? 100.0 : double.NaN;
                     Utilities.Status(
                         _statusFilesDone,
                         _statusDirsDone,
@@ -946,19 +927,19 @@ public class DedubaClass
         public long Mode { get; init; }
 
         [JsonPropertyName("fl")]
-        public required List<string> Flags { get; init; }
+        public required HashSet<string> Flags { get; init; }
 
         [JsonPropertyName("nl")]
         public long NLink { get; init; }
 
         [JsonPropertyName("ui")]
-        public uint Uid { get; init; }
+        public long Uid { get; init; }
 
         [JsonPropertyName("un")]
         public string UserName { get; init; } = string.Empty;
 
         [JsonPropertyName("gi")]
-        public uint Gid { get; init; }
+        public long Gid { get; init; }
 
         [JsonPropertyName("gn")]
         public string GroupName { get; init; } = string.Empty;

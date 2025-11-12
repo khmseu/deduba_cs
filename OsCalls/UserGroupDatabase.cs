@@ -13,18 +13,18 @@ public static unsafe partial class UserGroupDatabase
 {
     [LibraryImport("libOsCallsShim.so")]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    private static partial ValueT* getpwuid(ulong uid);
+    private static partial ValueT* getpwuid(long uid);
 
     [LibraryImport("libOsCallsShim.so")]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    private static partial ValueT* getgrgid(ulong gid);
+    private static partial ValueT* getgrgid(long gid);
 
     /// <summary>
     ///     Retrieves passwd database entry for a user id.
     /// </summary>
     /// <param name="uid">Numeric user id.</param>
     /// <returns>A JsonNode with typical fields like pw_name, pw_uid, pw_gid, etc.</returns>
-    public static JsonNode GetPwUid(ulong uid)
+    public static JsonNode GetPwUid(long uid)
     {
         return ToNode(getpwuid(uid), $"user {uid}", nameof(getpwuid));
     }
@@ -34,7 +34,7 @@ public static unsafe partial class UserGroupDatabase
     /// </summary>
     /// <param name="gid">Numeric group id.</param>
     /// <returns>A JsonNode with fields like gr_name, gr_gid, etc.</returns>
-    public static JsonNode GetGrGid(ulong gid)
+    public static JsonNode GetGrGid(long gid)
     {
         return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
     }

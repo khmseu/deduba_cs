@@ -8,14 +8,13 @@
 #include "ValXfer.h"
 #include <cstdint>
 
-namespace OsCalls
-{
-    extern "C" {
-    /** @brief Query passwd database by numeric UID. */
-    ValueT* getpwuid(std::uint64_t uid);
-    /** @brief Query group database by numeric GID. */
-    ValueT* getgrgid(std::uint64_t uid);
-    }
+namespace OsCalls {
+extern "C" {
+/** @brief Query passwd database by numeric UID. */
+ValueT *getpwuid(std::int64_t uid);
+/** @brief Query group database by numeric GID. */
+ValueT *getgrgid(std::int64_t gid);
+}
 } // namespace OsCalls
 
 #endif // USERGROUPDATABASE_H

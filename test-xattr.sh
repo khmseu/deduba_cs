@@ -10,7 +10,7 @@ echo
 TEST_FILE="/tmp/test_xattr_file.txt"
 
 echo "Creating test file: ${TEST_FILE}"
-echo "test content" > "${TEST_FILE}"
+echo "test content" >"${TEST_FILE}"
 
 echo
 echo "Setting extended attributes..."
