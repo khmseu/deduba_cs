@@ -940,7 +940,7 @@ public class DedubaClass
     private sealed class InodeData
     {
         [JsonPropertyName("fi")]
-        public required System.Text.Json.JsonElement? FileId { get; init; }
+        public required JsonElement? FileId { get; init; }
 
         [JsonPropertyName("md")]
         public long Mode { get; init; }

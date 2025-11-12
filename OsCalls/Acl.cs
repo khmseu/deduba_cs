@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 
@@ -32,10 +33,10 @@ public static unsafe partial class Acl
     }
 
     [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_access(string path);
 
     [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_default(string path);
 }
