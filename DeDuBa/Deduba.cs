@@ -757,6 +757,7 @@ public class DedubaClass
 
                         var inodeData = new InodeData
                         {
+                            FileId = Sdunpack(fsfid) as JsonElement?,
                             Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
                             Flags = flags,
                             NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
@@ -938,6 +939,9 @@ public class DedubaClass
     // Represents inode metadata collected for a filesystem entry prior to packing.
     private sealed class InodeData
     {
+        [JsonPropertyName("fi")]
+        public required System.Text.Json.JsonElement? FileId { get; init; }
+
         [JsonPropertyName("md")]
         public long Mode { get; init; }
 

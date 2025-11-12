@@ -6,14 +6,14 @@ SRC         := $(PROJECT_DIR)/src
 INCLUDE     := $(PROJECT_DIR)/include
 LIB         := $(PROJECT_DIR)/lib
 
-LIBRARIES   :=
+LIBRARIES   := -lacl
 SHARED_LIB  := libOsCallsShim.so
 
 all: $(BIN)/$(SHARED_LIB)
 
 $(BIN)/$(SHARED_LIB): $(SRC)/*.cpp
 	mkdir -vp $(BIN)
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) -shared -o $@ $^
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) -shared -o $@ $^ $(LIBRARIES)
 
 clean:
 	-rm $(BIN)/* *.o
