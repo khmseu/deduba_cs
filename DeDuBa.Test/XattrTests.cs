@@ -1,18 +1,17 @@
-using System;
-using System.IO;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using OsCalls;
-using Xunit;
 
 namespace DeDuBa.Test;
 
 /// <summary>
-/// Tests for extended attributes (xattr) functionality via OsCalls.Xattr module.
+///     Tests for extended attributes (xattr) functionality via OsCalls.Xattr module.
 /// </summary>
 public class XattrTests : IDisposable
 {
-    private readonly string _testFilePath;
     private readonly string _testDirPath;
+    private readonly string _testFilePath;
 
     public XattrTests()
     {
@@ -40,12 +39,12 @@ public class XattrTests : IDisposable
     }
 
     /// <summary>
-    /// Helper method to set extended attributes using the setfattr command.
+    ///     Helper method to set extended attributes using the setfattr command.
     /// </summary>
     private static void SetXattr(string path, string name, string value)
     {
-        var process = System.Diagnostics.Process.Start(
-            new System.Diagnostics.ProcessStartInfo
+        var process = Process.Start(
+            new ProcessStartInfo
             {
                 FileName = "setfattr",
                 Arguments = $"-n {name} -v \"{value}\" \"{path}\"",
@@ -93,14 +92,10 @@ public class XattrTests : IDisposable
             Assert.NotNull(result);
             // When there are no xattrs, the result might be an empty object or empty array
             if (result is JsonArray array)
-            {
                 Assert.Empty(array);
-            }
             else if (result is JsonObject obj)
-            {
                 // Empty object is also acceptable
                 Assert.Empty(obj);
-            }
         }
         finally
         {
@@ -149,7 +144,7 @@ public class XattrTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -167,7 +162,7 @@ public class XattrTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -185,7 +180,7 @@ public class XattrTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -197,8 +192,8 @@ public class XattrTests : IDisposable
         try
         {
             // Create symlink using ln -s
-            var process = System.Diagnostics.Process.Start(
-                new System.Diagnostics.ProcessStartInfo
+            var process = Process.Start(
+                new ProcessStartInfo
                 {
                     FileName = "ln",
                     Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",
@@ -219,15 +214,11 @@ public class XattrTests : IDisposable
             Assert.NotNull(result);
             // When there are no xattrs, the result might be an empty object or empty array
             if (result is JsonArray array)
-            {
                 // Symlink has no xattrs (or possibly empty)
                 Assert.NotNull(array);
-            }
             else if (result is JsonObject obj)
-            {
                 // Empty object is also acceptable
                 Assert.NotNull(obj);
-            }
         }
         finally
         {

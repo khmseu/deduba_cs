@@ -717,8 +717,9 @@ public class DedubaClass
                                     flags.Add(flagName);
                                 }
                         }
+
                     string report;
-                    long fileSize = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                    var fileSize = statBuf?["st_size"]?.GetValue<long>() ?? 0;
                     if (old)
                     {
                         report = $"[{fileSize:d} -> duplicate]";
@@ -750,8 +751,8 @@ public class DedubaClass
                         _packsum = 0;
                         // lstat(entry);
 
-                        long groupId = statBuf?["st_gid"]?.GetValue<long>() ?? 0;
-                        long userId = statBuf?["st_uid"]?.GetValue<long>() ?? 0;
+                        var groupId = statBuf?["st_gid"]?.GetValue<long>() ?? 0;
+                        var userId = statBuf?["st_uid"]?.GetValue<long>() ?? 0;
                         var inodeData = new InodeData
                         {
                             FileId = Sdunpack(fsfid) as JsonElement?,
@@ -842,7 +843,6 @@ public class DedubaClass
                         {
                             var xattrListResult = Xattr.ListXattr(entry);
                             if (xattrListResult is JsonArray xattrArray)
-                            {
                                 foreach (var xattrNameNode in xattrArray)
                                 {
                                     var xattrName = xattrNameNode?.ToString();
@@ -878,7 +878,6 @@ public class DedubaClass
                                             );
                                     }
                                 }
-                            }
                         }
                         catch (Exception ex)
                         {

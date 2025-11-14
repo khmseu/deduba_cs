@@ -1,18 +1,16 @@
-using System;
-using System.IO;
-using System.Text.Json.Nodes;
+using System.ComponentModel;
+using System.Diagnostics;
 using OsCalls;
-using Xunit;
 
 namespace DeDuBa.Test;
 
 /// <summary>
-/// Tests for ACL (Access Control List) functionality via OsCalls.Acl module.
+///     Tests for ACL (Access Control List) functionality via OsCalls.Acl module.
 /// </summary>
 public class AclTests : IDisposable
 {
-    private readonly string _testFilePath;
     private readonly string _testDirPath;
+    private readonly string _testFilePath;
 
     public AclTests()
     {
@@ -42,8 +40,8 @@ public class AclTests : IDisposable
         );
 
         // Set test ACLs using setfacl
-        SetAcl(_testFilePath, "u:daemon:rwx", isDefault: false);
-        SetAcl(_testDirPath, "u:daemon:rwx", isDefault: true);
+        SetAcl(_testFilePath, "u:daemon:rwx", false);
+        SetAcl(_testDirPath, "u:daemon:rwx", true);
     }
 
     public void Dispose()
@@ -56,13 +54,13 @@ public class AclTests : IDisposable
     }
 
     /// <summary>
-    /// Helper method to set ACLs using the setfacl command.
+    ///     Helper method to set ACLs using the setfacl command.
     /// </summary>
     private static void SetAcl(string path, string aclSpec, bool isDefault)
     {
         var args = isDefault ? $"-d -m {aclSpec} \"{path}\"" : $"-m {aclSpec} \"{path}\"";
-        var process = System.Diagnostics.Process.Start(
-            new System.Diagnostics.ProcessStartInfo
+        var process = Process.Start(
+            new ProcessStartInfo
             {
                 FileName = "setfacl",
                 Arguments = args,
@@ -167,7 +165,7 @@ public class AclTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -184,7 +182,7 @@ public class AclTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -201,7 +199,7 @@ public class AclTests : IDisposable
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
-        Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
     }
 
     [Fact]
@@ -221,10 +219,8 @@ public class AclTests : IDisposable
         // Format should be like: "u::rw-,u:daemon:rwx,g::r--,m::rwx,o::r--"
         // or abbreviated forms without entries equal to mode bits
         if (!string.IsNullOrEmpty(aclText))
-        {
             // Should contain commas if there are multiple entries
             Assert.True(aclText.Contains(',') || aclText.Split(',').Length == 1);
-        }
     }
 
     [Fact]
@@ -236,8 +232,8 @@ public class AclTests : IDisposable
         try
         {
             // Create symlink using ln -s
-            var process = System.Diagnostics.Process.Start(
-                new System.Diagnostics.ProcessStartInfo
+            var process = Process.Start(
+                new ProcessStartInfo
                 {
                     FileName = "ln",
                     Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",

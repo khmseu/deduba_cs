@@ -132,7 +132,7 @@
       "label": "Format: Trunk + CSharpier",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "trunk check -ay; dotnet tool run csharpier format ."],
+      "args": ["-lc", "trunk check -ay; dotnet tool run csharpier format .; clang-format -i */*/*.{h,cpp}"],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
