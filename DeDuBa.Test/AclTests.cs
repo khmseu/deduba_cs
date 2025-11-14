@@ -19,15 +19,27 @@ public class AclTests : IDisposable
         // Create a temporary test file
         _testFilePath = Path.Combine(Path.GetTempPath(), $"acl_test_{Guid.NewGuid()}.txt");
         File.WriteAllText(_testFilePath, "Test content for ACL testing");
-        File.SetUnixFileMode(_testFilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | 
-                                            UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        File.SetUnixFileMode(
+            _testFilePath,
+            UnixFileMode.UserRead
+                | UnixFileMode.UserWrite
+                | UnixFileMode.GroupRead
+                | UnixFileMode.OtherRead
+        );
 
         // Create a temporary test directory
         _testDirPath = Path.Combine(Path.GetTempPath(), $"acl_test_dir_{Guid.NewGuid()}");
         Directory.CreateDirectory(_testDirPath);
-        File.SetUnixFileMode(_testDirPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                                           UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                                           UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        File.SetUnixFileMode(
+            _testDirPath,
+            UnixFileMode.UserRead
+                | UnixFileMode.UserWrite
+                | UnixFileMode.UserExecute
+                | UnixFileMode.GroupRead
+                | UnixFileMode.GroupExecute
+                | UnixFileMode.OtherRead
+                | UnixFileMode.OtherExecute
+        );
 
         // Set test ACLs using setfacl
         SetAcl(_testFilePath, "u:daemon:rwx", isDefault: false);
@@ -49,15 +61,17 @@ public class AclTests : IDisposable
     private static void SetAcl(string path, string aclSpec, bool isDefault)
     {
         var args = isDefault ? $"-d -m {aclSpec} \"{path}\"" : $"-m {aclSpec} \"{path}\"";
-        var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = "setfacl",
-            Arguments = args,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
+        var process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "setfacl",
+                Arguments = args,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        );
         process?.WaitForExit();
     }
 
@@ -72,11 +86,11 @@ public class AclTests : IDisposable
         var obj = result.AsObject();
         Assert.NotNull(obj);
         Assert.True(obj.ContainsKey("acl_text"));
-        
+
         var aclText = obj["acl_text"]?.ToString();
         Assert.NotNull(aclText);
         Assert.NotEmpty(aclText);
-        
+
         // The ACL should contain the daemon user entry we set
         Assert.Contains("daemon", aclText);
         Assert.Contains("rwx", aclText);
@@ -93,11 +107,11 @@ public class AclTests : IDisposable
         var obj = result.AsObject();
         Assert.NotNull(obj);
         Assert.True(obj.ContainsKey("acl_text"));
-        
+
         var aclText = obj["acl_text"]?.ToString();
         Assert.NotNull(aclText);
         Assert.NotEmpty(aclText);
-        
+
         // The default ACL should contain the daemon user entry we set
         Assert.Contains("daemon", aclText);
         Assert.Contains("rwx", aclText);
@@ -109,8 +123,13 @@ public class AclTests : IDisposable
         // Arrange - create a file with no extended ACL entries
         var cleanFilePath = Path.Combine(Path.GetTempPath(), $"acl_clean_{Guid.NewGuid()}.txt");
         File.WriteAllText(cleanFilePath, "Clean file");
-        File.SetUnixFileMode(cleanFilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | 
-                                            UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        File.SetUnixFileMode(
+            cleanFilePath,
+            UnixFileMode.UserRead
+                | UnixFileMode.UserWrite
+                | UnixFileMode.GroupRead
+                | UnixFileMode.OtherRead
+        );
 
         try
         {
@@ -122,7 +141,7 @@ public class AclTests : IDisposable
             var obj = result.AsObject();
             Assert.NotNull(obj);
             Assert.True(obj.ContainsKey("acl_text"));
-            
+
             var aclText = obj["acl_text"]?.ToString();
             // With TEXT_ABBREVIATE flag, minimal ACLs (equal to mode bits) may return empty,
             // or may return the basic permission entries
@@ -145,7 +164,7 @@ public class AclTests : IDisposable
         {
             Acl.GetFileDefault(_testFilePath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -162,7 +181,7 @@ public class AclTests : IDisposable
         {
             Acl.GetFileAccess(nonExistentPath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -179,7 +198,7 @@ public class AclTests : IDisposable
         {
             Acl.GetFileDefault(nonExistentPath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -197,7 +216,7 @@ public class AclTests : IDisposable
         Assert.NotNull(obj);
         var aclText = obj["acl_text"]?.ToString();
         Assert.NotNull(aclText);
-        
+
         // Short text format uses commas as separators (TEXT_ABBREVIATE flag)
         // Format should be like: "u::rw-,u:daemon:rwx,g::r--,m::rwx,o::r--"
         // or abbreviated forms without entries equal to mode bits
@@ -213,19 +232,21 @@ public class AclTests : IDisposable
     {
         // Arrange - create a symlink to the test file
         var symlinkPath = Path.Combine(Path.GetTempPath(), $"acl_symlink_{Guid.NewGuid()}.txt");
-        
+
         try
         {
             // Create symlink using ln -s
-            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "ln",
-                Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
+            var process = System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "ln",
+                    Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            );
             process?.WaitForExit();
 
             // Act - GetFileAccess follows symlinks by default
@@ -236,7 +257,7 @@ public class AclTests : IDisposable
             var obj = result.AsObject();
             Assert.NotNull(obj);
             Assert.True(obj.ContainsKey("acl_text"));
-            
+
             var aclText = obj["acl_text"]?.ToString();
             Assert.NotNull(aclText);
             // Should contain the daemon ACL we set on the target

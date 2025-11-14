@@ -28,7 +28,11 @@ echo
 echo "Setting default ACL on directory..."
 setfacl -d -m u:daemon:rwx "${TEST_DIR}"
 echo "Default ACL (getfacl):"
-getfacl -d "${TEST_DIR}" 2>/dev/null | grep -v "^#"
+if default_acl=$(getfacl -d "${TEST_DIR}" 2>/dev/null); then
+	awk '!/^#/' <<<"${default_acl}"
+else
+	echo "Unable to read default ACL for ${TEST_DIR}" >&2
+fi
 
 echo
 echo "Now run the C# test to verify ACL reading works"

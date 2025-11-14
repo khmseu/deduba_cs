@@ -794,7 +794,10 @@ public class DedubaClass
                                 {
                                     var aclBytes = Encoding.UTF8.GetBytes(aclText);
                                     var aclMem = new MemoryStream(aclBytes);
-                                    aclHashes = [.. Save_file(aclMem, aclBytes.Length, $"{entry} $acl")];
+                                    aclHashes =
+                                    [
+                                        .. Save_file(aclMem, aclBytes.Length, $"{entry} $acl"),
+                                    ];
                                 }
                             }
 
@@ -807,10 +810,13 @@ public class DedubaClass
                                     && aclDefaultObj.ContainsKey("acl_text")
                                 )
                                 {
-                                    var aclDefaultText = aclDefaultObj["acl_text"]?.ToString() ?? "";
+                                    var aclDefaultText =
+                                        aclDefaultObj["acl_text"]?.ToString() ?? "";
                                     if (!string.IsNullOrEmpty(aclDefaultText))
                                     {
-                                        var aclDefaultBytes = Encoding.UTF8.GetBytes(aclDefaultText);
+                                        var aclDefaultBytes = Encoding.UTF8.GetBytes(
+                                            aclDefaultText
+                                        );
                                         var aclDefaultMem = new MemoryStream(aclDefaultBytes);
                                         var defaultHashes = Save_file(
                                             aclDefaultMem,
@@ -851,7 +857,8 @@ public class DedubaClass
                                             && xattrValueObj.ContainsKey("value")
                                         )
                                         {
-                                            var xattrValue = xattrValueObj["value"]?.ToString() ?? "";
+                                            var xattrValue =
+                                                xattrValueObj["value"]?.ToString() ?? "";
                                             var xattrBytes = Encoding.UTF8.GetBytes(xattrValue);
                                             var xattrMem = new MemoryStream(xattrBytes);
                                             var xattrHashList = Save_file(
@@ -1085,7 +1092,10 @@ public class DedubaClass
             var aclInfo = aclCount > 0 ? $"{aclCount} acl hash(es)" : "";
             var xattrCount = Xattr.Count;
             var xattrInfo = xattrCount > 0 ? $"{xattrCount} xattr(s)" : "";
-            var extras = string.Join(" ", new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s)));
+            var extras = string.Join(
+                " ",
+                new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s))
+            );
             return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
         }
     }

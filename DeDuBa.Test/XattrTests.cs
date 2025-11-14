@@ -44,15 +44,17 @@ public class XattrTests : IDisposable
     /// </summary>
     private static void SetXattr(string path, string name, string value)
     {
-        var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = "setfattr",
-            Arguments = $"-n {name} -v \"{value}\" \"{path}\"",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
+        var process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "setfattr",
+                Arguments = $"-n {name} -v \"{value}\" \"{path}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        );
         process?.WaitForExit();
     }
 
@@ -195,15 +197,17 @@ public class XattrTests : IDisposable
         try
         {
             // Create symlink using ln -s
-            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "ln",
-                Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
+            var process = System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "ln",
+                    Arguments = $"-s \"{_testFilePath}\" \"{symlinkPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            );
             process?.WaitForExit();
 
             // Act - ListXattr with llistxattr should get symlink's xattrs, not target's
