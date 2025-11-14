@@ -13,12 +13,15 @@ The `Xattr` class in the `OsCalls` namespace provides two main functions:
 Lists all extended attribute names for the specified path (not following symlinks).
 
 **Parameters:**
+
 - `path` - Filesystem path to read xattrs from
 
 **Returns:**
+
 - `JsonArray` containing the names of all extended attributes
 
 **Example:**
+
 ```csharp
 using OsCalls;
 
@@ -37,13 +40,16 @@ foreach (var attr in xattrList.AsArray())
 Gets the value of a specific extended attribute (not following symlinks).
 
 **Parameters:**
+
 - `path` - Filesystem path to read xattr from
 - `name` - Name of the extended attribute to retrieve
 
 **Returns:**
+
 - `JsonObject` with a "value" field containing the attribute value as a string
 
 **Example:**
+
 ```csharp
 using OsCalls;
 
@@ -75,6 +81,7 @@ Both `ListXattr` and `GetXattr` use the ValXfer mechanism to transfer data from 
 ### Native POSIX APIs
 
 The C++ implementation uses:
+
 - `llistxattr(path, buffer, size)` - List extended attributes without following symlinks
 - `lgetxattr(path, name, buffer, size)` - Get attribute value without following symlinks
 
@@ -83,11 +90,13 @@ Note: The "l" prefix indicates these functions do **not** follow symbolic links.
 ## Error Handling
 
 Errors are reported through the `Utilities.Error()` function, which:
+
 - Logs errors with caller context (file, line, member name)
 - Wraps the native `Win32Exception` in a `System.Exception`
 - Preserves the full exception chain via `InnerException`
 
 **Example Error Handling:**
+
 ```csharp
 try
 {
