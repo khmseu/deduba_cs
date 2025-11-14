@@ -67,7 +67,7 @@ public class XattrTests : IDisposable
         var array = result.AsArray();
         Assert.NotNull(array);
         Assert.Equal(3, array.Count);
-        
+
         // Verify all expected attributes are present
         var attrNames = array.Select(n => n?.ToString()).ToList();
         Assert.Contains("user.test_attr", attrNames);
@@ -144,7 +144,7 @@ public class XattrTests : IDisposable
         {
             Xattr.GetXattr(_testFilePath, "user.nonexistent");
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -162,7 +162,7 @@ public class XattrTests : IDisposable
         {
             Xattr.ListXattr(nonExistentPath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -180,7 +180,7 @@ public class XattrTests : IDisposable
         {
             Xattr.GetXattr(nonExistentPath, "user.test");
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -191,7 +191,7 @@ public class XattrTests : IDisposable
     {
         // Arrange - create a symlink to the test file
         var symlinkPath = Path.Combine(Path.GetTempPath(), $"xattr_symlink_{Guid.NewGuid()}.txt");
-        
+
         try
         {
             // Create symlink using ln -s

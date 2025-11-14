@@ -84,11 +84,11 @@ public class AclTests : IDisposable
         var obj = result.AsObject();
         Assert.NotNull(obj);
         Assert.True(obj.ContainsKey("acl_text"));
-        
+
         var aclText = obj["acl_text"]?.ToString();
         Assert.NotNull(aclText);
         Assert.NotEmpty(aclText);
-        
+
         // ACL text should contain standard entries
         // Format can vary but should have user/group/other entries
         Assert.Contains("u::", aclText);
@@ -105,11 +105,11 @@ public class AclTests : IDisposable
         var obj = result.AsObject();
         Assert.NotNull(obj);
         Assert.True(obj.ContainsKey("acl_text"));
-        
+
         var aclText = obj["acl_text"]?.ToString();
         Assert.NotNull(aclText);
         Assert.NotEmpty(aclText);
-        
+
         // Default ACL text should contain standard entries
         Assert.Contains("u::", aclText);
     }
@@ -122,7 +122,7 @@ public class AclTests : IDisposable
         try
         {
             var result = Acl.GetFileDefault(_testFilePath);
-            
+
             // If it doesn't throw, it should return empty or indicate no default ACL
             var obj = result.AsObject();
             if (obj != null && obj.ContainsKey("acl_text"))
@@ -151,7 +151,7 @@ public class AclTests : IDisposable
         {
             Acl.GetFileAccess(nonExistentPath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -169,7 +169,7 @@ public class AclTests : IDisposable
         {
             Acl.GetFileDefault(nonExistentPath);
         });
-        
+
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
         Assert.IsType<System.ComponentModel.Win32Exception>(ex.InnerException);
@@ -180,7 +180,7 @@ public class AclTests : IDisposable
     {
         // Arrange - create a symlink to the test file
         var symlinkPath = Path.Combine(Path.GetTempPath(), $"acl_symlink_{Guid.NewGuid()}.txt");
-        
+
         try
         {
             // Create symlink using ln -s
@@ -203,7 +203,7 @@ public class AclTests : IDisposable
             var obj = result.AsObject();
             Assert.NotNull(obj);
             Assert.True(obj.ContainsKey("acl_text"));
-            
+
             var aclText = obj["acl_text"]?.ToString();
             Assert.NotNull(aclText);
             Assert.NotEmpty(aclText);
