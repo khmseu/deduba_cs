@@ -775,6 +775,115 @@ public class DedubaClass
                             MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
                             CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
                         };
+
+                        // Read ACLs and xattrs before file type specialization
+                        string[] aclHashes = [];
+                        Dictionary<string, IEnumerable<string>> xattrHashes = [];
+
+                        // Read ACL data
+                        try
+                        {
+                            var aclAccessResult = Acl.GetFileAccess(entry);
+                            if (
+                                aclAccessResult is JsonObject aclAccessObj
+                                && aclAccessObj.ContainsKey("acl_text")
+                            )
+                            {
+                                var aclText = aclAccessObj["acl_text"]?.ToString() ?? "";
+                                if (!string.IsNullOrEmpty(aclText))
+                                {
+                                    var aclBytes = Encoding.UTF8.GetBytes(aclText);
+                                    var aclMem = new MemoryStream(aclBytes);
+                                    aclHashes = [.. Save_file(aclMem, aclBytes.Length, $"{entry} $acl")];
+                                }
+                            }
+
+                            // For directories, also read default ACL
+                            if (flags.Contains("dir"))
+                            {
+                                var aclDefaultResult = Acl.GetFileDefault(entry);
+                                if (
+                                    aclDefaultResult is JsonObject aclDefaultObj
+                                    && aclDefaultObj.ContainsKey("acl_text")
+                                )
+                                {
+                                    var aclDefaultText = aclDefaultObj["acl_text"]?.ToString() ?? "";
+                                    if (!string.IsNullOrEmpty(aclDefaultText))
+                                    {
+                                        var aclDefaultBytes = Encoding.UTF8.GetBytes(aclDefaultText);
+                                        var aclDefaultMem = new MemoryStream(aclDefaultBytes);
+                                        var defaultHashes = Save_file(
+                                            aclDefaultMem,
+                                            aclDefaultBytes.Length,
+                                            $"{entry} $acl_default"
+                                        );
+                                        // Combine both access and default ACL hashes
+                                        aclHashes = [.. aclHashes, .. defaultHashes];
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // ACL reading may fail for files without ACLs or unsupported filesystems
+                            // This is not fatal, just log and continue
+                            if (Utilities.Testing)
+                                Utilities.ConWrite($"ACL read failed for {entry}: {ex.Message}");
+                        }
+
+                        // Read extended attributes
+                        try
+                        {
+                            var xattrListResult = Xattr.ListXattr(entry);
+                            if (xattrListResult is JsonArray xattrArray)
+                            {
+                                foreach (var xattrNameNode in xattrArray)
+                                {
+                                    var xattrName = xattrNameNode?.ToString();
+                                    if (string.IsNullOrEmpty(xattrName))
+                                        continue;
+
+                                    try
+                                    {
+                                        var xattrValueResult = Xattr.GetXattr(entry, xattrName);
+                                        if (
+                                            xattrValueResult is JsonObject xattrValueObj
+                                            && xattrValueObj.ContainsKey("value")
+                                        )
+                                        {
+                                            var xattrValue = xattrValueObj["value"]?.ToString() ?? "";
+                                            var xattrBytes = Encoding.UTF8.GetBytes(xattrValue);
+                                            var xattrMem = new MemoryStream(xattrBytes);
+                                            var xattrHashList = Save_file(
+                                                xattrMem,
+                                                xattrBytes.Length,
+                                                $"{entry} $xattr:{xattrName}"
+                                            );
+                                            xattrHashes[xattrName] = xattrHashList;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        // Individual xattr reading may fail
+                                        if (Utilities.Testing)
+                                            Utilities.ConWrite(
+                                                $"Xattr read failed for {entry}:{xattrName}: {ex.Message}"
+                                            );
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Xattr reading may fail for files without xattrs or unsupported filesystems
+                            // This is not fatal, just log and continue
+                            if (Utilities.Testing)
+                                Utilities.ConWrite($"Xattr list failed for {entry}: {ex.Message}");
+                        }
+
+                        inodeData.Acl = aclHashes;
+                        inodeData.Xattr = xattrHashes;
+
                         string[] hashes = [];
                         _ds = 0;
                         MemoryStream mem;
@@ -959,6 +1068,12 @@ public class DedubaClass
         [JsonPropertyName("hs")]
         public IEnumerable<string> Hashes { get; set; } = [];
 
+        [JsonPropertyName("acl")]
+        public IEnumerable<string> Acl { get; set; } = [];
+
+        [JsonPropertyName("xattr")]
+        public Dictionary<string, IEnumerable<string>> Xattr { get; set; } = [];
+
         /// <summary>
         ///     Returns a compact string representation for diagnostics.
         /// </summary>
@@ -966,7 +1081,12 @@ public class DedubaClass
         {
             var hashCount = Hashes.Count();
             var hashInfo = hashCount > 0 ? $"{hashCount} hash(es)" : "no hashes";
-            return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo}]";
+            var aclCount = Acl.Count();
+            var aclInfo = aclCount > 0 ? $"{aclCount} acl hash(es)" : "";
+            var xattrCount = Xattr.Count;
+            var xattrInfo = xattrCount > 0 ? $"{xattrCount} xattr(s)" : "";
+            var extras = string.Join(" ", new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s)));
+            return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
         }
     }
 }
