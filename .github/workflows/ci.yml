@@ -40,7 +40,14 @@ jobs:
       - name: Build DeDuBa project (Linux)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
 
+      - name: Build native shims (Linux)
+        run: |
+          dotnet build OsCallsCommonShim/OsCallsCommonShim.csproj --configuration ${{ matrix.configuration }}
+          dotnet build OsCallsLinuxShim/OsCallsLinuxShim.csproj --configuration ${{ matrix.configuration }}
+
       - name: Run tests
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/OsCallsCommonShim/bin/${{ matrix.configuration }}/net8.0:${{ github.workspace }}/OsCallsLinuxShim/bin/${{ matrix.configuration }}/net8.0
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
 
       - name: Package Linux artifacts
