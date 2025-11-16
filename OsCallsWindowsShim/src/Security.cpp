@@ -7,7 +7,9 @@
  * - ConvertSecurityDescriptorToStringSecurityDescriptorW
  */
 #include "Security.h"
+// windows.h must be first
 #include <windows.h>
+// rest of windows headers
 #include <sddl.h>
 
 namespace OsCallsWindows {
