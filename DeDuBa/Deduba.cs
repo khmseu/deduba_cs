@@ -6,7 +6,11 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
+#if WINDOWS
+using OsCallsWindows;
+#else
 using OsCallsLinux;
+#endif
 using UtilitiesLibrary;
 
 namespace DeDuBa;
@@ -760,17 +764,25 @@ public class DedubaClass
                             Flags = flags,
                             NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
                             Uid = Convert.ToInt64(userId),
+#if !WINDOWS
                             UserName =
                                 UserGroupDatabase
                                     .GetPwUid(Convert.ToInt64(userId))["pw_name"]
                                     ?.ToString()
                                 ?? Convert.ToInt64(userId).ToString(),
+#else
+                            UserName = Convert.ToInt64(userId).ToString(),
+#endif
                             Gid = Convert.ToInt64(groupId),
+#if !WINDOWS
                             GroupName =
                                 UserGroupDatabase
                                     .GetGrGid(Convert.ToInt64(groupId))["gr_name"]
                                     ?.ToString()
                                 ?? Convert.ToInt64(groupId).ToString(),
+#else
+                            GroupName = Convert.ToInt64(groupId).ToString(),
+#endif
                             RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
                             Size = fileSize,
                             MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
@@ -782,6 +794,7 @@ public class DedubaClass
                         Dictionary<string, IEnumerable<string>> xattrHashes = [];
 
                         // Read ACL data
+#if !WINDOWS
                         try
                         {
                             var aclAccessResult = Acl.GetFileAccess(entry);
@@ -837,8 +850,10 @@ public class DedubaClass
                             if (Utilities.Testing)
                                 Utilities.ConWrite($"ACL read failed for {entry}: {ex.Message}");
                         }
+#endif
 
                         // Read extended attributes
+#if !WINDOWS
                         try
                         {
                             var xattrListResult = Xattr.ListXattr(entry);
@@ -886,6 +901,7 @@ public class DedubaClass
                             if (Utilities.Testing)
                                 Utilities.ConWrite($"Xattr list failed for {entry}: {ex.Message}");
                         }
+#endif
 
                         inodeData.Acl = aclHashes;
                         inodeData.Xattr = xattrHashes;

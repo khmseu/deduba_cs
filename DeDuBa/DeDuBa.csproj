@@ -10,12 +10,23 @@
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <!-- Define WINDOWS symbol for Windows builds -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="ZoneTree" Version="1.8.2" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- Platform-specific project references -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
     <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
+    <ProjectReference Include="..\OsCallsWindows\OsCallsWindows.csproj" />
+  </ItemGroup>
+  <!-- Common references -->
+  <ItemGroup>
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>
