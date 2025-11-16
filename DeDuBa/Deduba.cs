@@ -913,7 +913,9 @@ public class DedubaClass
                             string? dataIslink;
                             try
                             {
-                                dataIslink = FileSystem.ReadLink(entry).GetValue<string>();
+                                // ReadLink returns a JsonObject with a "path" field set to the symlink target.
+                                var linkNode = FileSystem.ReadLink(entry);
+                                dataIslink = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
                             }
                             catch (Exception ex)
                             {
@@ -1074,10 +1076,10 @@ public class DedubaClass
         [JsonPropertyName("hs")]
         public IEnumerable<string> Hashes { get; set; } = [];
 
-        [JsonPropertyName("acl")]
+        [JsonPropertyName("ac")]
         public IEnumerable<string> Acl { get; set; } = [];
 
-        [JsonPropertyName("xattr")]
+        [JsonPropertyName("xa")]
         public Dictionary<string, IEnumerable<string>> Xattr { get; set; } = [];
 
         /// <summary>
