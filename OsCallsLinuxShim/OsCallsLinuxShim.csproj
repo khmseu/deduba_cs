@@ -18,7 +18,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsLinuxShim.so">
+  <Target Name="Make" BeforeTargets="Build" Outputs="$(OutputPath)libOsCallsLinuxShim.so">
     <Exec
       EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
       Command="make"
@@ -30,10 +30,7 @@
       Command="make clean"
     />
   </Target>
-  <Target Name="CopySharedLibrary" AfterTargets="Build">
-    <Copy SourceFiles="bin/libOsCallsLinuxShim.so" DestinationFolder="$(OutputPath)" />
-  </Target>
   <Target Name="CopyNativeLibs" AfterTargets="Publish">
-    <Copy SourceFiles="bin/libOsCallsLinuxShim.so" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="$(OutputPath)libOsCallsLinuxShim.so" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>
