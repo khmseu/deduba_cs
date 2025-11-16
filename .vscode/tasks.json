@@ -180,6 +180,44 @@
       "command": "dotnet",
       "args": ["build", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
       "group": "build"
+    },
+    {
+      "label": "Package: All Debug",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "${workspaceFolder}/scripts/package.sh all Debug"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Package: All Release",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "${workspaceFolder}/scripts/package.sh all Release"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
     }
   ]
 }
