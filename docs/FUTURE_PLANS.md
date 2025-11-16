@@ -57,18 +57,18 @@ Planned steps:
 
 ## 10. Backlog Summary
 
-| Area                | Status        | Priority |
-|---------------------|---------------|----------|
-| CI build matrix     | Pending       | High     |
-| Artifact upload     | Pending       | High     |
-| Checksums           | Pending       | High     |
-| Cleanup script      | Deferred      | Low      |
-| Wine smoke test     | Pending       | Medium   |
-| Release automation  | Pending       | High     |
-| Container image     | Idea          | Medium   |
-| Brew/winget         | Idea          | Low      |
-| Metrics export      | Idea          | Low      |
-| SBOM & signing      | Idea          | Medium   |
+| Area               | Status   | Priority |
+| ------------------ | -------- | -------- |
+| CI build matrix    | Pending  | High     |
+| Artifact upload    | Pending  | High     |
+| Checksums          | Pending  | High     |
+| Cleanup script     | Deferred | Low      |
+| Wine smoke test    | Pending  | Medium   |
+| Release automation | Pending  | High     |
+| Container image    | Idea     | Medium   |
+| Brew/winget        | Idea     | Low      |
+| Metrics export     | Idea     | Low      |
+| SBOM & signing     | Idea     | Medium   |
 
 ## 11. Immediate Next Steps (When Prioritized)
 
@@ -77,4 +77,5 @@ Planned steps:
 3. Implement release workflow triggered by tags.
 
 ---
+
 Document created: 2025-11-16
