@@ -1,3 +1,4 @@
+#if LINUX
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
@@ -227,3 +228,4 @@ public class XattrTests : IDisposable
         }
     }
 }
+#endif

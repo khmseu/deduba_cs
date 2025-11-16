@@ -6,6 +6,10 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+  <!-- Define LINUX constant for Linux platforms -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
+    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
@@ -19,7 +23,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../OsCallsLinux/OsCallsLinux.csproj" />
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
+  </ItemGroup>
+  <!-- Conditional platform-specific references -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
+    <ProjectReference Include="../OsCallsLinux/OsCallsLinux.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
+    <ProjectReference Include="../OsCallsWindows/OsCallsWindows.csproj" />
   </ItemGroup>
 </Project>

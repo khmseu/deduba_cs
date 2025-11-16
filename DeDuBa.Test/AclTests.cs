@@ -1,3 +1,4 @@
+#if LINUX
 using System.ComponentModel;
 using System.Diagnostics;
 using OsCallsLinux;
@@ -266,3 +267,4 @@ public class AclTests : IDisposable
         }
     }
 }
+#endif
