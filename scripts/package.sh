@@ -7,10 +7,10 @@ set -euo pipefail
 # Usage:
 #   scripts/package.sh [linux-x64|win-x64|all] [Debug|Release]
 #
-# Outputs:
-#   dist/DeDuBa-<rid>/ ... files ...
-#   dist/DeDuBa-<rid>.tar.gz (Linux)
-#   dist/DeDuBa-<rid>.zip    (Windows)
+# Outputs (version from MinVer):
+#   dist/DeDuBa-<version>-<rid>/ ... files ...
+#   dist/DeDuBa-<version>-<rid>.tar.gz (Linux)
+#   dist/DeDuBa-<version>-<rid>.zip    (Windows)
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 DIST_DIR="${ROOT_DIR}/dist"
@@ -21,9 +21,22 @@ mkdir -p "${DIST_DIR}"
 
 log() { echo "[package] $*"; }
 
+get_version() {
+  # Prefer msbuild property if available; fallback to parsing build output.
+  if VERSION_LINE=$(dotnet msbuild "${ROOT_DIR}/DeDuBa/DeDuBa.csproj" -nologo -t:MinVer -getProperty:MinVerVersion 2>/dev/null); then
+    [[ -n "${VERSION_LINE}" ]] && echo "${VERSION_LINE}" && return 0
+  fi
+  dotnet build "${ROOT_DIR}/DeDuBa/DeDuBa.csproj" -c "${CONFIG}" -nologo | \
+    awk '/MinVer: Calculated version/{print $4; exit}' || echo "0.0.0-unknown"
+}
+
+VERSION="$(get_version)"
+log "Resolved version: ${VERSION}"
+
 publish_linux() {
   local rid="linux-x64"
-  local out_dir="${DIST_DIR}/DeDuBa-${rid}"
+  local base_name="DeDuBa-${VERSION}-${rid}"
+  local out_dir="${DIST_DIR}/${base_name}"
   log "Building native shims for ${rid} (${CONFIG})"
   dotnet build "${ROOT_DIR}/OsCallsCommonShim/OsCallsCommonShim.csproj" -c "${CONFIG}" >/dev/null
   dotnet build "${ROOT_DIR}/OsCallsLinuxShim/OsCallsLinuxShim.csproj" -c "${CONFIG}" >/dev/null
@@ -50,13 +63,14 @@ EOF
   chmod +x "${out_dir}/run.sh"
 
   # Archive
-  (cd "${DIST_DIR}" && tar czf "DeDuBa-${rid}.tar.gz" "$(basename "${out_dir}")")
-  log "Created ${DIST_DIR}/DeDuBa-${rid}.tar.gz"
+  (cd "${DIST_DIR}" && tar czf "${base_name}.tar.gz" "$(basename "${out_dir}")")
+  log "Created ${DIST_DIR}/${base_name}.tar.gz"
 }
 
 publish_windows() {
   local rid="win-x64"
-  local out_dir="${DIST_DIR}/DeDuBa-${rid}"
+  local base_name="DeDuBa-${VERSION}-${rid}"
+  local out_dir="${DIST_DIR}/${base_name}"
   log "Building native shim (cross) for ${rid} (${CONFIG})"
   dotnet build "${ROOT_DIR}/OsCallsWindowsShim/OsCallsWindowsShim.csproj" -c "${CONFIG}" -r "${rid}" >/dev/null
 
@@ -76,8 +90,8 @@ publish_windows() {
   fi
 
   # Archive (zip)
-  (cd "${DIST_DIR}" && zip -qr "DeDuBa-${rid}.zip" "$(basename "${out_dir}")")
-  log "Created ${DIST_DIR}/DeDuBa-${rid}.zip"
+  (cd "${DIST_DIR}" && zip -qr "${base_name}.zip" ""$(basename "${out_dir}")"")
+  log "Created ${DIST_DIR}/${base_name}.zip"
 }
 
 case "${TARGET}" in
