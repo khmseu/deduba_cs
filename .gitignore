@@ -481,6 +481,7 @@ inc/
 *.code-profile
 artest.diff
 artest*.diff
+build/
 DeDuBa/aaaa.cs
 DeDuBa/xxx.*
 docs/_site/
