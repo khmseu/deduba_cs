@@ -188,8 +188,26 @@ Follow **Conventional Commits** format: `<type>(<scope>): <subject>`
 **Examples:**
 ```
 feat(linux): implement ACL support via acl_get_file
+
+- Add P/Invoke wrapper for acl_get_file
+- Serialize ACL entries into JSON
+- Cover with xUnit tests (AclTests)
+
 fix(valxfer): handle null pointers in ToNode cursor
+
+Prevent NRE when native cursor returns null. Add unit test; no behavior
+change otherwise.
+
 docs: update cross-platform interop architecture
+
+Document 3-layer interop pattern and library path requirements.
+
 refactor(deduba): simplify hardlink detection logic
+
+Extract helper method and remove duplication; no behavior change.
+
 build(shim): add RPATH to OsCallsLinuxShim Makefile
+
+Ensure runtime linker resolves libOsCallsCommonShim without manual
+LD_LIBRARY_PATH.
 ```
