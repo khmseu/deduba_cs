@@ -482,6 +482,9 @@ inc/
 artest.diff
 artest*.diff
 build/
+# Native Windows shim local build dirs
+OsCallsWindowsShim/build-win-x64/
+OsCallsWindowsShim/build-win*/
 DeDuBa/aaaa.cs
 DeDuBa/xxx.*
 docs/_site/
