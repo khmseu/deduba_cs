@@ -42,6 +42,8 @@ jobs:
 
       - name: Run tests
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
+        env:
+          LD_LIBRARY_PATH: "${{ github.workspace }}/OsCallsCommonShim/bin/${{ matrix.configuration }}/net8.0:${{ github.workspace }}/OsCallsLinuxShim/bin/${{ matrix.configuration }}/net8.0"
 
       - name: Package Linux artifacts
         if: matrix.configuration == 'Release'
