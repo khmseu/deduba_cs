@@ -2,121 +2,163 @@
 
 ## Architecture Overview
 
-DeDuBa is a deduplicating backup system being ported from Perl to C# . It uses content-addressable storage with SHA-512 hashing and BZip2 compression.
+DeDuBa is a deduplicating backup system ported from Perl to C#. Uses content-addressable storage with SHA-512 hashing and BZip2 compression.
 
-**Core Components:**
+**9-Project Solution Structure:**
 
-- **DeDuBa** (main): C# port of the backup logic (`DeDuBa/Deduba.cs`)
-- **OsCalls**: C# wrapper for native filesystem operations
-- **OsCallsShim**: C++ shared library (`libOsCallsShim.so`) exposing POSIX syscalls (lstat, readlink, canonicalize_file_name)
-- **UtilitiesLibrary**: Shared utilities for logging, debugging, and JSON serialization
+1. **DeDuBa** - Main backup logic (`DeDuBa/Deduba.cs`)
+2. **DeDuBa.Test** - xUnit tests for ACLs, xattrs, core functionality
+3. **OsCallsCommon** - Platform-agnostic C# ValueT→JSON bridge
+4. **OsCallsCommonShim** - Shared C++ ValueT cursor (CreateHandle/GetNextValue)
+5. **OsCallsLinux** - Linux C# wrappers (lstat, ACLs, xattrs via P/Invoke)
+6. **OsCallsLinuxShim** - Linux native POSIX implementations (`libOsCallsLinuxShim.so`)
+7. **OsCallsWindows** - Windows C# wrappers (stubs for security, ADS)
+8. **OsCallsWindowsShim** - Windows native stubs (`OsCallsWindowsShim.dll`)
+9. **UtilitiesLibrary** - Logging, debugging, JSON serialization
 
 ## Critical Architecture Patterns
 
-### Native Interop Layer
+### Cross-Platform Native Interop (3-Layer Design)
 
-The system uses a unique **C# → C++ → POSIX** interop pattern via P/Invoke:
+**Flow: C# Platform Wrapper → Common Bridge → Platform Native Impl**
 
-1. C# calls into `libOsCallsShim.so` using `[DllImport]`
-2. C++ exposes POSIX syscalls returning complex `ValueT*` structures
-3. `ValXfer.cs` converts pointer-based data to JSON using a state machine iterator pattern (`GetNextValue()`)
+1. **Common bridge** (`OsCallsCommon/ValXfer.cs`):
+	- `PlatformGetNextValue` delegate set at runtime by OsCallsLinux/Windows
+	- `ToNode(ValueT* value)` iterates native cursor → JsonNode
+	- Single source of truth for ValueT protocol
 
-**Key files:**
+2. **Platform wrappers**:
+	- `OsCallsLinux/FileSystem.cs`: `[LibraryImport("libOsCallsLinuxShim.so")]`
+	- `OsCallsWindows/FileSystem.cs`: `[LibraryImport("OsCallsWindowsShim.dll")]`
+	- Static constructor sets `ValXfer.PlatformGetNextValue = GetNextValue`
 
-- `OsCalls/ValXfer.cs` - The bridging layer using unsafe pointers
-- `OsCallsShim/src/FileSystem.cpp` - Native implementations
-- `OsCallsShim/include/ValXfer.h` - Shared struct definitions
+3. **Native implementations**:
+	- Linux: POSIX (lstat, readlink, acl_get_file, llistxattr, getpwuid)
+	- Windows: Win32 stubs (TODO: CreateFileW, GetFinalPathNameByHandleW)
+	- Both call `CreateHandle()` from `OsCallsCommonShim/src/ValXfer.cpp`
 
+**Critical files:**
+
+- `OsCallsCommon/ValXfer.cs` - Unsafe pointer→JSON with delegate pattern
+- `OsCallsCommonShim/include/ValXfer.h` - Shared HandleT/ValueT/TypeT structs
+- `OsCallsLinuxShim/src/*.cpp` - Native handlers (handle_lstat, handle_readlink)
+- `OsCallsLinuxShim/Makefile` - Links `-lOsCallsCommonShim` with RPATH
 ### Content-Addressable Storage
 
-Files are chunked (1GB chunks), SHA-512 hashed, and stored in a hierarchical directory structure under `DATA/`:
-
-```text
+Files chunked (1GB), SHA-512 hashed, stored hierarchically:
+```
 DATA/ab/cd/abcdef123456789...  # hex(sha512(chunk))
 ```
-
-When a prefix directory exceeds 255 entries, it's automatically reorganized into subdirectories by the next 2 hex digits.
-
-## Developer Workflows
-
+Auto-reorganizes when prefix dir exceeds 255 entries (splits by next 2 hex digits).
 ### Building
 
 ```bash
-# Build everything (including C++ shim via Makefile)
-dotnet build
-
-# The OsCallsShim.csproj hooks into Makefile for C++ compilation
-# See custom targets: Make, MakeClean, CopySharedLibrary, CopyNativeLibs
+dotnet build  # Builds all 9 projects including C++ shims via Makefile/CMake
 ```
 
-### Running & Debugging
+**Build internals:**
+- `OsCallsLinuxShim.csproj` → runs `make` via `<Target Name="Make">`
+- `OsCallsCommonShim.csproj` → builds `libOsCallsCommonShim.so` first (dependency)
+- Makefile safety: Checks `BIN` != empty/root before `clean` (prevents `rm /*`)
+### Running & Testing
 
 ```bash
-# Set library path for libOsCallsShim.so
-export LD_LIBRARY_PATH=/bigdata/KAI/projects/Backup/deduba_cs/OsCallsShim/bin/Debug/net8.0
+# Scripts auto-derive paths from script location
+./test.sh              # Run backup on workspace, silent
+./test-show.sh         # Same with full output to ../test.ansi
+./demo-xattr.sh        # Demo xattr functionality
 
-# Run with test archive
+# Or manually:
+export LD_LIBRARY_PATH="${PWD}/OsCallsCommonShim/bin/Debug/net8.0:${PWD}/OsCallsLinuxShim/bin/Debug/net8.0"
 dotnet run --project=DeDuBa -- <files-to-backup>
-
 ```
 
-**Debug configurations** (`.vscode/launch.json`):
+**Library path requirements:**
+- MUST include both `OsCallsCommonShim` and `OsCallsLinuxShim` directories
+- Scripts use `SCRIPT_DIR` pattern: `$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)`
+- Missing LD_LIBRARY_PATH → cryptic `DllNotFoundException`
 
-- "C# : DeDuBa Debug" - Managed debugging
-- "C++: DeDuBa Debug" - Native debugging with gdb
+### Debugging
 
-Both require `LD_LIBRARY_PATH` set correctly. Use platform input prompt (linux-x64/win-x64).
+`.vscode/launch.json` has two configs:
 
-### Testing Architecture
+- **"C#: DeDuBa Debug"** - Managed debugging with coreclr
+- **"C++: DeDuBa Debug"** - Native debugging with gdb (set breakpoints in .cpp files)
 
-Historical note: The comparative test harness for Perl versus C# has been retired after migration to unified JSON encoding. Scripts `tester.sh`, `logfilter.pl`, and the Perl reference implementation were removed to simplify the workflow.
+Both auto-prompt for platform (linux-x64/win-x64) and set LD_LIBRARY_PATH correctly.
+### Error Handling Pattern
 
-## Project-Specific Conventions
+**NEVER throw directly.** Always use:
+```csharp
+Utilities.Error(file, operation, exception);
+```
 
-### Error Handling
+This captures:
+- Caller context: `[CallerFilePath]`, `[CallerLineNumber]`, `[CallerMemberName]`
+- Full exception chain via recursive `InnerException`
+- Dual output: console (if `Testing=true`) + `_log` StreamWriter
+### Metadata Serialization
 
-All errors use `Utilities.Error(file, operation, exception)` which:
+**C# uses standard JSON serialization** via `Sdpack`/`Sdunpack` wrappers:
 
-- Includes caller context via `[CallerFilePath]`, `[CallerLineNumber]`, `[CallerMemberName]`
-- Writes to both console (if `Testing = true`) and `_log` StreamWriter
-- Preserves full exception chains via recursive `InnerException` handling
+```csharp
+Sdpack(object? v, string name)   // → JsonSerializer.Serialize(v)
+Sdunpack(string value)            // → JsonSerializer.Deserialize<object>(value)
+```
 
-**Never** throw directly—always route through `Utilities.Error()`.
-
-### Data Serialization
-
-The system uses custom binary serialization (`Sdpack`/`Sdunpack`) with variable-length integer encoding (`pack_w`/`Unpack_w`):
-
-- `'s'` prefix = string
-- `'n'`/`'N'` prefix = positive/negative packed integer
-- `'l'` prefix = list with packed count and element lengths
-- `'u'` prefix = null/undefined
-
-This compact format reduces metadata overhead in the archive.
-
+The Perl original used custom binary encoding (`pack 'w'` for variable-length integers, prefix chars like `'s'`, `'n'`, `'l'`, `'u'`), but the C# port simplified this to JSON for easier debugging and cross-platform compatibility.
 ### Directory Tracking
 
-`Dirtmp` dictionary accumulates directory entries during traversal, then serializes them as packed lists stored in the parent directory's inode data. This enables incremental directory reconstruction.
-
+`Dirtmp` dictionary accumulates entries during traversal → serialized as packed lists → stored in parent dir's inode data. Enables incremental reconstruction.
 ### Hardlink Detection
 
-Files are tracked by `(st_dev, st_ino)` in `Fs2Ino` dictionary. When the same inode is encountered again, it's marked as duplicate without reprocessing.
+Track files by `(st_dev, st_ino)` in `Fs2Ino` dict. Duplicate inode → skip reprocessing.
+1. **Linking errors**: If `undefined symbol: CreateHandle`:
+	- Verify `OsCallsLinuxShim/Makefile` links `-lOsCallsCommonShim`
+	- Check RPATH: `readelf -d libOsCallsLinuxShim.so | grep RUNPATH`
+	- Ensure `OsCallsLinuxShim.csproj` has `<ProjectReference>` to `OsCallsCommonShim`
 
-## Testing Mode
+2. **Makefile variables**: Use `$(if $(VAR),$(VAR),default)` pattern for OUT_DIR/PROJECT_DIR
+	- Safety checks in `clean` target prevent `rm /*` disasters
 
-Set `Utilities.Testing = true` (default) to:
+3. **Path normalization**: Always use `FileSystem.Canonicalizefilename()` for user inputs (resolves symlinks/relative paths)
 
-- Use local test archive `/home/kai/projects/Backup/ARCHIVE3` instead of `/archive/backup`
-- Enable verbose `ConWrite()` output with timestamps/locations
-- Output all `Dumper()` diagnostics
+4. **Platform detection**: Currently Linux-only at runtime. DeDuBa directly imports `OsCallsLinux` namespace.
+	- Future: Add runtime platform check to switch between OsCallsLinux/OsCallsWindows
+Default `Utilities.Testing = true`:
 
-## Common Pitfalls
+- Uses local archive `~/projects/Backup/ARCHIVE4` (not `/archive/backup`)
+- Verbose `ConWrite()` output with timestamps/locations
+- All `Dumper()` diagnostics enabled
+## Windows Implementation Status
 
-1. **Library loading**: Always set `LD_LIBRARY_PATH` before running. Missing this causes cryptic DllNotFoundException.
-2. **Struct layout**: `ValXfer.ValueT` uses `[StructLayout(LayoutKind.Sequential)]` matching C++ memory layout. Any changes require coordination across C# / C++ boundaries.
-3. **Path normalization**: Use `FileSystem.Canonicalizefilename()` for all user inputs to resolve symlinks/relative paths consistently.
-4. **Memory safety**: `ValXfer.ToNode()` uses unsafe pointers. The C++ side manages lifetime via handle callbacks (`handle_lstat`, `handle_readlink`, `handle_cfn`).
+**OsCallsWindows/OsCallsWindowsShim are stubs:**
 
-## Port Status
+- All functions return `ERROR_CALL_NOT_IMPLEMENTED`
+- TODO: Implement Win32 APIs:
+	- `CreateFileW` + `FILE_FLAG_OPEN_REPARSE_POINT`
+	- `GetFileInformationByHandleEx` (FileBasicInfo, FileIdInfo)
+	- `DeviceIoControl` + `FSCTL_GET_REPARSE_POINT`
+	- `GetFinalPathNameByHandleW`
+	- `GetNamedSecurityInfoW` → SDDL string
+	- `FindFirstStreamW/FindNextStreamW` (ADS enumeration)
 
-This is an **active Perl → C# port**. Reference `deduba.pl` when C# behavior is unclear. The test harness validates equivalence between implementations.
+See `OsCallsWindowsShim/README.md` for build instructions and implementation checklist.
+
+## Documentation
+
+```bash
+# Generate C++ API docs (Doxygen → docs/doxygen/html)
+doxygen docs/Doxyfile
+
+# Generate C# API docs (DocFX → docs/_site)
+docfx docs/docfx.json
+
+# Or run task: "Docs: Generate all (Doxygen + DocFX)"
+```
+
+Doxygen processes all shim headers: `OsCallsCommonShim/include`, `OsCallsLinuxShim/include`, `OsCallsWindowsShim/include`.
+
+## Historical Context
+
+**Active Perl → C# port.** Original `deduba.pl` is reference implementation. Test harness for Perl/C# comparison was retired after JSON encoding unification.
