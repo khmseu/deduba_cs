@@ -8,4 +8,26 @@
   <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
+
+  <!-- Cross-compile native DLL via CMake only for Windows RID builds (win-x64) -->
+  <PropertyGroup>
+    <NativeBuildDir>$(MSBuildThisFileDirectory)build-win-x64</NativeBuildDir>
+    <CMakeToolchainFile>$(MSBuildThisFileDirectory)cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
+  </PropertyGroup>
+
+  <Target Name="ConfigureNative" Condition="'$(RuntimeIdentifier)' == 'win-x64'" BeforeTargets="Build">
+    <Message Text="Configuring CMake (toolchain: $(CMakeToolchainFile)) into $(NativeBuildDir)" Importance="High" />
+    <MakeDir Directories="$(NativeBuildDir)" />
+    <Exec Command="cmake -S &quot;$(MSBuildThisFileDirectory)&quot; -B &quot;$(NativeBuildDir)&quot; -G Ninja -DCMAKE_TOOLCHAIN_FILE=&quot;$(CMakeToolchainFile)&quot;" />
+  </Target>
+
+  <Target Name="BuildNative" Condition="'$(RuntimeIdentifier)' == 'win-x64'" DependsOnTargets="ConfigureNative" BeforeTargets="Build">
+    <Message Text="Building native OsCallsWindowsShim via CMake in $(NativeBuildDir)" Importance="High" />
+    <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot;" />
+  </Target>
+
+  <Target Name="CleanNative" Condition="Exists('$(NativeBuildDir)')" AfterTargets="Clean">
+    <Message Text="Cleaning native build directory $(NativeBuildDir)" Importance="Low" />
+    <RemoveDir Directories="$(NativeBuildDir)" />
+  </Target>
 </Project>
