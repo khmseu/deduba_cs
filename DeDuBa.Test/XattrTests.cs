@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
-using OsCalls;
+using OsCallsLinux;
 
 namespace DeDuBa.Test;
 

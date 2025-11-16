@@ -11,11 +11,14 @@
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="libOsCallsShim.so">
+    <ProjectReference Include="..\OsCallsCommonShim\OsCallsCommonShim.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="libOsCallsLinuxShim.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsShim.so">
+  <Target Name="Make" BeforeTargets="Build" Outputs="bin/libOsCallsLinuxShim.so">
     <Exec
       EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
       Command="make"
@@ -28,9 +31,9 @@
     />
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
-    <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(OutputPath)" />
+    <Copy SourceFiles="bin/libOsCallsLinuxShim.so" DestinationFolder="$(OutputPath)" />
   </Target>
   <Target Name="CopyNativeLibs" AfterTargets="Publish">
-    <Copy SourceFiles="$(OutDir)/libOsCallsShim.so" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="bin/libOsCallsLinuxShim.so" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>

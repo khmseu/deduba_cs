@@ -10,7 +10,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OsCallsShim\OsCallsShim.csproj" />
+    <ProjectReference Include="..\OsCallsCommon\OsCallsCommon.csproj" />
+    <ProjectReference Include="..\OsCallsLinuxShim\OsCallsLinuxShim.csproj" />
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>

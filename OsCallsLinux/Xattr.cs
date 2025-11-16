@@ -1,8 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using OsCallsCommon;
 
-namespace OsCalls;
+namespace OsCallsLinux;
 
 /// <summary>
 ///     Wrapper for native extended attributes (xattr) reading functions.
@@ -31,11 +32,11 @@ public static unsafe partial class Xattr
         return ValXfer.ToNode(lgetxattr(path, name), path, nameof(lgetxattr));
     }
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* llistxattr(string path);
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* lgetxattr(string path, string name);
 }

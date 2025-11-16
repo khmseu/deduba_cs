@@ -1,27 +1,41 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
-using static OsCalls.ValXfer;
+using OsCallsCommon;
+using static OsCallsCommon.ValXfer;
 
-namespace OsCalls;
+namespace OsCallsLinux;
 
 /// <summary>
-///     Thin P/Invoke wrapper around native POSIX filesystem calls exposed by libOsCallsShim.so.
+///     Thin P/Invoke wrapper around native POSIX filesystem calls exposed by libOsCallsLinuxShim.so.
 ///     Converts native iterator-style ValueT streams into JSON nodes via <see cref="ValXfer.ToNode" />.
 /// </summary>
 public static unsafe partial class FileSystem
 {
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* lstat(string path);
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* readlink(string path);
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* canonicalize_file_name(string path);
+
+    [LibraryImport("libOsCallsLinuxShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetNextValue(ValueT* value);
+
+    /// <summary>
+    ///     Initialize the platform-specific GetNextValue delegate for ValXfer.
+    /// </summary>
+    static FileSystem()
+    {
+        ValXfer.PlatformGetNextValue = GetNextValue;
+    }
 
     /// <summary>
     ///     Gets file status for the supplied path (like POSIX lstat), without following symlinks.

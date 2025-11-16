@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <!-- Windows DLL will be built using MSBuild/CMake in the future -->
+  <!-- For now, this is a placeholder project -->
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
+</Project>

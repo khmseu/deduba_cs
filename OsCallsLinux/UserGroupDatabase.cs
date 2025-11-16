@@ -1,9 +1,10 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
-using static OsCalls.ValXfer;
+using OsCallsCommon;
+using static OsCallsCommon.ValXfer;
 
-namespace OsCalls;
+namespace OsCallsLinux;
 
 /// <summary>
 ///     Access to system user/group databases via native libc calls (getpwuid/getgrgid).
@@ -11,11 +12,11 @@ namespace OsCalls;
 /// </summary>
 public static unsafe partial class UserGroupDatabase
 {
-    [LibraryImport("libOsCallsShim.so")]
+    [LibraryImport("libOsCallsLinuxShim.so")]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* getpwuid(long uid);
 
-    [LibraryImport("libOsCallsShim.so")]
+    [LibraryImport("libOsCallsLinuxShim.so")]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* getgrgid(long gid);
 

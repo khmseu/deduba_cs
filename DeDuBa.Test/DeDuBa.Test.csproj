@@ -19,7 +19,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../OsCalls/OsCalls.csproj" />
+    <ProjectReference Include="../OsCallsLinux/OsCallsLinux.csproj" />
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>

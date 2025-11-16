@@ -6,7 +6,9 @@
           "src": "..",
           "files": [
             "DeDuBa/DeDuBa.csproj",
-            "OsCalls/OsCalls.csproj",
+            "OsCallsCommon/OsCallsCommon.csproj",
+            "OsCallsLinux/OsCallsLinux.csproj",
+            "OsCallsWindows/OsCallsWindows.csproj",
             "UtilitiesLibrary/UtilitiesLibrary.csproj"
           ]
         }

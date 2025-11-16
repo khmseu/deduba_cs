@@ -19,5 +19,7 @@ MULTILINE_CPP_IS_BRIEF = YES
 CASE_SENSE_NAMES       = NO
 
 # Source inputs (relative to this Doxyfile in docs/)
-INPUT                  = ../OsCallsShim/include
+INPUT                  = ../OsCallsCommonShim/include \
+                         ../OsCallsLinuxShim/include \
+                         ../OsCallsWindowsShim/include
 FILE_PATTERNS          = *.h

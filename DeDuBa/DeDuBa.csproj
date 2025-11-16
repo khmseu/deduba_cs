@@ -15,7 +15,7 @@
     <PackageReference Include="ZoneTree" Version="1.8.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OsCalls\OsCalls.csproj" />
+    <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" />
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>

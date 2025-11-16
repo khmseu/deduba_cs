@@ -1,8 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using OsCallsCommon;
 
-namespace OsCalls;
+namespace OsCallsLinux;
 
 /// <summary>
 ///     Wrapper for native ACL (Access Control List) reading functions.
@@ -32,11 +33,11 @@ public static unsafe partial class Acl
         return ValXfer.ToNode(acl_get_file_default(path), path, nameof(acl_get_file_default));
     }
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_access(string path);
 
-    [LibraryImport("libOsCallsShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_default(string path);
 }

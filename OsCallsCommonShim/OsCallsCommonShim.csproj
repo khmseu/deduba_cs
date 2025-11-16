@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <!-- Build C++ shared library via Makefile -->
+  <Target Name="Make" BeforeTargets="PreBuildEvent">
+    <Exec Command="make -C $(MSBuildProjectDirectory)" />
+  </Target>
+  <Target Name="MakeClean" AfterTargets="Clean">
+    <Exec Command="make -C $(MSBuildProjectDirectory) clean" />
+  </Target>
+  <!-- Copy the shared library to output directory -->
+  <Target Name="CopySharedLibrary" AfterTargets="Build">
+    <ItemGroup>
+      <SharedLib Include="bin/Debug/net8.0/libOsCallsCommonShim.so" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" />
+  </Target>
+</Project>

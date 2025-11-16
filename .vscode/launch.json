@@ -10,7 +10,7 @@
         },
         {
           "name": "LD_LIBRARY_PATH",
-          "value": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0"
+          "value": "${workspaceFolder}/OsCallsCommonShim/bin/Debug/net8.0:${workspaceFolder}/OsCallsLinuxShim/bin/Debug/net8.0:${workspaceFolder}/OsCallsWindowsShim/bin/Debug/net8.0"
         },
         {
           "name": "DOTNET_ROOT",
@@ -48,7 +48,7 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "LD_DEBUG": "libs",
-        "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsShim/bin/Debug/net8.0",
+        "LD_LIBRARY_PATH": "${workspaceFolder}/OsCallsCommonShim/bin/Debug/net8.0:${workspaceFolder}/OsCallsLinuxShim/bin/Debug/net8.0:${workspaceFolder}/OsCallsWindowsShim/bin/Debug/net8.0",
         "DOTNET_ROOT": "${env:HOME}/.dotnet",
         "PATH": "${env:HOME}/.dotnet:${env:PATH}"
       },

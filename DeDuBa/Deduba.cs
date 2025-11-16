@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
-using OsCalls;
+using OsCallsLinux;
 using UtilitiesLibrary;
 
 namespace DeDuBa;
