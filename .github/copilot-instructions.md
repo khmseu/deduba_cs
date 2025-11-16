@@ -162,3 +162,34 @@ Doxygen processes all shim headers: `OsCallsCommonShim/include`, `OsCallsLinuxSh
 ## Historical Context
 
 **Active Perl → C# port.** Original `deduba.pl` is reference implementation. Test harness for Perl/C# comparison was retired after JSON encoding unification.
+
+## Commit Message Conventions
+
+Follow **Conventional Commits** format: `<type>(<scope>): <subject>`
+
+**Types:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation only
+- `style:` Code formatting (no logic change)
+- `refactor:` Code restructuring (no behavior change)
+- `perf:` Performance improvement
+- `test:` Add/update tests
+- `build:` Build system or dependencies
+- `ci:` CI/CD configuration
+- `chore:` Maintenance tasks
+
+**Rules:**
+- Subject line: 50-72 chars, imperative mood ("add" not "added"), no period
+- Body (required): add a blank line after the subject, wrap at ~72 chars, and explain
+	what changed and why; use bullet points when covering multiple notable changes
+- Optional footer: reference issues (`Fixes #123`), breaking changes (`BREAKING CHANGE:`)
+
+**Examples:**
+```
+feat(linux): implement ACL support via acl_get_file
+fix(valxfer): handle null pointers in ToNode cursor
+docs: update cross-platform interop architecture
+refactor(deduba): simplify hardlink detection logic
+build(shim): add RPATH to OsCallsLinuxShim Makefile
+```
