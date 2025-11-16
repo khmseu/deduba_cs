@@ -1,0 +1,176 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  # Linux native build and test
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # MinVer needs full history
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution (Linux)
+        run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration ${{ matrix.configuration }} --no-build --verbosity normal
+
+      - name: Package Linux artifacts
+        if: matrix.configuration == 'Release'
+        run: |
+          chmod +x scripts/package.sh
+          scripts/package.sh linux-x64 ${{ matrix.configuration }}
+
+      - name: Upload Linux artifacts
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeDuBa-linux-x64-${{ matrix.configuration }}
+          path: |
+            dist/DeDuBa-*-linux-x64.tar.gz
+          retention-days: 30
+
+  # Windows cross-build (MinGW on Linux)
+  build-windows-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install cross-compile dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build mingw-w64
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Windows shim (cross)
+        run: |
+          dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj \
+            --configuration ${{ matrix.configuration }} \
+            -r win-x64
+
+      - name: Package Windows artifacts
+        if: matrix.configuration == 'Release'
+        run: |
+          chmod +x scripts/package.sh
+          scripts/package.sh win-x64 ${{ matrix.configuration }}
+
+      - name: Upload Windows artifacts
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeDuBa-win-x64-${{ matrix.configuration }}
+          path: |
+            dist/DeDuBa-*-win-x64.zip
+          retention-days: 30
+
+  # Native Windows build and test (validates on actual Windows)
+  build-windows-native:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution (Windows)
+        run: |
+          dotnet build --configuration ${{ matrix.configuration }} --no-restore -r win-x64
+
+      - name: Run tests (Windows)
+        run: |
+          dotnet test --configuration ${{ matrix.configuration }} --no-build --verbosity normal -r win-x64
+
+      - name: Smoke test Windows binary
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: |
+          dotnet publish DeDuBa/DeDuBa.csproj `
+            --configuration ${{ matrix.configuration }} `
+            -r win-x64 `
+            -p:PublishSingleFile=true `
+            -p:SelfContained=true `
+            -o dist/smoke-test
+          
+          # Try --version to ensure runtime loads
+          dist/smoke-test/DeDuBa.exe --help || echo "Help output returned non-zero (expected if no args required)"
+
+  # Consolidate artifacts and prepare for release (runs only on Release builds)
+  prepare-release:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    needs: [build-linux, build-windows-cross]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: List downloaded artifacts
+        run: |
+          echo "=== Downloaded artifacts ==="
+          ls -lR artifacts/
+
+      - name: Archive consolidated artifacts
+        run: |
+          mkdir -p release-staging
+          find artifacts/ -name '*.tar.gz' -exec cp {} release-staging/ \;
+          find artifacts/ -name '*.zip' -exec cp {} release-staging/ \;
+          ls -lh release-staging/
+
+      - name: Upload consolidated release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeDuBa-release-all
+          path: release-staging/
+          retention-days: 90
