@@ -7,7 +7,7 @@
 #ifndef SECURITY_WINDOWS_H
 #define SECURITY_WINDOWS_H
 
-#include "../OsCallsCommonShim/include/ValXfer.h"
+#include "ValXfer.h"
 
 namespace OsCallsWindows {
 

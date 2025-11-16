@@ -8,7 +8,7 @@
 #ifndef FILESYSTEM_WINDOWS_H
 #define FILESYSTEM_WINDOWS_H
 
-#include "../OsCallsCommonShim/include/ValXfer.h"
+#include "ValXfer.h"
 
 namespace OsCallsWindows {
 

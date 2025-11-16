@@ -8,7 +8,7 @@
 #ifndef STREAMS_WINDOWS_H
 #define STREAMS_WINDOWS_H
 
-#include "../OsCallsCommonShim/include/ValXfer.h"
+#include "ValXfer.h"
 
 namespace OsCallsWindows {
 
