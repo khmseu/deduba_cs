@@ -41,7 +41,7 @@ jobs:
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
 
       - name: Run tests
-        run: dotnet test --configuration ${{ matrix.configuration }} --no-build --verbosity normal -r linux-x64
+        run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
 
       - name: Package Linux artifacts
         if: matrix.configuration == 'Release'
@@ -128,7 +128,7 @@ jobs:
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
       - name: Run tests (Windows)
-        run: dotnet test --configuration ${{ matrix.configuration }} --no-build --verbosity normal -r win-x64
+        run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
 
       - name: Smoke test Windows binary
         if: matrix.configuration == 'Release'
