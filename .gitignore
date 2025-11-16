@@ -496,3 +496,4 @@ inspectcode.xml
 nohup.out
 perl
 test.ansi
+dist/
