@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3-alpha] - 2025-11-17
+
 ### Added
 
 - Cross-platform native interop architecture with C++/C# bridge (ValXfer)
@@ -19,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-platform build support (Linux native, Windows cross-compile, Windows native)
 - GitHub Actions CI/CD with artifact consolidation
 - Automated packaging scripts for Linux (tar.gz) and Windows (zip)
+- Automated GitHub release workflow triggered by version tags
+- MinVer integration for semantic versioning from git tags
+- Comprehensive release documentation (RELEASE.md)
 
 ### Changed
 
