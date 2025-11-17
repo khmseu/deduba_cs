@@ -24,19 +24,6 @@ public static unsafe partial class FileSystem
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_canonicalize_file_name(string path);
 
-    [LibraryImport("OsCallsWindowsShim.dll")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetNextValue(ValueT* value);
-
-    /// <summary>
-    ///     Initialize the platform-specific GetNextValue delegate for ValXfer.
-    /// </summary>
-    static FileSystem()
-    {
-        ValXfer.PlatformGetNextValue = GetNextValue;
-    }
-
     /// <summary>
     ///     Gets file status for the supplied path (like Win32 GetFileAttributesEx), without following reparse points.
     /// </summary>

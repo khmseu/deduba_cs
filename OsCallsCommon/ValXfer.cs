@@ -42,25 +42,10 @@ public static unsafe partial class ValXfer
         IsBoolean,
     }
 
-    /// <summary>
-    ///     Delegate for platform-specific GetNextValue implementation.
-    ///     This will be set by OsCallsLinux or OsCallsWindows at runtime.
-    /// </summary>
-    public static GetNextValueDelegate? PlatformGetNextValue { get; set; }
-
-    /// <summary>
-    ///     Delegate type for GetNextValue implementations.
-    /// </summary>
-    public delegate bool GetNextValueDelegate(ValueT* value);
-
-    private static bool GetNextValue(ValueT* value)
-    {
-        if (PlatformGetNextValue == null)
-            throw new InvalidOperationException(
-                "PlatformGetNextValue not initialized. Call OsCallsLinux.FileSystem.Initialize() or similar."
-            );
-        return PlatformGetNextValue(value);
-    }
+    [LibraryImport("libOsCallsCommonShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetNextValue(ValueT* value);
 
     /// <summary>
     ///     Converts a native <see cref="ValueT" /> stream into a <see cref="JsonNode" />.

@@ -24,19 +24,6 @@ public static unsafe partial class FileSystem
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* canonicalize_file_name(string path);
 
-    [LibraryImport("libOsCallsLinuxShim.so")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetNextValue(ValueT* value);
-
-    /// <summary>
-    ///     Initialize the platform-specific GetNextValue delegate for ValXfer.
-    /// </summary>
-    static FileSystem()
-    {
-        ValXfer.PlatformGetNextValue = GetNextValue;
-    }
-
     /// <summary>
     ///     Gets file status for the supplied path (like POSIX lstat), without following symlinks.
     /// </summary>
