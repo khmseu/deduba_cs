@@ -46,7 +46,6 @@ To create a new release:
    ```
 
 4. **GitHub Actions automatically**:
-
    - Builds all platforms (Linux, Windows)
    - Runs all tests
    - Packages binaries
@@ -72,20 +71,26 @@ MinVer automatically derives versions from git tags.
 ## [X.Y.Z] - YYYY-MM-DD
 
 ### Added
+
 - New features
 
 ### Changed
+
 - Changes in existing functionality
 
 ### Deprecated
+
 - Soon-to-be removed features
 
 ### Removed
+
 - Removed features
 
 ### Fixed
+
 - Bug fixes
 
 ### Security
+
 - Security improvements
 ```

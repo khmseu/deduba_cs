@@ -21,10 +21,12 @@ Update `CHANGELOG.md` with the new version section:
 ## [0.2.0] - 2025-11-17
 
 ### Added
+
 - New ACL preservation during restore
 - Support for ARM64 Linux
 
 ### Fixed
+
 - Memory leak in chunk processing
 ```
 
@@ -91,7 +93,7 @@ Examples:
 
 **MinVer** derives versions from git tags automatically:
 
-```
+```text
 git tag v0.1.0
   ↓
 MinVer calculates: 0.1.0
@@ -127,9 +129,10 @@ GitHub automatically generates notes from **commit messages** since the last rel
 
 ```markdown
 ## What's Changed
-* feat: add ACL restoration support by @username in #42
-* fix: memory leak in chunk processor by @username in #43
-* refactor: simplify native interop by @username in #44
+
+- feat: add ACL restoration support by @username in #42
+- fix: memory leak in chunk processor by @username in #43
+- refactor: simplify native interop by @username in #44
 
 **Full Changelog**: https://github.com/user/repo/compare/v0.1.0...v0.2.0
 ```
@@ -171,17 +174,21 @@ A curated, human-friendly summary of **significant changes**:
 ## [0.2.0] - 2025-11-17
 
 ### Added
+
 - ACL preservation during restore operations
 - Support for ARM64 Linux architecture
 
 ### Changed
+
 - Improved chunk processing performance by 30%
 
 ### Fixed
+
 - Memory leak in long-running backup sessions
 - Race condition in parallel directory scanning
 
 ### Security
+
 - Updated dependencies to address CVE-2025-1234
 ```
 
@@ -189,7 +196,7 @@ A curated, human-friendly summary of **significant changes**:
 
 **In the GitHub Release:**
 
-```
+```text
 ┌─────────────────────────────────────┐
 │ DeDuBa v0.2.0                       │
 ├─────────────────────────────────────┤
