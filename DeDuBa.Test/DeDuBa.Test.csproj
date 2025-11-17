@@ -39,12 +39,12 @@
     Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'"
   >
     <Copy
-      SourceFiles="../OsCallsCommonShim/$(OutputPath)/libOsCallsCommonShim.so"
+      SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true"
     />
     <Copy
-      SourceFiles="../OsCallsLinuxShim/$(OutputPath)/libOsCallsLinuxShim.so"
+      SourceFiles="../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true"
     />
