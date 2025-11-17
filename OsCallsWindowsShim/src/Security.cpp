@@ -2,9 +2,96 @@
  * @file Security.cpp
  * @brief Windows security descriptor operations implementation
  *
- * Implements Windows security descriptor reading using:
- * - GetNamedSecurityInfoW
- * - ConvertSecurityDescriptorToStringSecurityDescriptorW
+ * This module reads Windows security descriptors and converts them to
+ * Security Descriptor Definition Language (SDDL) format for portable
+ * storage and cross-platform understanding.
+ * 
+ * ## SDDL Format Overview
+ * 
+ * SDDL strings represent Windows security descriptors in a compact text format:
+ * 
+ * ```
+ * O:owner_sid G:group_sid D:dacl_flags(ace1)(ace2)... S:sacl_flags(ace1)...
+ * ```
+ * 
+ * ### Components
+ * 
+ * - **O:** Owner SID (e.g., `O:S-1-5-21-...` or `O:BA` for Built-in Administrators)
+ * - **G:** Group SID (e.g., `G:DU` for Domain Users)
+ * - **D:** DACL (Discretionary Access Control List) with ACEs
+ * - **S:** SACL (System Access Control List) for auditing - requires privilege
+ * 
+ * ### DACL Flags
+ * - **P** - Protected (inheritance blocked)
+ * - **AI** - Auto-inherited
+ * - **AR** - Auto-inherit requested
+ * 
+ * ### ACE Format
+ * Each ACE (Access Control Entry) follows this pattern:
+ * ```
+ * (ace_type;ace_flags;rights;object_guid;inherit_object_guid;account_sid)
+ * ```
+ * 
+ * **ACE Types:**
+ * - **A** - Access allowed
+ * - **D** - Access denied
+ * - **AU** - System audit
+ * - **AL** - System alarm (rarely used)
+ * 
+ * **Common Rights:**
+ * - **FA** - File all access (GENERIC_ALL)
+ * - **FR** - File generic read
+ * - **FW** - File generic write
+ * - **FX** - File generic execute
+ * - **GA** - Generic all
+ * - **GR** - Generic read
+ * - **GW** - Generic write
+ * - **GX** - Generic execute
+ * 
+ * **Account SIDs (Well-Known):**
+ * - **BA** - Built-in Administrators
+ * - **BU** - Built-in Users
+ * - **WD** - Everyone (World)
+ * - **CO** - Creator Owner
+ * - **CG** - Creator Group
+ * - **SY** - Local System
+ * 
+ * ### Example SDDL String
+ * 
+ * ```
+ * O:BAG:DUD:PAI(A;;FA;;;BA)(A;;FR;;;BU)
+ * ```
+ * 
+ * Translation:
+ * - Owner: Built-in Administrators (BA)
+ * - Group: Domain Users (DU)
+ * - DACL: Protected (P) + Auto-inherited (AI)
+ *   - Allow (A) Administrators (BA) Full Access (FA)
+ *   - Allow (A) Users (BU) Read Access (FR)
+ * 
+ * ## API Usage
+ * 
+ * ### GetNamedSecurityInfoW
+ * Retrieves security descriptor from a named object (file/directory):
+ * - SE_FILE_OBJECT: Type of object being queried
+ * - Security info flags: OWNER | GROUP | DACL | SACL
+ * - Returns PSECURITY_DESCRIPTOR structure
+ * 
+ * ### ConvertSecurityDescriptorToStringSecurityDescriptorW
+ * Converts binary security descriptor to SDDL string:
+ * - SDDL_REVISION_1: Current revision level
+ * - Returns LocalAlloc'd wide string (must be freed)
+ * 
+ * ## SACL Privilege Requirements
+ * 
+ * Reading SACL requires SeSecurityPrivilege:
+ * - Administrator accounts typically have this
+ * - Regular users will get ERROR_PRIVILEGE_NOT_HELD (1314)
+ * - Implementation gracefully downgrades to DACL-only if privilege denied
+ * 
+ * @see https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-getnamedsecurityinfow
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsecuritydescriptortostringsecuritydescriptorw
  */
 #include "Security.h"
 // windows.h must be first

@@ -2,11 +2,78 @@
  * @file FileSystem.cpp
  * @brief Windows filesystem operations implementation
  *
- * Implements Windows-specific filesystem operations using Win32 APIs:
- * - CreateFileW with FILE_FLAG_OPEN_REPARSE_POINT
- * - GetFileInformationByHandleEx (FileBasicInfo, FileIdInfo)
- * - DeviceIoControl with FSCTL_GET_REPARSE_POINT
- * - GetFinalPathNameByHandleW
+ * This module implements Windows-specific filesystem operations to provide
+ * cross-platform compatibility with POSIX systems. The implementation uses
+ * Win32 APIs to query file metadata, read reparse points, and canonicalize paths.
+ * 
+ * ## Architecture
+ * 
+ * Functions follow the ValueT iterator pattern established in OsCallsLinuxShim:
+ * 1. Native function allocates data and creates ValueT with handler
+ * 2. Handler function yields metadata fields sequentially via GetNextValue
+ * 3. C# ValXfer.ToNode converts iterator to JSON object
+ * 
+ * ## Key Windows APIs Used
+ * 
+ * ### CreateFileW
+ * Opens files/directories with specific flags:
+ * - FILE_FLAG_BACKUP_SEMANTICS: Required to open directories
+ * - FILE_FLAG_OPEN_REPARSE_POINT: Prevents following symlinks (like lstat)
+ * - OPEN_EXISTING: File must already exist
+ * 
+ * ### GetFileInformationByHandle
+ * Retrieves file metadata without additional syscalls:
+ * - File attributes (directory, hidden, readonly, reparse point)
+ * - File size (high/low 32-bit parts)
+ * - Timestamps (creation, access, write)
+ * - File ID (volume serial + file index → inode equivalent)
+ * - Link count (number of hardlinks)
+ * 
+ * ### DeviceIoControl with FSCTL_GET_REPARSE_POINT
+ * Reads reparse point data without following the link:
+ * - Returns REPARSE_DATA_BUFFER with tag and target path
+ * - Handles both symbolic links and junction points
+ * - Requires FILE_FLAG_OPEN_REPARSE_POINT when opening
+ * 
+ * ### GetFinalPathNameByHandleW
+ * Resolves paths to canonical form (follows symlinks):
+ * - FILE_NAME_NORMALIZED: Returns absolute path with resolved links
+ * - VOLUME_NAME_DOS: Uses drive letters (C:\) not volume GUIDs
+ * - May return paths with \\?\ prefix (extended-length paths)
+ * 
+ * ## Windows vs POSIX Differences
+ * 
+ * ### File Types
+ * Windows has fewer file types than POSIX:
+ * - No block/character devices exposed as files
+ * - No FIFOs or Unix domain sockets as files
+ * - Reparse points approximate symlinks/junctions
+ * 
+ * ### Permissions
+ * Windows uses ACLs, not simple permission bits:
+ * - Read-only attribute approximates write permission
+ * - No direct owner/group/other distinction
+ * - Directories always get execute bit (for traversal)
+ * - See Security.cpp for full ACL/SDDL support
+ * 
+ * ### Timestamps
+ * Windows tracks creation time (birth time), not ctime:
+ * - Creation time: when file was created
+ * - Access time: last read operation
+ * - Write time: last modification
+ * - No inode change time (ctime) → use creation time
+ * 
+ * ### File IDs
+ * Windows uses volume serial + file index as inode:
+ * - Volume serial number (32-bit) → st_dev
+ * - File index (64-bit) → st_ino
+ * - Unique within volume, persistent across reboots
+ * - Hardlinks share same file ID
+ * 
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_get_reparse_point
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
  */
 #include "FileSystem.h"
 #include <windows.h>
@@ -76,6 +143,24 @@ struct WinFileInfo {
 
 /**
  * @brief Convert Windows file attributes to POSIX-like mode bits
+ * 
+ * Windows file attributes don't directly map to POSIX permission bits,
+ * so this function provides a reasonable approximation:
+ * 
+ * File type mapping (high 4 bits of st_mode):
+ * - Symbolic links (IO_REPARSE_TAG_SYMLINK) → S_IFLNK (0120000)
+ * - Junction points (IO_REPARSE_TAG_MOUNT_POINT) → S_IFLNK (0120000)
+ * - Directories → S_IFDIR (0040000)
+ * - Regular files → S_IFREG (0100000)
+ * 
+ * Permission bits (low 9 bits):
+ * - Owner: always readable (0400), writable if not read-only (0200),
+ *   executable if directory (0100)
+ * - Group and Other: inherit from owner bits (simplified model)
+ * 
+ * @param attrs Windows FILE_ATTRIBUTE_* flags from GetFileInformationByHandle
+ * @param reparseTag Reparse tag if FILE_ATTRIBUTE_REPARSE_POINT is set
+ * @return POSIX-like mode bits compatible with st_mode field
  */
 static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
   DWORD mode = 0;
@@ -114,6 +199,24 @@ static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
 
 /**
  * @brief Convert FILETIME to timespec (100-nanosecond intervals since 1601-01-01)
+ * 
+ * Windows FILETIME represents time as 100-nanosecond intervals since
+ * January 1, 1601 UTC (the start of the Gregorian calendar cycle).
+ * 
+ * Unix timespec represents time as seconds + nanoseconds since
+ * January 1, 1970 UTC (Unix epoch).
+ * 
+ * The difference between these epochs is 11,644,473,600 seconds
+ * (369 years, 89 leap days).
+ * 
+ * Conversion steps:
+ * 1. Combine FILETIME's low/high parts into 64-bit integer
+ * 2. Divide by 10,000,000 to get seconds
+ * 3. Subtract epoch difference to get Unix seconds
+ * 4. Use modulo to get nanosecond remainder
+ * 
+ * @param ft Windows FILETIME structure (creation/access/write time)
+ * @return Unix timespec with tv_sec and tv_nsec fields
  */
 static timespec filetime_to_timespec(const FILETIME &ft) {
   // FILETIME is 100-nanosecond intervals since 1601-01-01

@@ -2,9 +2,99 @@
  * @file Streams.cpp
  * @brief Windows Alternate Data Streams operations implementation
  *
- * Implements ADS enumeration and reading using:
- * - FindFirstStreamW / FindNextStreamW
- * - CreateFileW with stream syntax (path:streamname:$DATA)
+ * This module implements enumeration and reading of NTFS Alternate Data Streams (ADS).
+ * ADS allow storing multiple data streams within a single file, commonly used for:
+ * - Security metadata (Zone.Identifier for downloaded file origin)
+ * - Resource forks (compatibility with HFS+ when migrating from macOS)
+ * - Custom application metadata
+ * - Hidden data storage
+ * 
+ * ## ADS Syntax
+ * 
+ * Alternate Data Streams are accessed using colon notation:
+ * ```
+ * filename:streamname:$DATA
+ * ```
+ * 
+ * ### Examples
+ * - `document.txt::$DATA` - Default stream (main file content)
+ * - `document.txt:Author:$DATA` - "Author" alternate stream
+ * - `document.txt:Zone.Identifier:$DATA` - Internet Explorer download zone
+ * 
+ * ### Stream Types
+ * While `$DATA` is most common, NTFS supports other stream types:
+ * - `$DATA` - File data (default and alternates)
+ * - `$INDEX_ALLOCATION` - Directory indexes
+ * - `$BITMAP` - Allocation bitmaps
+ * - `$EA` - Extended attributes
+ * 
+ * Most user-accessible streams are `$DATA` type.
+ * 
+ * ## Common ADS Use Cases
+ * 
+ * ### Zone.Identifier (Security)
+ * Windows marks files downloaded from the internet:
+ * ```
+ * [ZoneTransfer]
+ * ZoneId=3
+ * ReferrerUrl=https://example.com/download
+ * ```
+ * - ZoneId=3: Internet Zone (untrusted)
+ * - Used by SmartScreen and file blocking warnings
+ * 
+ * ### Thumbnails and Metadata
+ * Windows Explorer may cache:
+ * - Thumbnail images
+ * - Summary information
+ * - Custom properties
+ * 
+ * ### Application-Specific Data
+ * Applications can store:
+ * - Cryptographic signatures
+ * - Version information
+ * - User annotations
+ * - Backup metadata
+ * 
+ * ## API Usage
+ * 
+ * ### FindFirstStreamW / FindNextStreamW
+ * Enumerate all streams attached to a file:
+ * - FindStreamInfoStandard: Returns WIN32_FIND_STREAM_DATA
+ * - cStreamName: Stream name with syntax `::$DATA` or `:Name:$DATA`
+ * - StreamSize: Size of stream data in bytes
+ * - Includes default stream (often largest)
+ * 
+ * ### CreateFileW with Stream Syntax
+ * Open a specific stream for reading/writing:
+ * ```cpp
+ * CreateFileW(L"file.txt:StreamName:$DATA", GENERIC_READ, ...)
+ * ```
+ * - Stream behaves like a separate file
+ * - Can be read, written, and sized independently
+ * - Deleted when all streams in file are deleted
+ * 
+ * ## Important Notes
+ * 
+ * ### Filesystem Support
+ * - **NTFS only** - ADS not supported on FAT32, exFAT, or network shares
+ * - Copying to non-NTFS volumes loses alternate streams
+ * - Some backup tools may skip ADS unless explicitly configured
+ * 
+ * ### Security Implications
+ * - ADS can hide data (not visible in directory listings)
+ * - Malware has used ADS for persistence
+ * - Antivirus should scan all streams
+ * - Windows Defender scans ADS by default
+ * 
+ * ### Performance
+ * - Each stream has minimal overhead (metadata)
+ * - Stream data is stored in MFT for small streams (<1KB typically)
+ * - Larger streams allocated in normal cluster runs
+ * - Fragmentation can occur independently per stream
+ * 
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirststreamw
+ * @see https://learn.microsoft.com/en-us/windows/win32/fileio/file-streams
+ * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
 #include "Streams.h"
 #include <windows.h>
