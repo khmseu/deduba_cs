@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.3-alpha] - 2025-11-17
+## [0.1.3-alpha.1] - 2025-11-17
+
+### Fixed
+
+- CI workflow now triggers on version tag pushes (enables automatic releases)
+
+## [0.1.3-alpha] - 2025-11-17 [YANKED]
 
 ### Added
 
