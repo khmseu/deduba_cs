@@ -33,8 +33,20 @@
     <ProjectReference Include="../OsCallsWindows/OsCallsWindows.csproj" />
   </ItemGroup>
   <!-- Copy native libraries to test output for Linux -->
-  <Target Name="CopyNativeLibsForTests" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
-    <Copy SourceFiles="../OsCallsCommonShim/$(OutputPath)/libOsCallsCommonShim.so" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="../OsCallsLinuxShim/$(OutputPath)/libOsCallsLinuxShim.so" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  <Target
+    Name="CopyNativeLibsForTests"
+    AfterTargets="Build"
+    Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'"
+  >
+    <Copy
+      SourceFiles="../OsCallsCommonShim/$(OutputPath)/libOsCallsCommonShim.so"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+    />
+    <Copy
+      SourceFiles="../OsCallsLinuxShim/$(OutputPath)/libOsCallsLinuxShim.so"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+    />
   </Target>
 </Project>
