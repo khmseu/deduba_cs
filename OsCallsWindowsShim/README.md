@@ -64,10 +64,10 @@ Create a new C++ DLL project and:
 
 ## Implementation Status
 
-- [ ] FileSystem.cpp - win_lstat, win_readlink, win_canonicalize_file_name
-- [ ] Security.cpp - win_get_sd (SDDL security descriptors)
-- [ ] Streams.cpp - win_list_streams, win_read_stream (ADS support)
-- [ ] GetNextValue - Windows implementation of ValueT cursor
+- [x] FileSystem.cpp - win_lstat, win_readlink, win_canonicalize_file_name
+- [x] Security.cpp - win_get_sd (SDDL security descriptors)
+- [x] Streams.cpp - win_list_streams, win_read_stream (ADS support)
+- [x] GetNextValue - Windows implementation of ValueT cursor (via OsCallsCommonShim)
 
 ## Dependencies
 
