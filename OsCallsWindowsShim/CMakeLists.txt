@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Source files
 file(GLOB SOURCES "src/*.cpp")
 
+# Add ValXfer.cpp from OsCallsCommonShim
+list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/src/ValXfer.cpp")
+
 # Create shared library (DLL on Windows)
 add_library(OsCallsWindowsShim SHARED ${SOURCES})
 
