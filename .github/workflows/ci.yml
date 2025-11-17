@@ -178,3 +178,53 @@ jobs:
           name: DeDuBa-release-all
           path: release-staging/
           retention-days: 90
+
+  # Create GitHub release from artifacts (only on version tags)
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-windows-cross, build-windows-native]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release-files
+          find artifacts/ -name '*.tar.gz' -exec cp {} release-files/ \;
+          find artifacts/ -name '*.zip' -exec cp {} release-files/ \;
+          echo "=== Release files ==="
+          ls -lh release-files/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+          generate_release_notes: true
+          body: |
+            ## Downloads
+            
+            ### Linux (x64)
+            - `DeDuBa-*-linux-x64.tar.gz` - Self-contained Linux binary with native POSIX shims
+              - Extract: `tar xzf DeDuBa-*-linux-x64.tar.gz`
+              - Run: `./DeDuBa <files-to-backup>`
+            
+            ### Windows (x64)
+            - `DeDuBa-*-win-x64.zip` - Self-contained Windows binary with native shims
+              - Extract to a folder and run `DeDuBa.exe <files-to-backup>`
+            
+            ## What's Changed
+            
+            See below for automatically generated release notes from commit messages.
+            For detailed changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md).
+            
+            ---
