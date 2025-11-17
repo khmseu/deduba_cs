@@ -5,6 +5,7 @@ This document explains how GitHub releases work for DeDuBa, including automatic 
 ## Overview
 
 DeDuBa uses **automated GitHub releases** triggered by git version tags. The process combines:
+
 - **MinVer** for automatic semantic versioning from git tags
 - **GitHub Actions** for building, testing, and packaging
 - **Automatic release notes** generated from commit messages
@@ -81,6 +82,7 @@ Format: `MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]`
 - **BUILD**: Git metadata (e.g., `+sha.abc1234`)
 
 Examples:
+
 - `v0.1.0` → stable release 0.1.0
 - `v1.2.3-beta.1` → pre-release (marked as "Pre-release" on GitHub)
 - `v2.0.0` → major version (breaking changes)
@@ -100,12 +102,14 @@ MinVer calculates: 0.1.1-alpha.0.3+sha.abc1234
 ```
 
 **How it works:**
+
 1. Finds the most recent version tag (e.g., `v0.1.0`)
 2. Counts commits since that tag (height)
 3. If height > 0: auto-increments PATCH and adds `-alpha.0.{height}`
 4. Adds build metadata with current commit SHA
 
 **Configuration** (in `Directory.Build.props`):
+
 ```xml
 <MinVerTagPrefix>v</MinVerTagPrefix>        <!-- Tags start with 'v' -->
 <MinVerVerbosity>normal</MinVerVerbosity>   <!-- Show calculation during build -->
@@ -120,6 +124,7 @@ The system provides **two sources** of release notes:
 GitHub automatically generates notes from **commit messages** since the last release:
 
 **Example output:**
+
 ```markdown
 ## What's Changed
 * feat: add ACL restoration support by @username in #42
@@ -130,12 +135,14 @@ GitHub automatically generates notes from **commit messages** since the last rel
 ```
 
 **Advantages:**
+
 - Zero effort
 - Complete commit history
 - Automatic contributor attribution
 - Links to PRs
 
 **Best practices for commit messages:**
+
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 - Write clear, descriptive messages
 - Reference issues/PRs: `fix: resolve crash (#42)`
@@ -145,18 +152,21 @@ GitHub automatically generates notes from **commit messages** since the last rel
 A curated, human-friendly summary of **significant changes**:
 
 **Purpose:**
+
 - High-level overview for users
 - Grouped by change type (Added, Changed, Fixed, etc.)
 - More context than raw commits
 - Stable reference for version history
 
 **When to update:**
+
 - Before creating each release tag
 - Group related commits into logical features
 - Focus on user-facing changes
 - Omit internal refactoring unless significant
 
 **Format:**
+
 ```markdown
 ## [0.2.0] - 2025-11-17
 
@@ -202,6 +212,7 @@ A curated, human-friendly summary of **significant changes**:
 ```
 
 **Result:** Users get:
+
 1. Quick download links
 2. High-level overview (CHANGELOG.md link)
 3. Complete commit history (auto-generated)
@@ -223,6 +234,7 @@ prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || 
 ```
 
 **Benefits:**
+
 - Clearly marked on GitHub Releases page
 - Not shown as "Latest Release"
 - Allows testing before stable release
@@ -325,6 +337,7 @@ gh run view <run-id> --log
 ```
 
 Common issues:
+
 - Test failures
 - Native library build errors
 - Missing dependencies

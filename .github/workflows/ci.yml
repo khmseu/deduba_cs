@@ -212,19 +212,19 @@ jobs:
           generate_release_notes: true
           body: |
             ## Downloads
-            
+
             ### Linux (x64)
             - `DeDuBa-*-linux-x64.tar.gz` - Self-contained Linux binary with native POSIX shims
               - Extract: `tar xzf DeDuBa-*-linux-x64.tar.gz`
               - Run: `./DeDuBa <files-to-backup>`
-            
+
             ### Windows (x64)
             - `DeDuBa-*-win-x64.zip` - Self-contained Windows binary with native shims
               - Extract to a folder and run `DeDuBa.exe <files-to-backup>`
-            
+
             ## What's Changed
-            
+
             See below for automatically generated release notes from commit messages.
             For detailed changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md).
-            
+
             ---
