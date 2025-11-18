@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- CI workflow now triggers on version tag pushes (enables automatic releases)
+- Native library loading in test environment via MSBuild copy targets
 
 ## [0.1.3-alpha] - 2025-11-17 [YANKED]
 
@@ -37,8 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced custom binary encoding with JSON serialization for metadata
 - Simplified interop: moved `GetNextValue` to common shim eliminating delegate pattern
 
-### Fixed
+### Fixed (0.1.3-alpha)
 
+- CI workflow now triggers on version tag pushes (enables automatic releases)
 - Native library loading in test environment via MSBuild copy targets
 - Platform-conditional test compilation (Linux-only ACL/xattr tests)
 - Native shim build output paths and RPATH configuration
