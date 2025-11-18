@@ -30,3 +30,7 @@ cd dist/DeDuBa-linux-x64
 ```
 
 On Windows, just run `DeDuBa.exe` in-place.
+
+## Changelog
+
+For curated release notes, see `docs/CHANGELOG.md`.

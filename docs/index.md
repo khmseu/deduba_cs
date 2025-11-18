@@ -29,3 +29,4 @@ Architecture guides and developer documentation.
 - **Getting Started**: See [Introduction](articles/intro.md)
 - **Architecture**: Check the [Copilot Instructions](https://github.com/khmseu/deduba_cs/blob/master/.github/copilot-instructions.md) for system overview
 - **Build**: Run `dotnet build` (includes C++ shim via Makefile)
+ - **Changelog**: [docs/CHANGELOG.md](https://github.com/khmseu/deduba_cs/blob/master/docs/CHANGELOG.md)
