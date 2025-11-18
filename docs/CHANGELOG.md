@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 To create a new release:
 
-1. **Update this CHANGELOG.md** with the new version section
+1. **Update docs/CHANGELOG.md** with the new version section
 2. **Commit the changes**: `git commit -am "chore: prepare release vX.Y.Z"`
 3. **Create and push a version tag**:
 

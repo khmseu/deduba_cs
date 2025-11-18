@@ -9,13 +9,13 @@ DeDuBa uses **automated GitHub releases** triggered by git version tags. The pro
 - **MinVer** for automatic semantic versioning from git tags
 - **GitHub Actions** for building, testing, and packaging
 - **Automatic release notes** generated from commit messages
-- **Manual CHANGELOG.md** for curated release summaries
+- **Manual CHANGELOG.md** (in `docs/`) for curated release summaries
 
 ## How to Create a Release
 
 ### 1. Prepare the Release
 
-Update `CHANGELOG.md` with the new version section:
+Update `docs/CHANGELOG.md` with the new version section:
 
 ```markdown
 ## [0.2.0] - 2025-11-17
@@ -33,7 +33,7 @@ Update `CHANGELOG.md` with the new version section:
 Commit the changes:
 
 ```bash
-git add CHANGELOG.md
+git add docs/CHANGELOG.md
 git commit -m "chore: prepare release v0.2.0"
 git push origin master
 ```
@@ -69,7 +69,7 @@ Once the tag is pushed, GitHub Actions automatically:
    - All packaged binaries attached
    - Custom description (download instructions)
    - Auto-generated release notes from commits
-   - Link to CHANGELOG.md
+   - Link to docs/CHANGELOG.md
 
 ## Versioning System
 
@@ -150,7 +150,7 @@ GitHub automatically generates notes from **commit messages** since the last rel
 - Write clear, descriptive messages
 - Reference issues/PRs: `fix: resolve crash (#42)`
 
-### 2. CHANGELOG.md (Manual Curation)
+### 2. docs/CHANGELOG.md (Manual Curation)
 
 A curated, human-friendly summary of **significant changes**:
 
@@ -205,7 +205,7 @@ A curated, human-friendly summary of **significant changes**:
 │ - Windows: DeDuBa-*-win-x64.zip     │
 │                                     │
 │ ## What's Changed                   │
-│ See CHANGELOG.md for details.       │ ← Link to curated changelog
+│ See docs/CHANGELOG.md for details.  │ ← Link to curated changelog
 │                                     │
 │ ---                                 │
 │                                     │
@@ -221,7 +221,7 @@ A curated, human-friendly summary of **significant changes**:
 **Result:** Users get:
 
 1. Quick download links
-2. High-level overview (CHANGELOG.md link)
+2. High-level overview (docs/CHANGELOG.md link)
 3. Complete commit history (auto-generated)
 
 ## Pre-releases
@@ -353,13 +353,13 @@ Fix the issue, then recreate the tag.
 
 ## Best Practices
 
-1. **Always update CHANGELOG.md** before tagging
+1. **Always update docs/CHANGELOG.md** before tagging
 2. **Use annotated tags** (`git tag -a`) not lightweight tags
 3. **Follow semantic versioning** strictly
 4. **Write clear commit messages** (they become release notes)
 5. **Test pre-releases** (`-alpha`, `-beta`, `-rc`) before stable
 6. **Never force-push tags** (creates confusion)
-7. **Keep CHANGELOG.md format** consistent
+7. **Keep docs/CHANGELOG.md format** consistent
 
 ## References
 

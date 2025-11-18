@@ -146,10 +146,10 @@ Track files by `(st_dev, st_ino)` in `Fs2Ino` dict. Duplicate inode → skip rep
 
 ## Windows Implementation Status
 
-**OsCallsWindows/OsCallsWindowsShim are stubs:**
+**OsCallsWindows/OsCallsWindowsShim implementation:**
 
-- All functions return `ERROR_CALL_NOT_IMPLEMENTED`
-- TODO: Implement Win32 APIs:
+- Native Win32 implementations for filesystem, security, and ADS operations
+- Uses Win32 APIs:
   - `CreateFileW` + `FILE_FLAG_OPEN_REPARSE_POINT`
   - `GetFileInformationByHandleEx` (FileBasicInfo, FileIdInfo)
   - `DeviceIoControl` + `FSCTL_GET_REPARSE_POINT`
@@ -157,7 +157,7 @@ Track files by `(st_dev, st_ino)` in `Fs2Ino` dict. Duplicate inode → skip rep
   - `GetNamedSecurityInfoW` → SDDL string
   - `FindFirstStreamW/FindNextStreamW` (ADS enumeration)
 
-See `OsCallsWindowsShim/README.md` for build instructions and implementation checklist.
+See `docs/OsCallsWindowsShim.md` for build instructions and implementation details.
 
 ## Documentation
 

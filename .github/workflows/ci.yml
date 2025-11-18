@@ -226,6 +226,6 @@ jobs:
             ## What's Changed
 
             See below for automatically generated release notes from commit messages.
-            For detailed changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md).
+            For detailed changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/CHANGELOG.md).
 
             ---
