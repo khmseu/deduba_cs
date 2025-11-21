@@ -138,8 +138,9 @@ Track files by `(st_dev, st_ino)` in `Fs2Ino` dict. Duplicate inode → skip rep
 3. **Path normalization**: Always use `FileSystem.Canonicalizefilename()` for user inputs (resolves symlinks/relative paths)
 
 4. **Platform detection**: Currently Linux-only at runtime. DeDuBa directly imports `OsCallsLinux` namespace.
- - Future: Add runtime platform check to switch between OsCallsLinux/OsCallsWindows
-   Default `Utilities.Testing = true`:
+
+- Future: Add runtime platform check to switch between OsCallsLinux/OsCallsWindows
+  Default `Utilities.Testing = true`:
 
 - Uses local archive `~/projects/Backup/ARCHIVE4` (not `/archive/backup`)
 - Verbose `ConWrite()` output with timestamps/locations

@@ -294,6 +294,12 @@ public class DedubaClass
     // ############################################################################
     // build arlist/preflist
 
+    /// <summary>
+    ///     Recursively scans the archive DATA directory to populate <see cref="Arlist"/> and <see cref="Preflist"/>.
+    ///     These dictionaries track all existing hash files and directory prefixes to enable incremental backup
+    ///     and efficient lookup of duplicate data blocks.
+    /// </summary>
+    /// <param name="filePaths">Paths to scan (initially <see cref="_dataPath"/>, then recursively expanded).</param>
     private static void Mkarlist(params string[] filePaths)
     {
         foreach (var entry in filePaths.OrderBy(e => e))
@@ -358,6 +364,13 @@ public class DedubaClass
     // ############################################################################
     // Helper method to create directories with optional blue console output in test mode
 
+    /// <summary>
+    ///     Creates a directory and optionally logs the creation in blue text if verbose output is enabled.
+    /// </summary>
+    /// <param name="path">Absolute path to the directory to create.</param>
+    /// <remarks>
+    ///     Uses <see cref="Directory.CreateDirectory"/> which is idempotent (succeeds if directory already exists).
+    /// </remarks>
     private static void CreateDirectoryWithLogging(string path)
     {
         Directory.CreateDirectory(path);
@@ -381,6 +394,17 @@ public class DedubaClass
     // ############################################################################
     // find place for hashed file, or note we already have it
 
+    /// <summary>
+    ///     Maps a content hash to its storage path in the archive, creating intermediate directories as needed.
+    ///     Returns null if the hash already exists (deduplication), otherwise returns the target file path.
+    ///     Automatically reorganizes directory structures when they exceed 255 entries.
+    /// </summary>
+    /// <param name="hash">Hex-encoded SHA-512 hash of the data block.</param>
+    /// <returns>Absolute path where the data should be written, or null if it already exists.</returns>
+    /// <remarks>
+    ///     Updates <see cref="Arlist"/> and <see cref="Preflist"/> to track the new file.
+    ///     Triggers directory split when prefix directory grows beyond 255 entries.
+    /// </remarks>
     private static string? Hash2Fn(string hash)
     {
         if (Utilities.VerboseOutput)

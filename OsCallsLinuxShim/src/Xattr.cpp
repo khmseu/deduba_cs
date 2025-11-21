@@ -16,7 +16,14 @@ struct XattrListContext {
 
 /**
  * @brief Handler for llistxattr that returns an array of attribute names.
- * The data1 pointer contains a XattrListContext structure.
+ *
+ * Iterates through null-terminated attribute names in the buffer, yielding
+ * each as a string array element. Cleans up allocated buffer and context
+ * on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing
+ * XattrListContext*.
+ * @return true if more attribute names remain, false when iteration completes.
  */
 bool handle_llistxattr(ValueT *value) {
   auto ctx = reinterpret_cast<XattrListContext *>(value->Handle.data1);
@@ -57,6 +64,13 @@ bool handle_llistxattr(ValueT *value) {
 
 /**
  * @brief Handler for lgetxattr that returns the attribute value as a string.
+ *
+ * Yields a single string value containing the extended attribute's data.
+ * Uses ::free() to release the malloc'd buffer.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing char* attribute
+ * value.
+ * @return true on first call if successful, false to signal completion.
  */
 bool handle_lgetxattr(ValueT *value) {
   auto attr_value = reinterpret_cast<char *>(value->Handle.data1);
@@ -76,6 +90,17 @@ bool handle_lgetxattr(ValueT *value) {
 }
 
 extern "C" {
+/**
+ * @brief Lists all extended attribute names for a path (not following
+ * symlinks).
+ *
+ * Uses llistxattr(2) to retrieve the list of attribute names. The buffer
+ * is automatically sized based on the syscall's return value.
+ *
+ * @param path Filesystem path to read xattrs from.
+ * @return ValueT* cursor yielding array of attribute name strings or error
+ * number.
+ */
 ValueT *llistxattr(const char *path) {
   errno = 0;
 
@@ -114,6 +139,17 @@ ValueT *llistxattr(const char *path) {
   return v;
 }
 
+/**
+ * @brief Gets the value of a specific extended attribute (not following
+ * symlinks).
+ *
+ * Uses lgetxattr(2) to read the attribute value. The buffer is automatically
+ * sized and null-terminated for string interpretation.
+ *
+ * @param path Filesystem path to read xattr from.
+ * @param name Name of the extended attribute to retrieve.
+ * @return ValueT* cursor with attribute value as string or error number.
+ */
 ValueT *lgetxattr(const char *path, const char *name) {
   errno = 0;
 

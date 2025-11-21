@@ -2,36 +2,37 @@
  * @file Streams.cpp
  * @brief Windows Alternate Data Streams operations implementation
  *
- * This module implements enumeration and reading of NTFS Alternate Data Streams (ADS).
- * ADS allow storing multiple data streams within a single file, commonly used for:
+ * This module implements enumeration and reading of NTFS Alternate Data Streams
+ * (ADS). ADS allow storing multiple data streams within a single file, commonly
+ * used for:
  * - Security metadata (Zone.Identifier for downloaded file origin)
  * - Resource forks (compatibility with HFS+ when migrating from macOS)
  * - Custom application metadata
  * - Hidden data storage
- * 
+ *
  * ## ADS Syntax
- * 
+ *
  * Alternate Data Streams are accessed using colon notation:
  * ```
  * filename:streamname:$DATA
  * ```
- * 
+ *
  * ### Examples
  * - `document.txt::$DATA` - Default stream (main file content)
  * - `document.txt:Author:$DATA` - "Author" alternate stream
  * - `document.txt:Zone.Identifier:$DATA` - Internet Explorer download zone
- * 
+ *
  * ### Stream Types
  * While `$DATA` is most common, NTFS supports other stream types:
  * - `$DATA` - File data (default and alternates)
  * - `$INDEX_ALLOCATION` - Directory indexes
  * - `$BITMAP` - Allocation bitmaps
  * - `$EA` - Extended attributes
- * 
+ *
  * Most user-accessible streams are `$DATA` type.
- * 
+ *
  * ## Common ADS Use Cases
- * 
+ *
  * ### Zone.Identifier (Security)
  * Windows marks files downloaded from the internet:
  * ```
@@ -41,29 +42,29 @@
  * ```
  * - ZoneId=3: Internet Zone (untrusted)
  * - Used by SmartScreen and file blocking warnings
- * 
+ *
  * ### Thumbnails and Metadata
  * Windows Explorer may cache:
  * - Thumbnail images
  * - Summary information
  * - Custom properties
- * 
+ *
  * ### Application-Specific Data
  * Applications can store:
  * - Cryptographic signatures
  * - Version information
  * - User annotations
  * - Backup metadata
- * 
+ *
  * ## API Usage
- * 
+ *
  * ### FindFirstStreamW / FindNextStreamW
  * Enumerate all streams attached to a file:
  * - FindStreamInfoStandard: Returns WIN32_FIND_STREAM_DATA
  * - cStreamName: Stream name with syntax `::$DATA` or `:Name:$DATA`
  * - StreamSize: Size of stream data in bytes
  * - Includes default stream (often largest)
- * 
+ *
  * ### CreateFileW with Stream Syntax
  * Open a specific stream for reading/writing:
  * ```cpp
@@ -72,35 +73,37 @@
  * - Stream behaves like a separate file
  * - Can be read, written, and sized independently
  * - Deleted when all streams in file are deleted
- * 
+ *
  * ## Important Notes
- * 
+ *
  * ### Filesystem Support
  * - **NTFS only** - ADS not supported on FAT32, exFAT, or network shares
  * - Copying to non-NTFS volumes loses alternate streams
  * - Some backup tools may skip ADS unless explicitly configured
- * 
+ *
  * ### Security Implications
  * - ADS can hide data (not visible in directory listings)
  * - Malware has used ADS for persistence
  * - Antivirus should scan all streams
  * - Windows Defender scans ADS by default
- * 
+ *
  * ### Performance
  * - Each stream has minimal overhead (metadata)
  * - Stream data is stored in MFT for small streams (<1KB typically)
  * - Larger streams allocated in normal cluster runs
  * - Fragmentation can occur independently per stream
- * 
- * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirststreamw
+ *
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirststreamw
  * @see https://learn.microsoft.com/en-us/windows/win32/fileio/file-streams
- * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
 #include "Streams.h"
-#include <windows.h>
-#include <vector>
-#include <string>
 #include <algorithm>
+#include <string>
+#include <vector>
+#include <windows.h>
 
 namespace OsCallsWindows {
 
@@ -116,11 +119,18 @@ struct StreamInfo {
 };
 
 /**
- * @brief Handler for win_list_streams results - iterates through stream list
+ * @brief Handler for win_list_streams results - iterates through stream list.
+ *
+ * Yields each stream as a complex value containing "name" and "size" fields.
+ * Stream names are converted from wide characters to UTF-8. Cleans up
+ * StreamInfo on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing StreamInfo*.
+ * @return true if more streams remain, false when iteration completes.
  */
 static bool handle_win_streams(ValueT *value) {
   auto streams = reinterpret_cast<StreamInfo *>(value->Handle.data1);
-  
+
   if (value->Handle.index == 0) {
     if (value->Type != TypeT::IsOk) {
       // Error case
@@ -138,7 +148,7 @@ static bool handle_win_streams(ValueT *value) {
   }
 
   size_t idx = streams->currentIndex;
-  
+
   if (idx >= streams->names.size()) {
     // End of iteration
     delete streams;
@@ -148,27 +158,27 @@ static bool handle_win_streams(ValueT *value) {
 
   // Return stream info as a complex value (object with name and size)
   auto streamObj = new ValueT[2]; // Array with 2 elements
-  
+
   // Stream name
-  int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, 
-                                      nullptr, 0, nullptr, nullptr);
+  int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(),
+                                     -1, nullptr, 0, nullptr, nullptr);
   auto nameUtf8 = new char[nameSize];
-  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, 
-                       nameUtf8, nameSize, nullptr, nullptr);
-  
+  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nameUtf8,
+                      nameSize, nullptr, nullptr);
+
   streamObj[0].Type = TypeT::IsString;
   streamObj[0].Name = "name";
   streamObj[0].String = nameUtf8;
-  
+
   // Stream size
   streamObj[1].Type = TypeT::IsNumber;
   streamObj[1].Name = "size";
   streamObj[1].Number = streams->sizes[idx].QuadPart;
-  
+
   value->Type = TypeT::IsComplex;
   value->Name = nullptr; // Array element
   value->Complex = streamObj;
-  
+
   streams->currentIndex++;
   return true;
 }
@@ -178,7 +188,8 @@ extern "C" __declspec(dllexport) ValueT *win_list_streams(const wchar_t *path) {
   auto v = new ValueT();
 
   WIN32_FIND_STREAM_DATA findStreamData;
-  HANDLE hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
+  HANDLE hFind =
+      FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
 
   if (hFind == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -190,12 +201,12 @@ extern "C" __declspec(dllexport) ValueT *win_list_streams(const wchar_t *path) {
   // Enumerate all streams
   do {
     std::wstring streamName = findStreamData.cStreamName;
-    
+
     // Skip the default ::$DATA stream (or optionally include it with a flag)
     // For now, include all streams
     streams->names.push_back(streamName);
     streams->sizes.push_back(findStreamData.StreamSize);
-    
+
   } while (FindNextStreamW(hFind, &findStreamData));
 
   DWORD lastErr = GetLastError();
@@ -221,7 +232,13 @@ struct StreamData {
 };
 
 /**
- * @brief Handler for win_read_stream results
+ * @brief Handler for win_read_stream results - yields stream content.
+ *
+ * Returns the alternate data stream content as a string value.
+ * Cleans up StreamData on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing StreamData*.
+ * @return true on first call if successful, false to signal completion.
  */
 static bool handle_win_stream_data(ValueT *value) {
   auto streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
@@ -261,14 +278,9 @@ win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
   }
 
   // Open the stream
-  HANDLE hFile = CreateFileW(
-      fullPath.c_str(),
-      GENERIC_READ,
-      FILE_SHARE_READ,
-      nullptr,
-      OPEN_EXISTING,
-      FILE_ATTRIBUTE_NORMAL,
-      nullptr);
+  HANDLE hFile =
+      CreateFileW(fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -289,11 +301,13 @@ win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
 
   // Read stream content (limit to reasonable size)
   const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024; // 10 MB limit
-  DWORD bytesToRead = static_cast<DWORD>(std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
-  
+  DWORD bytesToRead = static_cast<DWORD>(
+      std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
+
   streamData->data.resize(bytesToRead);
   DWORD bytesRead = 0;
-  if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
+  if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead,
+                nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
     CreateHandle(v, handle_win_stream_data, streamData, nullptr);

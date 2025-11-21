@@ -4,23 +4,24 @@
  *
  * This module implements Windows-specific filesystem operations to provide
  * cross-platform compatibility with POSIX systems. The implementation uses
- * Win32 APIs to query file metadata, read reparse points, and canonicalize paths.
- * 
+ * Win32 APIs to query file metadata, read reparse points, and canonicalize
+ * paths.
+ *
  * ## Architecture
- * 
+ *
  * Functions follow the ValueT iterator pattern established in OsCallsLinuxShim:
  * 1. Native function allocates data and creates ValueT with handler
  * 2. Handler function yields metadata fields sequentially via GetNextValue
  * 3. C# ValXfer.ToNode converts iterator to JSON object
- * 
+ *
  * ## Key Windows APIs Used
- * 
+ *
  * ### CreateFileW
  * Opens files/directories with specific flags:
  * - FILE_FLAG_BACKUP_SEMANTICS: Required to open directories
  * - FILE_FLAG_OPEN_REPARSE_POINT: Prevents following symlinks (like lstat)
  * - OPEN_EXISTING: File must already exist
- * 
+ *
  * ### GetFileInformationByHandle
  * Retrieves file metadata without additional syscalls:
  * - File attributes (directory, hidden, readonly, reparse point)
@@ -28,58 +29,62 @@
  * - Timestamps (creation, access, write)
  * - File ID (volume serial + file index → inode equivalent)
  * - Link count (number of hardlinks)
- * 
+ *
  * ### DeviceIoControl with FSCTL_GET_REPARSE_POINT
  * Reads reparse point data without following the link:
  * - Returns REPARSE_DATA_BUFFER with tag and target path
  * - Handles both symbolic links and junction points
  * - Requires FILE_FLAG_OPEN_REPARSE_POINT when opening
- * 
+ *
  * ### GetFinalPathNameByHandleW
  * Resolves paths to canonical form (follows symlinks):
  * - FILE_NAME_NORMALIZED: Returns absolute path with resolved links
  * - VOLUME_NAME_DOS: Uses drive letters (C:\) not volume GUIDs
  * - May return paths with \\?\ prefix (extended-length paths)
- * 
+ *
  * ## Windows vs POSIX Differences
- * 
+ *
  * ### File Types
  * Windows has fewer file types than POSIX:
  * - No block/character devices exposed as files
  * - No FIFOs or Unix domain sockets as files
  * - Reparse points approximate symlinks/junctions
- * 
+ *
  * ### Permissions
  * Windows uses ACLs, not simple permission bits:
  * - Read-only attribute approximates write permission
  * - No direct owner/group/other distinction
  * - Directories always get execute bit (for traversal)
  * - See Security.cpp for full ACL/SDDL support
- * 
+ *
  * ### Timestamps
  * Windows tracks creation time (birth time), not ctime:
  * - Creation time: when file was created
  * - Access time: last read operation
  * - Write time: last modification
  * - No inode change time (ctime) → use creation time
- * 
+ *
  * ### File IDs
  * Windows uses volume serial + file index as inode:
  * - Volume serial number (32-bit) → st_dev
  * - File index (64-bit) → st_ino
  * - Unique within volume, persistent across reboots
  * - Hardlinks share same file ID
- * 
- * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
- * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle
- * @see https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_get_reparse_point
- * @see https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
+ *
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_get_reparse_point
+ * @see
+ * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
  */
 #include "FileSystem.h"
-#include <windows.h>
-#include <winioctl.h>
 #include <cstring>
 #include <vector>
+#include <windows.h>
+#include <winioctl.h>
 
 // Define REPARSE_DATA_BUFFER if not available in MinGW headers
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
@@ -109,7 +114,8 @@ typedef struct _REPARSE_DATA_BUFFER {
   };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
-#define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+#define REPARSE_DATA_BUFFER_HEADER_SIZE                                        \
+  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 #endif
 
 #ifndef IO_REPARSE_TAG_SYMLINK
@@ -121,7 +127,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 #endif
 
 #ifndef FIELD_OFFSET
-#define FIELD_OFFSET(type, field) ((LONG)(LONG_PTR)&(((type *)0)->field))
+#define FIELD_OFFSET(type, field) ((LONG)(LONG_PTR) & (((type *)0)->field))
 #endif
 
 namespace OsCallsWindows {
@@ -135,7 +141,7 @@ struct WinFileInfo {
   FILETIME creationTime;
   FILETIME lastAccessTime;
   FILETIME lastWriteTime;
-  LARGE_INTEGER fileIndex; // File ID (inode equivalent)
+  LARGE_INTEGER fileIndex;  // File ID (inode equivalent)
   DWORD volumeSerialNumber; // Device equivalent
   DWORD numberOfLinks;
   DWORD reparseTag;
@@ -143,21 +149,21 @@ struct WinFileInfo {
 
 /**
  * @brief Convert Windows file attributes to POSIX-like mode bits
- * 
+ *
  * Windows file attributes don't directly map to POSIX permission bits,
  * so this function provides a reasonable approximation:
- * 
+ *
  * File type mapping (high 4 bits of st_mode):
  * - Symbolic links (IO_REPARSE_TAG_SYMLINK) → S_IFLNK (0120000)
  * - Junction points (IO_REPARSE_TAG_MOUNT_POINT) → S_IFLNK (0120000)
  * - Directories → S_IFDIR (0040000)
  * - Regular files → S_IFREG (0100000)
- * 
+ *
  * Permission bits (low 9 bits):
  * - Owner: always readable (0400), writable if not read-only (0200),
  *   executable if directory (0100)
  * - Group and Other: inherit from owner bits (simplified model)
- * 
+ *
  * @param attrs Windows FILE_ATTRIBUTE_* flags from GetFileInformationByHandle
  * @param reparseTag Reparse tag if FILE_ATTRIBUTE_REPARSE_POINT is set
  * @return POSIX-like mode bits compatible with st_mode field
@@ -198,25 +204,26 @@ static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
 }
 
 /**
- * @brief Convert FILETIME to timespec (100-nanosecond intervals since 1601-01-01)
- * 
+ * @brief Convert FILETIME to timespec (100-nanosecond intervals since
+ * 1601-01-01)
+ *
  * Windows FILETIME represents time as 100-nanosecond intervals since
  * January 1, 1601 UTC (the start of the Gregorian calendar cycle).
- * 
+ *
  * Unix timespec represents time as seconds + nanoseconds since
  * January 1, 1970 UTC (Unix epoch).
- * 
+ *
  * The difference between these epochs is 11,644,473,600 seconds
  * (369 years, 89 leap days).
- * 
+ *
  * Conversion steps:
  * 1. Combine FILETIME's low/high parts into 64-bit integer
  * 2. Divide by 10,000,000 to get seconds
  * 3. Subtract epoch difference to get Unix seconds
  * 4. Use modulo to get nanosecond remainder
- * 
- * @param ft Windows FILETIME structure (creation/access/write time)
- * @return Unix timespec with tv_sec and tv_nsec fields
+ *
+ * @param ft Windows FILETIME structure (creation/access/write time).
+ * @return Unix timespec with tv_sec and tv_nsec fields.
  */
 static timespec filetime_to_timespec(const FILETIME &ft) {
   // FILETIME is 100-nanosecond intervals since 1601-01-01
@@ -238,7 +245,15 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
 }
 
 /**
- * @brief Handler for win_lstat results - iterates through file metadata fields
+ * @brief Handler for win_lstat results - iterates through file metadata fields.
+ *
+ * Yields file information fields sequentially in POSIX stat order: st_dev,
+ * st_ino, st_mode, file type flags (S_ISDIR, S_ISREG, S_ISLNK, etc.), st_nlink,
+ * st_uid/gid (always 0 on Windows), st_size, timestamps (st_atim, st_mtim,
+ * st_ctim), st_blksize, and st_blocks. Cleans up WinFileInfo on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing WinFileInfo*.
+ * @return true if more fields remain, false when iteration completes.
  */
 static bool handle_win_lstat(ValueT *value) {
   auto info = reinterpret_cast<WinFileInfo *>(value->Handle.data1);
@@ -265,10 +280,12 @@ static bool handle_win_lstat(ValueT *value) {
     set_val(Boolean, "S_ISBLK", false); // Windows doesn't have block devices
     return true;
   case 4:
-    set_val(Boolean, "S_ISCHR", false); // Windows doesn't expose char devices this way
+    set_val(Boolean, "S_ISCHR",
+            false); // Windows doesn't expose char devices this way
     return true;
   case 5:
-    set_val(Boolean, "S_ISDIR", (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+    set_val(Boolean, "S_ISDIR",
+            (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
     return true;
   case 6:
     set_val(Boolean, "S_ISFIFO", false); // Windows doesn't have FIFOs
@@ -289,19 +306,23 @@ static bool handle_win_lstat(ValueT *value) {
     return true;
   }
   case 9:
-    set_val(Boolean, "S_ISSOCK", false); // Windows doesn't have Unix sockets as files
+    set_val(Boolean, "S_ISSOCK",
+            false); // Windows doesn't have Unix sockets as files
     return true;
   case 10:
-    set_val(Boolean, "S_TYPEISMQ", false); // Message queues not exposed as files
+    set_val(Boolean, "S_TYPEISMQ",
+            false); // Message queues not exposed as files
     return true;
   case 11:
     set_val(Boolean, "S_TYPEISSEM", false); // Semaphores not exposed as files
     return true;
   case 12:
-    set_val(Boolean, "S_TYPEISSHM", false); // Shared memory not exposed as files
+    set_val(Boolean, "S_TYPEISSHM",
+            false); // Shared memory not exposed as files
     return true;
   case 13:
-    set_val(Boolean, "S_TYPEISTMO", false); // Typed memory objects not supported
+    set_val(Boolean, "S_TYPEISTMO",
+            false); // Typed memory objects not supported
     return true;
   case 14:
     set_val(Number, "st_nlink", info->numberOfLinks);
@@ -353,10 +374,8 @@ extern "C" __declspec(dllexport) ValueT *win_lstat(const wchar_t *path) {
   HANDLE hFile = CreateFileW(
       path,
       0, // No access needed for metadata
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      nullptr,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
       nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
@@ -396,8 +415,8 @@ extern "C" __declspec(dllexport) ValueT *win_lstat(const wchar_t *path) {
     // Query reparse point to get tag
     BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     DWORD bytesReturned;
-    if (DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0,
-                        buffer, sizeof(buffer), &bytesReturned, nullptr)) {
+    if (DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
+                        sizeof(buffer), &bytesReturned, nullptr)) {
       auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
       info->reparseTag = reparseData->ReparseTag;
     }
@@ -411,7 +430,14 @@ extern "C" __declspec(dllexport) ValueT *win_lstat(const wchar_t *path) {
 }
 
 /**
- * @brief Handler for win_readlink results
+ * @brief Handler for win_readlink results - yields reparse point target path.
+ *
+ * Converts wide-character target path to UTF-8 and yields as string value.
+ * Cleans up allocated buffer on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing wchar_t* target
+ * path.
+ * @return true on first call if successful, false to signal completion.
  */
 static bool handle_win_readlink(ValueT *value) {
   auto target = reinterpret_cast<wchar_t *>(value->Handle.data1);
@@ -419,10 +445,12 @@ static bool handle_win_readlink(ValueT *value) {
   case 0:
     if (value->Type == TypeT::IsOk) {
       // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0, nullptr, nullptr);
+      int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0,
+                                     nullptr, nullptr);
       if (size > 0) {
         auto utf8 = new char[size];
-        WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr, nullptr);
+        WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr,
+                            nullptr);
         value->String = utf8;
         value->Name = "path";
         value->Type = TypeT::IsString;
@@ -445,10 +473,8 @@ extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
   HANDLE hFile = CreateFileW(
       path,
       0, // No access needed
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      nullptr,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
       nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
@@ -463,8 +489,8 @@ extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
   // Get reparse point data
   BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   DWORD bytesReturned;
-  if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0,
-                       buffer, sizeof(buffer), &bytesReturned, nullptr)) {
+  if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
+                       sizeof(buffer), &bytesReturned, nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
     target = new wchar_t[1];
@@ -477,19 +503,23 @@ extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
   CloseHandle(hFile);
 
   auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
-  
+
   // Extract target path based on reparse tag
   if (reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
-    USHORT targetLength = reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset = reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+    USHORT targetLength =
+        reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
+    USHORT targetOffset =
+        reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
     wcsncpy_s(target, targetLength + 1,
               &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset],
               targetLength);
     target[targetLength] = L'\0';
   } else if (reparseData->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-    USHORT targetLength = reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset = reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+    USHORT targetLength =
+        reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
+    USHORT targetOffset =
+        reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
     wcsncpy_s(target, targetLength + 1,
               &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset],
@@ -510,7 +540,15 @@ extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
 }
 
 /**
- * @brief Handler for win_canonicalize_file_name results
+ * @brief Handler for win_canonicalize_file_name results - yields canonical
+ * path.
+ *
+ * Converts wide-character canonical path to UTF-8 and yields as string value.
+ * Cleans up allocated buffer on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing wchar_t*
+ * canonical path.
+ * @return true on first call if successful, false to signal completion.
  */
 static bool handle_win_cfn(ValueT *value) {
   auto cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
@@ -518,7 +556,8 @@ static bool handle_win_cfn(ValueT *value) {
   case 0:
     if (value->Type == TypeT::IsOk) {
       // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr, nullptr);
+      int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr,
+                                     nullptr);
       if (size > 0) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
@@ -545,8 +584,7 @@ win_canonicalize_file_name(const wchar_t *path) {
   HANDLE hFile = CreateFileW(
       path,
       0, // No access needed
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      nullptr,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
       OPEN_EXISTING,
       FILE_FLAG_BACKUP_SEMANTICS, // Follow reparse points for canonical path
       nullptr);
@@ -561,7 +599,8 @@ win_canonicalize_file_name(const wchar_t *path) {
   }
 
   // Get the final path name
-  DWORD bufferSize = GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+  DWORD bufferSize = GetFinalPathNameByHandleW(
+      hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   if (bufferSize == 0) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
@@ -573,7 +612,8 @@ win_canonicalize_file_name(const wchar_t *path) {
   }
 
   canonical = new wchar_t[bufferSize];
-  DWORD result = GetFinalPathNameByHandleW(hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+  DWORD result = GetFinalPathNameByHandleW(
+      hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   CloseHandle(hFile);
 
   if (result == 0 || result >= bufferSize) {

@@ -56,6 +56,18 @@
 #endif
 
 namespace OsCalls {
+/**
+ * @brief Handler function for lstat results - iterates through stat structure
+ * fields.
+ *
+ * Yields stat buffer fields sequentially (st_dev, st_ino, st_mode, file type
+ * flags, st_nlink, owner/group IDs, size, timestamps, etc.) via the ValueT
+ * cursor protocol. Cleans up allocated stat buffer and ValueT on completion or
+ * error.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing struct stat*.
+ * @return true if more fields remain, false when iteration completes.
+ */
 bool handle_lstat(ValueT *value) {
   auto stbuf = reinterpret_cast<struct stat *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -141,6 +153,15 @@ bool handle_lstat(ValueT *value) {
   }
 }
 
+/**
+ * @brief Handler function for readlink results - returns symlink target path.
+ *
+ * Yields a single string value containing the symlink's target path.
+ * Cleans up allocated buffer and ValueT on completion or error.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing char* buffer.
+ * @return true on first call if successful, false to signal completion.
+ */
 bool handle_readlink(ValueT *value) {
   auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -157,6 +178,18 @@ bool handle_readlink(ValueT *value) {
   }
 }
 
+/**
+ * @brief Handler function for canonicalize_file_name results - returns
+ * canonical path.
+ *
+ * Yields a single string value containing the resolved absolute path with all
+ * symlinks expanded and relative components removed.
+ * Uses ::free() on data1 since canonicalize_file_name uses malloc.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing char* from
+ * canonicalize_file_name.
+ * @return true on first call if successful, false to signal completion.
+ */
 bool handle_cfn(ValueT *value) {
   auto cfn = reinterpret_cast<const char *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -176,6 +209,16 @@ bool handle_cfn(ValueT *value) {
 auto slbufsz = _POSIX_PATH_MAX;
 
 extern "C" {
+/**
+ * @brief Performs lstat(2) on the specified path and returns results as ValueT
+ * cursor.
+ *
+ * Does not follow symbolic links. Returns file metadata including type,
+ * permissions, size, timestamps, and ownership information.
+ *
+ * @param path Filesystem path to inspect.
+ * @return ValueT* cursor initialized with stat data or error number.
+ */
 ValueT *lstat(const char *path) {
   auto stbuf = new struct stat();
   errno = 0;
@@ -190,6 +233,15 @@ ValueT *lstat(const char *path) {
   return v;
 };
 
+/**
+ * @brief Reads the target of a symbolic link and returns it as a string.
+ *
+ * Uses readlink(2) with automatic buffer resizing to handle arbitrarily long
+ * paths. Does not follow the symlink itself.
+ *
+ * @param path Path to the symbolic link.
+ * @return ValueT* cursor with symlink target string or error number.
+ */
 ValueT *readlink(const char *path) {
   if (slbufsz <= 0)
     slbufsz = 1024;
@@ -217,6 +269,15 @@ ValueT *readlink(const char *path) {
   return v;
 };
 
+/**
+ * @brief Resolves a path to its canonical absolute form.
+ *
+ * Uses glibc's canonicalize_file_name to expand all symbolic links and resolve
+ * relative path components (. and ..). Follows symlinks unlike lstat.
+ *
+ * @param path Input path (relative or absolute, may contain symlinks).
+ * @return ValueT* cursor with canonical path string or error number.
+ */
 ValueT *canonicalize_file_name(const char *path) {
   // ::chown("*** before ***", errno, (intptr_t)path);
   errno = 0;

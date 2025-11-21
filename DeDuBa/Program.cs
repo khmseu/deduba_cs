@@ -3,8 +3,16 @@
 namespace DeDuBa;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+/// <summary>
+///     Entry point for the DeDuBa command-line application.
+///     Parses command-line options and initiates the backup process.
+/// </summary>
 internal class Program
 {
+    /// <summary>
+    ///     Main entry point that parses command-line arguments and invokes the backup worker.
+    /// </summary>
+    /// <param name="args">Command-line arguments including file paths and options (--verbose, --production, --help).</param>
     private static void Main(string[] args)
     {
         Utilities.Testing = true; // Default to testing mode
@@ -33,6 +41,9 @@ internal class Program
         DedubaClass.Backup([.. fileArgs]);
     }
 
+    /// <summary>
+    ///     Displays usage information and available command-line options to the console.
+    /// </summary>
     private static void ShowHelp()
     {
         Console.WriteLine("DeDuBa - Deduplicating Backup System");

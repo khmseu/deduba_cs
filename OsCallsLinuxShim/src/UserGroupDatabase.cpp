@@ -5,6 +5,17 @@
 #include <unistd.h>
 
 namespace OsCalls {
+/**
+ * @brief Handler for passwd structure results - iterates through passwd fields.
+ *
+ * Yields passwd structure fields sequentially (pw_name, pw_passwd, pw_uid,
+ * pw_gid, pw_gecos, pw_dir, pw_shell). Cleans up allocated passwd buffer
+ * and string buffer on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing passwd* and data2
+ * containing char* buffer.
+ * @return true if more fields remain, false when iteration completes.
+ */
 bool handle_passwd(ValueT *value) {
   auto pw = reinterpret_cast<passwd *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -40,6 +51,16 @@ bool handle_passwd(ValueT *value) {
   }
 }
 
+/**
+ * @brief Handler for group member list - iterates through gr_mem array.
+ *
+ * Yields group member names as string array elements until reaching
+ * null terminator.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing char** member
+ * list.
+ * @return true if more members remain, false at null terminator.
+ */
 bool handle_group_mem(OsCalls::ValueT *value) {
   auto mem = reinterpret_cast<char **>(value->Handle.data1);
   if (mem[value->Handle.index] == nullptr) {
@@ -50,6 +71,17 @@ bool handle_group_mem(OsCalls::ValueT *value) {
   return true;
 }
 
+/**
+ * @brief Handler for group structure results - iterates through group fields.
+ *
+ * Yields group structure fields sequentially (gr_name, gr_gid, gr_mem).
+ * The gr_mem field is a complex nested array handled by handle_group_mem.
+ * Cleans up allocated group buffer and string buffer on completion.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing group* and data2
+ * containing char* buffer.
+ * @return true if more fields remain, false when iteration completes.
+ */
 bool handle_group(ValueT *value) {
   auto gr = reinterpret_cast<group *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -79,6 +111,15 @@ auto pwbufsz = sysconf(_SC_GETPW_R_SIZE_MAX);
 auto grbufsz = sysconf(_SC_GETGR_R_SIZE_MAX);
 
 extern "C" {
+/**
+ * @brief Queries the passwd database for a user ID.
+ *
+ * Uses getpwuid_r (thread-safe) with automatic buffer resizing on ERANGE.
+ * Returns passwd structure fields via ValueT cursor.
+ *
+ * @param uid Numeric user ID to look up.
+ * @return ValueT* cursor with passwd fields or error number.
+ */
 ValueT *getpwuid(int64_t uid) {
   if (pwbufsz <= 0)
     pwbufsz = 1024;
@@ -103,6 +144,15 @@ ValueT *getpwuid(int64_t uid) {
   return v;
 };
 
+/**
+ * @brief Queries the group database for a group ID.
+ *
+ * Uses getgrgid_r (thread-safe) with automatic buffer resizing on ERANGE.
+ * Returns group structure fields including member list via ValueT cursor.
+ *
+ * @param gid Numeric group ID to look up.
+ * @return ValueT* cursor with group fields or error number.
+ */
 ValueT *getgrgid(int64_t gid) {
   if (grbufsz <= 0)
     grbufsz = 1024;

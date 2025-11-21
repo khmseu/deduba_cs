@@ -13,6 +13,12 @@ namespace OsCallsWindows {
 
 /**
  * @brief Get security descriptor in SDDL format
+ *
+ * Retrieves Windows security descriptor (owner, group, DACL, optional SACL)
+ * and converts to SDDL string format for portable storage and analysis.
+ * If include_sacl is true but SeSecurityPrivilege is not held, gracefully
+ * downgrades to DACL-only retrieval.
+ *
  * @param path Wide-character path to file
  * @param include_sacl Whether to include SACL (requires SeSecurityPrivilege)
  * @return ValueT* with SDDL string

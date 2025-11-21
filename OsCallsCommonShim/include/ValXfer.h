@@ -18,6 +18,16 @@
 namespace OsCalls {
 struct ValueT;
 
+/**
+ * @brief Function pointer type for value iteration handlers.
+ *
+ * Handler functions are invoked by GetNextValue to populate the ValueT
+ * structure with the next value in the sequence. Return false to signal
+ * end of iteration.
+ *
+ * @param value Pointer to ValueT to populate with next value.
+ * @return true if more values remain, false to end iteration.
+ */
 typedef bool HandlerT(ValueT *value);
 
 // Define the THandle struct
@@ -60,6 +70,19 @@ struct ValueT {
   bool Boolean;
 };
 
+/**
+ * @brief Convenience macro for setting ValueT fields based on type.
+ *
+ * Sets the Type discriminator, Name field, and the corresponding value field
+ * in a single statement. The typ parameter should be one of: Number, String,
+ * Complex, TimeSpec, Boolean (without the "Is" prefix).
+ *
+ * @param typ Type suffix (e.g., Number for TypeT::IsNumber).
+ * @param name C-string for the Name field.
+ * @param val Value to assign to the corresponding field.
+ *
+ * Example: set_val(Number, "st_ino", inode_value);
+ */
 #define set_val(typ, name, val)                                                \
   do {                                                                         \
     value->Type = TypeT::Is##typ;                                              \

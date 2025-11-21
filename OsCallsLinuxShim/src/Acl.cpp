@@ -4,6 +4,16 @@
 #include <sys/acl.h>
 
 namespace OsCalls {
+/**
+ * @brief Handler function for ACL text results - yields ACL string.
+ *
+ * Returns the ACL as a short-form text string on the first iteration.
+ * Uses acl_free to release the libacl-allocated text buffer.
+ *
+ * @param value Pointer to ValueT with Handle.data1 containing char* from
+ * acl_to_any_text.
+ * @return true on first call if successful, false to signal completion.
+ */
 bool handle_acl_text(ValueT *value) {
   auto acl_text = reinterpret_cast<const char *>(value->Handle.data1);
   switch (value->Handle.index) {
@@ -22,6 +32,15 @@ bool handle_acl_text(ValueT *value) {
 }
 
 extern "C" {
+/**
+ * @brief Reads the access ACL from a file or directory.
+ *
+ * Retrieves the ACL_TYPE_ACCESS ACL and converts it to short text form using
+ * acl_to_any_text with TEXT_ABBREVIATE flag (omits entries matching mode bits).
+ *
+ * @param path Filesystem path to read ACL from.
+ * @return ValueT* cursor with ACL text string or error number.
+ */
 ValueT *acl_get_file_access(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_ACCESS);
@@ -46,6 +65,15 @@ ValueT *acl_get_file_access(const char *path) {
   return v;
 }
 
+/**
+ * @brief Reads the default ACL from a directory.
+ *
+ * Retrieves the ACL_TYPE_DEFAULT ACL (only valid for directories) and converts
+ * it to short text form. Default ACLs are inherited by newly created files.
+ *
+ * @param path Filesystem path (must be a directory).
+ * @return ValueT* cursor with ACL text string or error number.
+ */
 ValueT *acl_get_file_default(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_DEFAULT);

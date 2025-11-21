@@ -55,17 +55,17 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Check that we got file metadata
         Assert.True(resultObj.ContainsKey("st_size"));
         Assert.True(resultObj.ContainsKey("st_mode"));
         Assert.True(resultObj.ContainsKey("S_ISREG"));
         Assert.True(resultObj["S_ISREG"]?.GetValue<bool>() == true);
-        
+
         // File size should match
         var size = resultObj["st_size"]?.GetValue<long>();
         Assert.True(size > 0);
-        
+
         // Should have timestamps
         Assert.True(resultObj.ContainsKey("st_mtim"));
         Assert.True(resultObj.ContainsKey("st_atim"));
@@ -80,11 +80,11 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Check that it's identified as a directory
         Assert.True(resultObj.ContainsKey("S_ISDIR"));
         Assert.True(resultObj["S_ISDIR"]?.GetValue<bool>() == true);
-        
+
         // Should have mode and timestamps
         Assert.True(resultObj.ContainsKey("st_mode"));
         Assert.True(resultObj.ContainsKey("st_mtim"));
@@ -105,7 +105,7 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Check that it's identified as a symbolic link
         Assert.True(resultObj.ContainsKey("S_ISLNK"));
         Assert.True(resultObj["S_ISLNK"]?.GetValue<bool>() == true);
@@ -126,7 +126,7 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Should have a path field with the target
         Assert.True(resultObj.ContainsKey("path"));
         var targetPath = resultObj["path"]?.GetValue<string>();
@@ -139,10 +139,10 @@ public class OsCallsWindowsTests : IDisposable
         // Arrange
         var currentDir = Directory.GetCurrentDirectory();
         var relativePath = Path.GetFileName(_testFilePath);
-        
+
         // Change to test directory
         Directory.SetCurrentDirectory(_testDirPath);
-        
+
         try
         {
             // Act
@@ -151,11 +151,11 @@ public class OsCallsWindowsTests : IDisposable
             // Assert
             Assert.NotNull(result);
             var resultObj = result.AsObject();
-            
+
             Assert.True(resultObj.ContainsKey("path"));
             var canonicalPath = resultObj["path"]?.GetValue<string>();
             Assert.False(string.IsNullOrEmpty(canonicalPath));
-            
+
             // Path should be absolute (no relative components)
             Assert.True(Path.IsPathRooted(canonicalPath));
         }
@@ -175,12 +175,12 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Should have an sddl field with security descriptor string
         Assert.True(resultObj.ContainsKey("sddl"));
         var sddl = resultObj["sddl"]?.GetValue<string>();
         Assert.False(string.IsNullOrEmpty(sddl));
-        
+
         // SDDL should contain owner (O:), group (G:), and DACL (D:)
         Assert.Contains("O:", sddl);
         Assert.Contains("D:", sddl);
@@ -192,7 +192,7 @@ public class OsCallsWindowsTests : IDisposable
         // Arrange - Create a file with alternate data stream
         var testFileWithAds = Path.Combine(_testDirPath, "file_with_ads.txt");
         File.WriteAllText(testFileWithAds, "Main content");
-        
+
         // Add an alternate data stream using cmd
         var streamPath = $"{testFileWithAds}:TestStream";
         try
@@ -210,12 +210,12 @@ public class OsCallsWindowsTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        
+
         // Result should be an array of stream objects
         if (result is JsonArray streamArray)
         {
             Assert.True(streamArray.Count > 0);
-            
+
             // At least one stream should be present
             var firstStream = streamArray[0]?.AsObject();
             Assert.NotNull(firstStream);
@@ -230,11 +230,11 @@ public class OsCallsWindowsTests : IDisposable
         // Arrange - Create a file with alternate data stream
         var testFileWithAds = Path.Combine(_testDirPath, "file_with_stream.txt");
         File.WriteAllText(testFileWithAds, "Main content");
-        
+
         var streamName = "TestStream";
         var streamContent = "This is stream content";
         var streamPath = $"{testFileWithAds}:{streamName}";
-        
+
         try
         {
             File.WriteAllText(streamPath, streamContent);
@@ -251,7 +251,7 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Should have content field
         Assert.True(resultObj.ContainsKey("content"));
         var content = resultObj["content"]?.GetValue<string>();
@@ -270,7 +270,7 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Should have an error number (ERROR_FILE_NOT_FOUND = 2)
         Assert.True(resultObj.ContainsKey("errno"));
         var errNo = resultObj["errno"]?.GetValue<int>();
@@ -287,7 +287,7 @@ public class OsCallsWindowsTests : IDisposable
             longPath = Path.Combine(longPath, $"subdir_{i}");
         }
         Directory.CreateDirectory(longPath);
-        
+
         var longFilePath = Path.Combine(longPath, "test_file.txt");
         File.WriteAllText(longFilePath, "Test");
 
@@ -297,7 +297,7 @@ public class OsCallsWindowsTests : IDisposable
         // Assert
         Assert.NotNull(result);
         var resultObj = result.AsObject();
-        
+
         // Should successfully get metadata for long path
         Assert.True(resultObj.ContainsKey("st_size"));
         Assert.True(resultObj.ContainsKey("S_ISREG"));
