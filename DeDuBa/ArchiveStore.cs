@@ -1,5 +1,4 @@
 using System;
-using UtilitiesLibrary;
 #pragma warning disable CS1591
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using ICSharpCode.SharpZipLib.BZip2;
+using UtilitiesLibrary;
 
 namespace DeDuBa;
 
@@ -23,7 +23,13 @@ public sealed class ArchiveStore : IArchiveStore
     public ArchiveStore(BackupConfig config, Action<string>? log = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _log = log ?? new Action<string>(s => { if (_config.Verbose) Utilities.ConWrite(s); });
+        _log =
+            log
+            ?? new Action<string>(s =>
+            {
+                if (_config.Verbose)
+                    Utilities.ConWrite(s);
+            });
         try
         {
             Directory.CreateDirectory(_config.DataPath);

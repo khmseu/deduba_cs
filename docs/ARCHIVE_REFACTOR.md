@@ -27,18 +27,18 @@ This document summarizes the refactor to extract archive/data management to `Arc
 - Consider writing compressed files to temporary path and `File.Move` for atomic writes.
 - Add `IArchiveLogger` or `ILogger` for better logging and tracing.
 - Integrate Prometheus-style metrics for saved/duplicate blocks.
- - Add CLI tooling for inspecting the archive, listing prefixes, and restore operations.
- - Add transactional and inter-process safety (e.g., file locks or leader election) for multi-process writes against the same archive to avoid races.
- - Improve BuildIndex performance by persisting an index on disk and using change journals or file monitoring to update it incrementally.
- - Implement snapshot exports and compaction (dedup/garbage-collect) to reduce archive size over time.
- - Add end-to-end restore/integrity verification tests (read-back written chunks and verify checksums and metadata round-trip).
- - Add retention and pruning policy: allow the system to remove file chunks no longer referenced by any inode (safe compaction algorithm).
- - Add a safe migration path for existing archives: utilities to import/export index formats, and tools to convert prefix formats.
- - Add more comprehensive concurrency tests: simultaneous save streams, reorg under load, conflicts when one writer reorganizes a directory.
- - Add support for partial uploads and resumable chunking: allow saving to resume interrupted uploads.
- - Consider adding encryption-at-rest options (AES-GCM) and key rotation features.
- - Add support for verification / digest-only mode to quickly scan archive for missing or corrupted files.
- - Add metadata snapshots for archiving and quick restore of directory structures.
+- Add CLI tooling for inspecting the archive, listing prefixes, and restore operations.
+- Add transactional and inter-process safety (e.g., file locks or leader election) for multi-process writes against the same archive to avoid races.
+- Improve BuildIndex performance by persisting an index on disk and using change journals or file monitoring to update it incrementally.
+- Implement snapshot exports and compaction (dedup/garbage-collect) to reduce archive size over time.
+- Add end-to-end restore/integrity verification tests (read-back written chunks and verify checksums and metadata round-trip).
+- Add retention and pruning policy: allow the system to remove file chunks no longer referenced by any inode (safe compaction algorithm).
+- Add a safe migration path for existing archives: utilities to import/export index formats, and tools to convert prefix formats.
+- Add more comprehensive concurrency tests: simultaneous save streams, reorg under load, conflicts when one writer reorganizes a directory.
+- Add support for partial uploads and resumable chunking: allow saving to resume interrupted uploads.
+- Consider adding encryption-at-rest options (AES-GCM) and key rotation features.
+- Add support for verification / digest-only mode to quickly scan archive for missing or corrupted files.
+- Add metadata snapshots for archiving and quick restore of directory structures.
 
 ## Testing notes
 

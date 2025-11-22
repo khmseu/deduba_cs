@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 namespace DeDuBa;
+
 #pragma warning disable CS1591
 
 public interface IArchiveStore
