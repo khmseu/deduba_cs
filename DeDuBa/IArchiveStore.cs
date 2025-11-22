@@ -1,7 +1,5 @@
 namespace DeDuBa;
 
-#pragma warning disable CS1591
-
 public interface IArchiveStore
 {
     IReadOnlyDictionary<string, string> Arlist { get; }
