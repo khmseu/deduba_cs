@@ -148,6 +148,27 @@ struct WinFileInfo {
 };
 
 /**
+ * @brief Helper to open a file or directory with common share + semantic flags.
+ *
+ * Centralizes the CreateFileW invocation pattern used by win_lstat,
+ * win_readlink, and win_canonicalize_file_name. Always requests no direct
+ * access (metadata only) and applies FILE_FLAG_BACKUP_SEMANTICS so that
+ * directories can be opened. Additional flags (e.g.
+ * FILE_FLAG_OPEN_REPARSE_POINT) can be supplied via the extraFlags parameter.
+ *
+ * @param path      Wide-character path to open.
+ * @param extraFlags Additional flags OR'd with FILE_FLAG_BACKUP_SEMANTICS.
+ * @param access    Desired access mask (default 0 for metadata only).
+ * @return HANDLE   Valid handle on success, INVALID_HANDLE_VALUE on failure.
+ */
+static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags,
+                            DWORD access = 0) {
+  return CreateFileW(
+      path, access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | extraFlags, nullptr);
+}
+
+/**
  * @brief Convert Windows file attributes to POSIX-like mode bits
  *
  * Windows file attributes don't directly map to POSIX permission bits,
@@ -371,12 +392,7 @@ extern "C" __declspec(dllexport) ValueT *win_lstat(const wchar_t *path) {
   auto v = new ValueT();
 
   // Open file/directory without following reparse points
-  HANDLE hFile = CreateFileW(
-      path,
-      0, // No access needed for metadata
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-      nullptr);
+  HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -470,12 +486,7 @@ extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
   auto v = new ValueT();
 
   // Open the reparse point
-  HANDLE hFile = CreateFileW(
-      path,
-      0, // No access needed
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-      nullptr);
+  HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -581,13 +592,7 @@ win_canonicalize_file_name(const wchar_t *path) {
   auto v = new ValueT();
 
   // Open the file/directory
-  HANDLE hFile = CreateFileW(
-      path,
-      0, // No access needed
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS, // Follow reparse points for canonical path
-      nullptr);
+  HANDLE hFile = win_open_path(path, 0);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
