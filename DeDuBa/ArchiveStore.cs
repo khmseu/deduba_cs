@@ -1,11 +1,7 @@
-using System;
 #pragma warning disable CS1591
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
+using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
 using UtilitiesLibrary;
 
@@ -13,11 +9,11 @@ namespace DeDuBa;
 
 public sealed class ArchiveStore : IArchiveStore
 {
+    private readonly ConcurrentDictionary<string, string> _arlist = new();
     private readonly BackupConfig _config;
     private readonly Action<string>? _log;
-    private readonly object _reorgLock = new();
-    private readonly ConcurrentDictionary<string, string> _arlist = new();
     private readonly ConcurrentDictionary<string, HashSet<string>> _preflist = new();
+    private readonly object _reorgLock = new();
     private readonly ConcurrentDictionary<string, long> _stats = new();
 
     public ArchiveStore(BackupConfig config, Action<string>? log = null)
@@ -25,11 +21,13 @@ public sealed class ArchiveStore : IArchiveStore
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _log =
             log
-            ?? new Action<string>(s =>
-            {
-                if (_config.Verbose)
-                    Utilities.ConWrite(s);
-            });
+            ?? (
+                s =>
+                {
+                    if (_config.Verbose)
+                        Utilities.ConWrite(s);
+                }
+            );
         try
         {
             Directory.CreateDirectory(_config.DataPath);
@@ -44,11 +42,13 @@ public sealed class ArchiveStore : IArchiveStore
     public string DataPath => _config.DataPath;
 
     public IReadOnlyDictionary<string, string> Arlist => _arlist;
+
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Preflist =>
         _preflist.ToDictionary(
             kvp => kvp.Key,
             kvp => (IReadOnlyCollection<string>)kvp.Value.ToList().AsReadOnly()
         );
+
     public IReadOnlyDictionary<string, long> Stats => _stats;
     public long PackSum { get; private set; }
 
@@ -62,85 +62,6 @@ public sealed class ArchiveStore : IArchiveStore
             MkarlistInternal(entry);
     }
 
-    private void MkarlistInternal(string entry)
-    {
-        if (entry == _config.DataPath)
-        {
-            if (_config.Verbose)
-                _log?.Invoke($"+ {entry}");
-            try
-            {
-                foreach (var e in Directory.GetFileSystemEntries(entry).OrderBy(x => x))
-                    MkarlistInternal(e);
-            }
-            catch (Exception ex)
-            {
-                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
-            }
-            return;
-        }
-
-        var rel = Path.GetRelativePath(_config.DataPath, entry)
-            .Replace(Path.DirectorySeparatorChar, '/');
-        var prefix = "";
-        var file = rel;
-        var idx = rel.LastIndexOf('/');
-        if (idx >= 0)
-        {
-            prefix = rel.Substring(0, idx);
-            file = rel.Substring(idx + 1);
-        }
-
-        if (System.Text.RegularExpressions.Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
-        {
-            if (_config.Verbose)
-                _log?.Invoke($"+ {entry}:{prefix}:{file}");
-            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
-            lock (set)
-            {
-                set.Add($"{file}/");
-            }
-            try
-            {
-                foreach (var e in Directory.GetFileSystemEntries(entry).OrderBy(x => x))
-                    MkarlistInternal(e);
-            }
-            catch (Exception ex)
-            {
-                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
-            }
-        }
-        else if (System.Text.RegularExpressions.Regex.IsMatch(file, "^[0-9a-f]+$"))
-        {
-            _arlist[file] = prefix;
-            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
-            lock (set)
-            {
-                set.Add(file);
-            }
-        }
-        else
-        {
-            Utilities.Warn($"Bad entry in archive: {entry}");
-        }
-    }
-
-    private static string JoinPrefix(string prefix, string segment)
-    {
-        return string.IsNullOrEmpty(prefix) ? segment : $"{prefix}/{segment}";
-    }
-
-    private void CreateDirectoryWithLogging(string path)
-    {
-        Directory.CreateDirectory(path);
-        if (_config.Verbose)
-        {
-            const string blue = "\u001b[34m";
-            const string reset = "\u001b[0m";
-            _log?.Invoke($"{blue}Created directory: {path}{reset}");
-        }
-    }
-
     public string? GetTargetPathForHash(string hash)
     {
         if (_config.Verbose)
@@ -152,20 +73,19 @@ public sealed class ArchiveStore : IArchiveStore
             try
             {
                 if (File.Exists(fPath))
-                {
                     PackSum += new FileInfo(fPath).Length;
-                }
             }
             catch
             {
                 // ignore
             }
+
             return null;
         }
 
         var prefix = hash;
-        var prefixList = System
-            .Text.RegularExpressions.Regex.Split(prefix, "(..)")
+        var prefixList = Regex
+            .Split(prefix, "(..)")
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToList();
         prefixList.RemoveAt(prefixList.Count - 1);
@@ -234,6 +154,7 @@ public sealed class ArchiveStore : IArchiveStore
                             Utilities.Error($"{from} -> {to}", nameof(File.Move), ex);
                             continue;
                         }
+
                         var newpfx = JoinPrefix(prefix, dir);
                         _arlist[f] = newpfx;
                         var set = _preflist.GetOrAdd(newpfx, p => new HashSet<string>());
@@ -242,9 +163,11 @@ public sealed class ArchiveStore : IArchiveStore
                             set.Add(f);
                         }
                     }
+
                     _preflist[prefix] = newDirs;
                 }
             }
+
             var depth2 = prefixList.Count;
             var plen2 = 2 * depth2;
             var dir2 = hash.Substring(plen2, 2);
@@ -257,6 +180,7 @@ public sealed class ArchiveStore : IArchiveStore
         {
             pset.Add(hash);
         }
+
         return Path.Combine(_config.DataPath, prefix, hash);
     }
 
@@ -291,6 +215,7 @@ public sealed class ArchiveStore : IArchiveStore
                     PackSum += new FileInfo(outFile).Length;
                 }
                 catch { }
+
                 return hash;
             }
 
@@ -311,6 +236,7 @@ public sealed class ArchiveStore : IArchiveStore
             if (_config.Verbose)
                 _log?.Invoke($"{hash} already exists");
         }
+
         return hash;
     }
 
@@ -343,5 +269,86 @@ public sealed class ArchiveStore : IArchiveStore
         }
 
         return hashes;
+    }
+
+    private void MkarlistInternal(string entry)
+    {
+        if (entry == _config.DataPath)
+        {
+            if (_config.Verbose)
+                _log?.Invoke($"+ {entry}");
+            try
+            {
+                foreach (var e in Directory.GetFileSystemEntries(entry).OrderBy(x => x))
+                    MkarlistInternal(e);
+            }
+            catch (Exception ex)
+            {
+                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+            }
+
+            return;
+        }
+
+        var rel = Path.GetRelativePath(_config.DataPath, entry)
+            .Replace(Path.DirectorySeparatorChar, '/');
+        var prefix = "";
+        var file = rel;
+        var idx = rel.LastIndexOf('/');
+        if (idx >= 0)
+        {
+            prefix = rel.Substring(0, idx);
+            file = rel.Substring(idx + 1);
+        }
+
+        if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
+        {
+            if (_config.Verbose)
+                _log?.Invoke($"+ {entry}:{prefix}:{file}");
+            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
+            lock (set)
+            {
+                set.Add($"{file}/");
+            }
+
+            try
+            {
+                foreach (var e in Directory.GetFileSystemEntries(entry).OrderBy(x => x))
+                    MkarlistInternal(e);
+            }
+            catch (Exception ex)
+            {
+                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+            }
+        }
+        else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
+        {
+            _arlist[file] = prefix;
+            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
+            lock (set)
+            {
+                set.Add(file);
+            }
+        }
+        else
+        {
+            Utilities.Warn($"Bad entry in archive: {entry}");
+        }
+    }
+
+    private static string JoinPrefix(string prefix, string segment)
+    {
+        return string.IsNullOrEmpty(prefix) ? segment : $"{prefix}/{segment}";
+    }
+
+    private void CreateDirectoryWithLogging(string path)
+    {
+        Directory.CreateDirectory(path);
+        if (_config.Verbose)
+        {
+            const string blue = "\u001b[34m";
+            const string reset = "\u001b[0m";
+            _log?.Invoke($"{blue}Created directory: {path}{reset}");
+        }
     }
 }

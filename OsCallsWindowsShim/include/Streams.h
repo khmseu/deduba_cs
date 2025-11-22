@@ -11,7 +11,6 @@
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
-
 /**
  * @brief List all alternate data streams for a file
  *
@@ -36,7 +35,6 @@ win_list_streams(const wchar_t *path);
  */
 extern "C" __declspec(dllexport) OsCalls::ValueT *
 win_read_stream(const wchar_t *path, const wchar_t *stream_name);
-
 } // namespace OsCallsWindows
 
 #endif // STREAMS_WINDOWS_H

@@ -1,7 +1,4 @@
-using System;
-using System.IO;
 using UtilitiesLibrary;
-using Xunit;
 
 namespace DeDuBa.Test;
 
@@ -13,6 +10,15 @@ public class DedubaIntegrationTests : IDisposable
     {
         _tmpDir = Path.Combine(Path.GetTempPath(), "deduba_integ_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_tmpDir, true);
+        }
+        catch { }
     }
 
     [Fact]
@@ -29,14 +35,5 @@ public class DedubaIntegrationTests : IDisposable
 
         var files = Directory.GetFiles(config.DataPath, "*", SearchOption.AllDirectories);
         Assert.True(files.Length > 0);
-    }
-
-    public void Dispose()
-    {
-        try
-        {
-            Directory.Delete(_tmpDir, true);
-        }
-        catch { }
     }
 }

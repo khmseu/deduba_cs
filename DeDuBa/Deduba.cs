@@ -228,7 +228,7 @@ public class DedubaClass
                 if (Utilities.VerboseOutput)
                 {
                     Utilities.ConWrite("Before backup:\n");
-                    foreach (var kvp in (_archiveStore?.Arlist ?? Arlist))
+                    foreach (var kvp in _archiveStore?.Arlist ?? Arlist)
                         Utilities.ConWrite(
                             Utilities.Dumper(
                                 new KeyValuePair<string, object?>(
@@ -241,15 +241,13 @@ public class DedubaClass
                     // Iterate over preflist
                     // Iterate over preflist
                     foreach (
-                        var kvp in (
-                            _archiveStore?.Preflist
+                        var kvp in _archiveStore?.Preflist
                             ?? Preflist.ToDictionary(
                                 k => k.Key,
                                 k =>
                                     (IReadOnlyCollection<string>)
                                         k.Value.Split('\0', StringSplitOptions.RemoveEmptyEntries)
                             )
-                        )
                     )
                         Utilities.ConWrite(
                             Utilities.Dumper(
@@ -318,11 +316,11 @@ public class DedubaClass
     // build arlist/preflist
 
     /// <summary>
-    ///     Recursively scans the archive DATA directory to populate <see cref="Arlist"/> and <see cref="Preflist"/>.
+    ///     Recursively scans the archive DATA directory to populate <see cref="Arlist" /> and <see cref="Preflist" />.
     ///     These dictionaries track all existing hash files and directory prefixes to enable incremental backup
     ///     and efficient lookup of duplicate data blocks.
     /// </summary>
-    /// <param name="filePaths">Paths to scan (initially <see cref="_dataPath"/>, then recursively expanded).</param>
+    /// <param name="filePaths">Paths to scan (initially <see cref="_dataPath" />, then recursively expanded).</param>
     private static void Mkarlist(params string[] filePaths)
     {
         if (_archiveStore != null)
@@ -330,6 +328,7 @@ public class DedubaClass
             _archiveStore.BuildIndex();
             return;
         }
+
         foreach (var entry in filePaths.OrderBy(e => e))
         {
             if (entry == _dataPath)
@@ -397,7 +396,7 @@ public class DedubaClass
     /// </summary>
     /// <param name="path">Absolute path to the directory to create.</param>
     /// <remarks>
-    ///     Uses <see cref="Directory.CreateDirectory"/> which is idempotent (succeeds if directory already exists).
+    ///     Uses <see cref="Directory.CreateDirectory" /> which is idempotent (succeeds if directory already exists).
     /// </remarks>
     private static void CreateDirectoryWithLogging(string path)
     {
@@ -430,7 +429,7 @@ public class DedubaClass
     /// <param name="hash">Hex-encoded SHA-512 hash of the data block.</param>
     /// <returns>Absolute path where the data should be written, or null if it already exists.</returns>
     /// <remarks>
-    ///     Updates <see cref="Arlist"/> and <see cref="Preflist"/> to track the new file.
+    ///     Updates <see cref="Arlist" /> and <see cref="Preflist" /> to track the new file.
     ///     Triggers directory split when prefix directory grows beyond 255 entries.
     /// </remarks>
     private static string? Hash2Fn(string hash)
@@ -639,7 +638,7 @@ public class DedubaClass
     {
         var total = size;
         var pathForStatus = (tag ?? "").Split(' ')[0];
-        List<string> hashes = new List<string>();
+        var hashes = new List<string>();
         if (_archiveStore != null)
         {
             hashes = _archiveStore.SaveStream(
@@ -650,7 +649,7 @@ public class DedubaClass
                 {
                     _statusBytesDone += bytes;
                     var processed = Math.Max(0, (int)(size - bytes));
-                    var percent = size > 0 ? (double)(processed) * 100.0 / size : 100.0;
+                    var percent = size > 0 ? processed * 100.0 / size : 100.0;
                     var queuedRemaining = Math.Max(
                         0,
                         _statusQueueTotal - (_statusFilesDone + _statusDirsDone)

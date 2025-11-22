@@ -5,6 +5,7 @@
 Create a single high-level OS API used for all OS interactions while reading source data for the backup system. This API will be implemented per-platform (Linux and Windows) and should be the canonical way DeDuBa accesses the OS for file metadata, content, user/group information, ACL/xattr/ADS, and directory traversal.
 
 Motivation:
+
 - Centralize platform-specific behavior into a small set of well-defined interfaces.
 - Simplify testing (mockable interfaces) and reduce repeated platform-checks throughout the code.
 - Make a clearly-versioned, documented boundary between backup logic and platform nuances.
@@ -149,7 +150,7 @@ Note: Use `System.Text.Json` friendly classes or `JsonNode` if we want to serial
 ## Error Mapping and Logging
 
 - Map native errors to `HighLevelOsApiException` with `ErrorKind` to avoid leaking platform-specific code.
-- Continue to use `Utilities.Error(file, op, exception)` where appropriate for dual logging (console + _log files) and consistent error report semantics.
+- Continue to use `Utilities.Error(file, op, exception)` where appropriate for dual logging (console + \_log files) and consistent error report semantics.
 
 ---
 
@@ -220,7 +221,6 @@ public record InodeInfo(ulong Device, ulong Inode);
 public enum FileType { File, Directory, Symlink, BlockDevice, CharDevice, FIFO, Socket, Unknown }
 ```
 
-
 ---
 
-This captures the current plan and the migration steps to get us from tightly-coupled P/Invoke wrappers to a single high-level OS API that DeDuBa can use across platforms. If you'd like, I can now scaffold the interface and Linux/Windows prototypes and update a sample `DeDuBa` file to use the new interface. 
+This captures the current plan and the migration steps to get us from tightly-coupled P/Invoke wrappers to a single high-level OS API that DeDuBa can use across platforms. If you'd like, I can now scaffold the interface and Linux/Windows prototypes and update a sample `DeDuBa` file to use the new interface.

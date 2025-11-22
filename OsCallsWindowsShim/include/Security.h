@@ -10,7 +10,6 @@
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
-
 /**
  * @brief Get security descriptor in SDDL format
  *
@@ -25,7 +24,6 @@ namespace OsCallsWindows {
  */
 extern "C" __declspec(dllexport) OsCalls::ValueT *
 win_get_sd(const wchar_t *path, bool include_sacl);
-
 } // namespace OsCallsWindows
 
 #endif // SECURITY_WINDOWS_H

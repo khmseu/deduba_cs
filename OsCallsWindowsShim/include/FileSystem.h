@@ -11,7 +11,6 @@
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
-
 /**
  * @brief Get file status without following reparse points (like lstat)
  *
@@ -48,7 +47,6 @@ win_readlink(const wchar_t *path);
  */
 extern "C" __declspec(dllexport) OsCalls::ValueT *
 win_canonicalize_file_name(const wchar_t *path);
-
 } // namespace OsCallsWindows
 
 #endif // FILESYSTEM_WINDOWS_H

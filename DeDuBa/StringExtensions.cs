@@ -6,11 +6,11 @@ namespace DeDuBa;
 internal static class StringExtensions
 {
     /// <summary>
-    ///     Repeats the specified string <paramref name="n"/> times.
+    ///     Repeats the specified string <paramref name="n" /> times.
     /// </summary>
     /// <param name="text">The string to repeat.</param>
     /// <param name="n">The number of times to repeat the string.</param>
-    /// <returns>A new string containing <paramref name="text"/> repeated <paramref name="n"/> times.</returns>
+    /// <returns>A new string containing <paramref name="text" /> repeated <paramref name="n" /> times.</returns>
     public static string Repeat(this string text, int n)
     {
         var textAsSpan = text.AsSpan();

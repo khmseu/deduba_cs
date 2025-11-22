@@ -106,7 +106,6 @@
 #include <windows.h>
 
 namespace OsCallsWindows {
-
 using namespace OsCalls;
 
 /**
@@ -206,7 +205,6 @@ extern "C" __declspec(dllexport) ValueT *win_list_streams(const wchar_t *path) {
     // For now, include all streams
     streams->names.push_back(streamName);
     streams->sizes.push_back(findStreamData.StreamSize);
-
   } while (FindNextStreamW(hFind, &findStreamData));
 
   DWORD lastErr = GetLastError();
@@ -256,7 +254,7 @@ static bool handle_win_stream_data(ValueT *value) {
       value->Type = TypeT::IsString;
       return true;
     }
-    // Error case - fall through
+  // Error case - fall through
   default:
     delete streamData;
     delete value;
@@ -322,5 +320,4 @@ win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
   v->Type = TypeT::IsOk;
   return v;
 }
-
 } // namespace OsCallsWindows

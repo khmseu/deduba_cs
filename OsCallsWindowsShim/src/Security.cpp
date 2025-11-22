@@ -105,7 +105,6 @@
 #include <sddl.h>
 
 namespace OsCallsWindows {
-
 using namespace OsCalls;
 
 /**
@@ -135,7 +134,7 @@ static bool handle_win_sd(ValueT *value) {
         return true;
       }
     }
-    // Error or conversion failed - fall through
+  // Error or conversion failed - fall through
   default:
     if (sddl) {
       LocalFree(sddl); // SDDL strings are allocated by LocalAlloc
@@ -210,5 +209,4 @@ extern "C" __declspec(dllexport) ValueT *win_get_sd(const wchar_t *path,
   v->Type = TypeT::IsOk;
   return v;
 }
-
 } // namespace OsCallsWindows

@@ -1,34 +1,35 @@
-using System;
-using System.IO;
-using System.Linq;
+using System.Text;
 using ICSharpCode.SharpZipLib.BZip2;
-using Xunit;
 
 namespace DeDuBa.Test;
 
 public class ArchiveStoreTests : IDisposable
 {
-    private readonly string _tmpDir;
     private readonly BackupConfig _cfg;
     private readonly ArchiveStore _store;
+    private readonly string _tmpDir;
 
     public ArchiveStoreTests()
     {
         _tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
-        _cfg = new BackupConfig(
-            _tmpDir,
-            chunkSize: 1024 * 16,
-            testing: true,
-            verbose: false,
-            prefixSplitThreshold: 10
-        );
+        _cfg = new BackupConfig(_tmpDir, 1024 * 16, true, false, 10);
         _store = new ArchiveStore(
             _cfg,
             s =>
-            { /* no-op */
+            {
+                /* no-op */
             }
         );
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_tmpDir, true);
+        }
+        catch { }
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public class ArchiveStoreTests : IDisposable
     [Fact]
     public void SaveData_WritesBzip2File_And_StatsUpdated()
     {
-        var data = System.Text.Encoding.UTF8.GetBytes("Hello, World!");
+        var data = Encoding.UTF8.GetBytes("Hello, World!");
         var hash = _store.SaveData(data);
 
         Assert.NotNull(hash);
@@ -62,7 +63,7 @@ public class ArchiveStoreTests : IDisposable
         using var bzip = new BZip2InputStream(fs);
         using var ms = new MemoryStream();
         bzip.CopyTo(ms);
-        var decompressed = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+        var decompressed = Encoding.UTF8.GetString(ms.ToArray());
         Assert.Equal("Hello, World!", decompressed);
 
         Assert.True(_store.Stats.ContainsKey("saved_blocks"));
@@ -71,7 +72,7 @@ public class ArchiveStoreTests : IDisposable
     [Fact]
     public void SaveData_DuplicateDetection()
     {
-        var data = System.Text.Encoding.UTF8.GetBytes("duplicate-data");
+        var data = Encoding.UTF8.GetBytes("duplicate-data");
         var hash1 = _store.SaveData(data);
         var hash2 = _store.SaveData(data);
 
@@ -86,22 +87,17 @@ public class ArchiveStoreTests : IDisposable
         var buffer = new byte[size];
         new Random(42).NextBytes(buffer);
 
-        int callbackInvocations = 0;
-        void OnProgress(long bytes) => callbackInvocations++;
+        var callbackInvocations = 0;
+
+        void OnProgress(long bytes)
+        {
+            callbackInvocations++;
+        }
 
         using var mem = new MemoryStream(buffer);
 
         var hashes = _store.SaveStream(mem, size, "test", bytes => OnProgress(bytes));
         Assert.True(hashes.Count >= 1);
         Assert.True(callbackInvocations > 0);
-    }
-
-    public void Dispose()
-    {
-        try
-        {
-            Directory.Delete(_tmpDir, true);
-        }
-        catch { }
     }
 }

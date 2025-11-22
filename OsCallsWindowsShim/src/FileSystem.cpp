@@ -92,6 +92,7 @@ typedef struct _REPARSE_DATA_BUFFER {
   ULONG ReparseTag;
   USHORT ReparseDataLength;
   USHORT Reserved;
+
   union {
     struct {
       USHORT SubstituteNameOffset;
@@ -101,6 +102,7 @@ typedef struct _REPARSE_DATA_BUFFER {
       ULONG Flags;
       WCHAR PathBuffer[1];
     } SymbolicLinkReparseBuffer;
+
     struct {
       USHORT SubstituteNameOffset;
       USHORT SubstituteNameLength;
@@ -108,6 +110,7 @@ typedef struct _REPARSE_DATA_BUFFER {
       USHORT PrintNameLength;
       WCHAR PathBuffer[1];
     } MountPointReparseBuffer;
+
     struct {
       UCHAR DataBuffer[1];
     } GenericReparseBuffer;
@@ -131,7 +134,6 @@ typedef struct _REPARSE_DATA_BUFFER {
 #endif
 
 namespace OsCallsWindows {
-
 using namespace OsCalls;
 
 // Helper structure to hold file information
@@ -284,7 +286,7 @@ static bool handle_win_lstat(ValueT *value) {
       set_val(Number, "st_dev", info->volumeSerialNumber);
       return true;
     }
-    // Error case - fall through to cleanup
+  // Error case - fall through to cleanup
   default:
     delete info;
     delete value;
@@ -473,7 +475,7 @@ static bool handle_win_readlink(ValueT *value) {
         return true;
       }
     }
-    // Error or conversion failed - fall through
+  // Error or conversion failed - fall through
   default:
     delete[] target;
     delete value;
@@ -578,7 +580,7 @@ static bool handle_win_cfn(ValueT *value) {
         return true;
       }
     }
-    // Error or conversion failed - fall through
+  // Error or conversion failed - fall through
   default:
     delete[] cfn;
     delete value;
@@ -653,5 +655,4 @@ win_canonicalize_file_name(const wchar_t *path) {
   v->Type = TypeT::IsOk;
   return v;
 }
-
 } // namespace OsCallsWindows

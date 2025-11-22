@@ -1,19 +1,10 @@
 #pragma warning disable CS1591
-using System;
-using System.IO;
 using UtilitiesLibrary;
 
 namespace DeDuBa;
 
 public sealed class BackupConfig
 {
-    public string ArchiveRoot { get; init; }
-    public string DataPath { get; init; }
-    public long ChunkSize { get; init; } = 1024 * 1024 * 1024;
-    public bool Testing { get; init; }
-    public bool Verbose { get; init; }
-    public int PrefixSplitThreshold { get; init; } = 255;
-
     public BackupConfig(
         string archiveRoot,
         long chunkSize = 1024L * 1024L * 1024L,
@@ -30,11 +21,18 @@ public sealed class BackupConfig
         PrefixSplitThreshold = prefixSplitThreshold;
     }
 
+    public string ArchiveRoot { get; init; }
+    public string DataPath { get; init; }
+    public long ChunkSize { get; init; } = 1024 * 1024 * 1024;
+    public bool Testing { get; init; }
+    public bool Verbose { get; init; }
+    public int PrefixSplitThreshold { get; init; } = 255;
+
     public static BackupConfig FromUtilities()
     {
         var testing = Utilities.Testing;
         var archiveRoot = testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
         var verbose = Utilities.VerboseOutput;
-        return new BackupConfig(archiveRoot, 1024L * 1024L * 1024L, testing, verbose, 255);
+        return new BackupConfig(archiveRoot, 1024L * 1024L * 1024L, testing, verbose);
     }
 }
