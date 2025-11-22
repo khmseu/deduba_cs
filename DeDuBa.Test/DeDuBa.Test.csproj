@@ -27,7 +27,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
+    <ProjectReference Include="../DeDuBa/DeDuBa.csproj" />
   </ItemGroup>
   <!-- Conditional platform-specific references -->
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">

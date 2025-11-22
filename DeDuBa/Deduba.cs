@@ -29,6 +29,8 @@ public class DedubaClass
     private static string? _archive;
 
     private static string _dataPath = "";
+    private static BackupConfig? _config;
+    private static IArchiveStore? _archiveStore;
 
     // private static string? _tmpp;
 
@@ -210,13 +212,23 @@ public class DedubaClass
                 Preflist[""] = "";
 
                 Utilities.ConWrite("Getting archive state\n");
-
-                Mkarlist(_dataPath);
+                // Initialize config & archive store
+                _config = BackupConfig.FromUtilities();
+                _config = new BackupConfig(
+                    _archive ?? _config.ArchiveRoot,
+                    _config.ChunkSize,
+                    Utilities.Testing,
+                    Utilities.VerboseOutput,
+                    _config.PrefixSplitThreshold
+                );
+                _dataPath = _config.DataPath;
+                _archiveStore = new ArchiveStore(_config, msg => Utilities.ConWrite(msg));
+                _archiveStore.BuildIndex();
 
                 if (Utilities.VerboseOutput)
                 {
                     Utilities.ConWrite("Before backup:\n");
-                    foreach (var kvp in Arlist)
+                    foreach (var kvp in (_archiveStore?.Arlist ?? Arlist))
                         Utilities.ConWrite(
                             Utilities.Dumper(
                                 new KeyValuePair<string, object?>(
@@ -227,7 +239,18 @@ public class DedubaClass
                         );
 
                     // Iterate over preflist
-                    foreach (var kvp in Preflist)
+                    // Iterate over preflist
+                    foreach (
+                        var kvp in (
+                            _archiveStore?.Preflist
+                            ?? Preflist.ToDictionary(
+                                k => k.Key,
+                                k =>
+                                    (IReadOnlyCollection<string>)
+                                        k.Value.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+                            )
+                        )
+                    )
                         Utilities.ConWrite(
                             Utilities.Dumper(
                                 new KeyValuePair<string, object?>(
@@ -256,7 +279,7 @@ public class DedubaClass
                 if (Utilities.VerboseOutput)
                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
 
-                Utilities.ConWrite(Utilities.Dumper(Utilities.D(Bstats)));
+                Utilities.ConWrite(Utilities.Dumper(Utilities.D(_archiveStore?.Stats ?? Bstats)));
 
                 // untie %arlist;
                 // untie %preflist;
@@ -302,6 +325,11 @@ public class DedubaClass
     /// <param name="filePaths">Paths to scan (initially <see cref="_dataPath"/>, then recursively expanded).</param>
     private static void Mkarlist(params string[] filePaths)
     {
+        if (_archiveStore != null)
+        {
+            _archiveStore.BuildIndex();
+            return;
+        }
         foreach (var entry in filePaths.OrderBy(e => e))
         {
             if (entry == _dataPath)
@@ -407,6 +435,8 @@ public class DedubaClass
     /// </remarks>
     private static string? Hash2Fn(string hash)
     {
+        if (_archiveStore != null)
+            return _archiveStore.GetTargetPathForHash(hash);
         if (Utilities.VerboseOutput)
             Utilities.ConWrite(Utilities.Dumper(Utilities.D(hash)));
 
@@ -554,6 +584,8 @@ public class DedubaClass
     /// </summary>
     private static string Save_data(string data)
     {
+        if (_archiveStore != null)
+            return _archiveStore.SaveData(Encoding.UTF8.GetBytes(data));
         var hashBytes = SHA512.HashData([.. data.ToArray().Select(x => (byte)x)]);
         var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         var outFile = Hash2Fn(hash);
@@ -605,10 +637,38 @@ public class DedubaClass
     /// </summary>
     private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
-        // Live progress for current path while saving
-        var hashes = new List<string>();
         var total = size;
         var pathForStatus = (tag ?? "").Split(' ')[0];
+        List<string> hashes = new List<string>();
+        if (_archiveStore != null)
+        {
+            hashes = _archiveStore.SaveStream(
+                fileStream,
+                size,
+                tag ?? "",
+                bytes =>
+                {
+                    _statusBytesDone += bytes;
+                    var processed = Math.Max(0, (int)(size - bytes));
+                    var percent = size > 0 ? (double)(processed) * 100.0 / size : 100.0;
+                    var queuedRemaining = Math.Max(
+                        0,
+                        _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
+                    );
+                    Utilities.Status(
+                        _statusFilesDone,
+                        _statusDirsDone,
+                        queuedRemaining,
+                        _statusBytesDone,
+                        pathForStatus,
+                        percent
+                    );
+                }
+            );
+            return hashes;
+        }
+        // Live progress for current path while saving
+        // hashes already declared above
 
         // my @layers = PerlIO::get_layers($file, details => 1);
         // print "\n", __LINE__, ' ', scalar localtime, ' input: ', Utilities.Dumper(@layers, $size) if TESTING;
