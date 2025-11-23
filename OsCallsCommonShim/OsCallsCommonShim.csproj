@@ -7,19 +7,19 @@
   <Target
     Name="ConfigureNative"
     BeforeTargets="Build"
-    Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')"
+    Condition="!Exists('$(MSBuildProjectDirectory)/build/$(Configuration)/CMakeCache.txt')"
   >
-    <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build" />
+    <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build/$(Configuration) -DCMAKE_BUILD_TYPE=$(Configuration)" />
   </Target>
   <!-- Build native shared library via CMake -->
   <Target Name="BuildNative" BeforeTargets="Build" DependsOnTargets="ConfigureNative">
-    <Exec Command="cmake --build $(MSBuildProjectDirectory)/build --target OsCallsCommonShim" />
+    <Exec Command="cmake --build $(MSBuildProjectDirectory)/build/$(Configuration) --target OsCallsCommonShim" />
   </Target>
   <!-- Copy the shared library to output directory -->
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
-      <SharedLib Include="bin/Debug/net8.0/libOsCallsCommonShim.so" />
+      <SharedLib Include="bin/$(Configuration)/net8.0/libOsCallsCommonShim.so" />
     </ItemGroup>
-    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" />
+    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" Condition="Exists('%(SharedLib.Identity)')" />
   </Target>
 </Project>

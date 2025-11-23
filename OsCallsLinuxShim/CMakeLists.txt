@@ -24,8 +24,11 @@ find_library(ACL_LIB acl REQUIRED)
 target_link_libraries(OsCallsLinuxShim PRIVATE OsCallsCommonShim ${ACL_LIB})
 target_link_options(OsCallsLinuxShim PRIVATE "-Wl,-rpath,'$ORIGIN'")
 
-# Match existing output layout used by scripts
-set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug/net8.0)
+# Match existing output layout per build type (Debug/Release)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
 file(MAKE_DIRECTORY ${out_dir})
 set(CMAKE_BUILD_RPATH "$ORIGIN")
 set_target_properties(OsCallsLinuxShim PROPERTIES

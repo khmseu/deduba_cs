@@ -12,8 +12,12 @@ target_include_directories(OsCallsCommonShim PUBLIC
 
 target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
 
-# Match existing output layout so scripts and LD_LIBRARY_PATH remain valid
-set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug/net8.0)
+# Match existing output layout per build type (Debug/Release)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+string(TOLOWER "${CMAKE_BUILD_TYPE}" _lower_bt)
+set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
 file(MAKE_DIRECTORY ${out_dir})
 set_target_properties(OsCallsCommonShim PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${out_dir}
