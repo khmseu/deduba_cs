@@ -231,6 +231,34 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path "${{ env.DEDU_ARCHIVE_ROOT }}" | Out-Null
 
+      - name: Debug CMake & project layout (Windows)
+        shell: pwsh
+        run: |
+          Write-Host "=== Windows CI diagnostics ==="
+          Write-Host "PWD: $(Get-Location)"
+          Write-Host "--- cmake info ---"
+          if (Get-Command cmake -ErrorAction SilentlyContinue) {
+            cmake --version
+          } else {
+            Write-Host "cmake not found in PATH"
+          }
+          Write-Host "--- Directory listing (root of repo) ---"
+          Get-ChildItem -Force | Select-Object Name,Mode,Length | Sort-Object Name | Format-Table -AutoSize
+          Write-Host "--- Check OsCallsWindowsShim folder and CMakeLists.txt ---"
+          if (Test-Path OsCallsWindowsShim) {
+            Write-Host "OsCallsWindowsShim directory exists"
+            if (Test-Path OsCallsWindowsShim/CMakeLists.txt) {
+              Write-Host "CMakeLists.txt found"
+            } else {
+              Write-Host "CMakeLists.txt is missing in OsCallsWindowsShim"
+            }
+            Write-Host "Listing OsCallsWindowsShim top-level files"
+            Get-ChildItem OsCallsWindowsShim | Select-Object Name,Mode,Length | Format-Table -AutoSize
+          } else {
+            Write-Host "OsCallsWindowsShim directory does not exist"
+          }
+          Write-Host "=== End diagnostics ==="
+
       - name: Build DeDuBa project (Windows)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
