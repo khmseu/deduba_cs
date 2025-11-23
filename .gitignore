@@ -498,3 +498,6 @@ inspectcode.xml
 nohup.out
 perl
 test.ansi
+
+# Local test archive used by integration tests
+ARCHIVE4/
