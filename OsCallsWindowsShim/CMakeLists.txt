@@ -13,6 +13,13 @@ list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/src/ValXfe
 # Create shared library (DLL on Windows)
 add_library(OsCallsWindowsShim SHARED ${SOURCES})
 
+# Use a distinct runtime name for the native DLL so it does not conflict with
+# the managed assembly produced by the C# project which would otherwise
+# shadow native exports at runtime (causing EntryPointNotFoundException).
+set_target_properties(OsCallsWindowsShim PROPERTIES
+    OUTPUT_NAME "OsCallsWindowsShimNative"
+)
+
 # Include directories
 target_include_directories(OsCallsWindowsShim PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include

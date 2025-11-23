@@ -32,11 +32,11 @@ public static unsafe partial class Streams
         return ValXfer.ToNode(win_read_stream(path, streamName), path, nameof(win_read_stream));
     }
 
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_list_streams(string path);
 
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_read_stream(string path, string streamName);
 }

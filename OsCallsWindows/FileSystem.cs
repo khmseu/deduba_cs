@@ -12,15 +12,15 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class FileSystem
 {
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_lstat(string path);
 
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_readlink(string path);
 
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_canonicalize_file_name(string path);
 

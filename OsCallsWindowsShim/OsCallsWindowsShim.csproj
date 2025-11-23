@@ -13,6 +13,12 @@
     <NativeBuildDir>$(MSBuildThisFileDirectory)build-win-x64</NativeBuildDir>
     <CMakeToolchainFile>$(MSBuildThisFileDirectory)cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Native runtime library; copy it into managed output to make it locatable by the P/Invoke loader -->
+    <None Update="bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Target
     Name="ConfigureNative"
     Condition="'$(RuntimeIdentifier)' == 'win-x64'"
@@ -36,6 +42,16 @@
       Importance="High"
     />
     <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot;" />
+  </Target>
+  <Target Name="CopySharedLibrary" AfterTargets="Build">
+    <ItemGroup>
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(SharedLib)"
+      DestinationFolder="$(OutputPath)"
+      Condition="Exists('%(SharedLib.Identity)')"
+    />
   </Target>
   <Target Name="CleanNative" Condition="Exists('$(NativeBuildDir)')" AfterTargets="Clean">
     <Message Text="Cleaning native build directory $(NativeBuildDir)" Importance="Low" />

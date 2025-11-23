@@ -23,7 +23,7 @@ public static unsafe partial class Security
         return ValXfer.ToNode(win_get_sd(path, includeSacl), path, nameof(win_get_sd));
     }
 
-    [LibraryImport("OsCallsWindowsShim.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_get_sd(
         string path,
