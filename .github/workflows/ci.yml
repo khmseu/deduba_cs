@@ -20,16 +20,29 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Lint commit messages for literal '\\n'
+      - name: Lint commit messages for literal '\\n' outside quoted examples
         run: |
           set -euo pipefail
-          # Examine last 200 commit bodies and fail if a literal '\n' sequence appears
-          if git log -n 200 --pretty=%B | grep -F "\\n" >/dev/null; then
-            echo "Found literal '\\n' string in commit message(s). Please use real newlines in commit messages."
-            echo "See .github/copilot-instructions.md for guidance."
-            git log -n 200 --pretty=format:'%h %s%n%b' | sed -n '1,200p' | awk '/\\\\n/ {print; exit 0}' || true
-            exit 1
+          # Get last 200 commit bodies
+          commits=$(git log -n 200 --pretty=%B)
+          if ! echo "$commits" | grep -q "\\\n"; then
+            echo "No literal '\\n' sequences found in commit messages."
+            exit 0
           fi
+          # For each line containing a literal \n, ensure it's part of a quoted example like '\n' or "\n" or `\n`
+          echo "$commits" | nl -ba -v 1 | sed -n '1,200p' | while read -r num line; do
+            if echo "$line" | grep -q "\\\\n"; then
+              # allow if line contains quoted '\n', "\n", or `\n`
+              if echo "$line" | grep -q -E "'\\\\n'|\"\\\\n\"|`\\\\n`"; then
+                continue
+              fi
+              echo "Found literal '\\n' not in quotes in commit message (line $num):"
+              echo "$line"
+              echo "Please use real newlines in commit messages or wrap '\\n' in quotes when referring to the two-character sequence."
+              echo "See .github/copilot-instructions.md for guidance."
+              exit 1
+            fi
+          done
   # Linux native build and test
   build-linux:
     runs-on: ubuntu-latest
