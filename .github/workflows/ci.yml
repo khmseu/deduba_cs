@@ -118,6 +118,14 @@ jobs:
         run: |
           echo "DEDUBA_DEBUG_NATIVE=1" >> $GITHUB_ENV
 
+      - name: Print loader environment variables (Linux)
+        if: always()
+        run: |
+          echo "==== LD_LIBRARY_PATH ===="
+          echo "$LD_LIBRARY_PATH"
+          echo "==== PATH ===="
+          echo "$PATH"
+
       - name: Run tests
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
         env:
@@ -190,6 +198,14 @@ jobs:
         if: always()
         run: |
           echo "DEDUBA_DEBUG_NATIVE=1" >> $GITHUB_ENV
+
+      - name: Print loader environment variables (cross build)
+        if: always()
+        run: |
+          echo "==== LD_LIBRARY_PATH ===="
+          echo "$LD_LIBRARY_PATH"
+          echo "==== PATH ===="
+          echo "$PATH"
 
       - name: Build Windows shim (cross)
         run: |
@@ -294,6 +310,15 @@ jobs:
         run: |
           Write-Host "Setting DEDUBA_DEBUG_NATIVE=1 for subsequent steps"
           echo "DEDUBA_DEBUG_NATIVE=1" >> $env:GITHUB_ENV
+
+      - name: Print loader environment variables (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "==== PATH ===="
+          Write-Host $env:PATH
+          Write-Host "==== LD_LIBRARY_PATH (if present) ===="
+          Write-Host $env:LD_LIBRARY_PATH
 
       - name: Run tests (Windows)
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
