@@ -15,6 +15,13 @@
     <NativeBuildDir>$(MSBuildProjectDirectory)/build-win-x64</NativeBuildDir>
     <CMakeToolchainFile>$(MSBuildProjectDirectory)/cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Platform-aware CMake generator and args to avoid using mingw on Windows runners -->
+    <CMakeGenerator Condition="'$(OS)' == 'Windows_NT'">Visual Studio 17 2022</CMakeGenerator>
+    <CMakeGenerator Condition="'$(OS)' != 'Windows_NT'">Ninja</CMakeGenerator>
+    <CMakeGeneratorExtraArgs Condition="'$(OS)' == 'Windows_NT'">-A x64</CMakeGeneratorExtraArgs>
+    <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'">-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
+  </PropertyGroup>
   <ItemGroup>
     <!-- Native runtime libraries; copy them into managed output to make them locatable by the P/Invoke loader.
          Some generators / toolchains prepend 'lib' and/or place the file at different output paths, so include
@@ -46,7 +53,11 @@
       Importance="High"
     />
     <MakeDir Directories="$(NativeBuildDir)" />
-    <Exec Command="cmake -G Ninja &quot;$(MSBuildThisFileDirectory)&quot; -B &quot;$(NativeBuildDir)&quot; -DCMAKE_TOOLCHAIN_FILE=&quot;$(CMakeToolchainFile)&quot;" />
+    <!-- Run CMake from the project directory to avoid trailing backslash/quote issues when invoked under PowerShell. -->
+    <Exec
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      Command="cmake -G &quot;$(CMakeGenerator)&quot; . -B &quot;$(NativeBuildDir)&quot; $(CMakeGeneratorExtraArgs)"
+    />
   </Target>
   <Target
     Name="BuildNative"
@@ -58,7 +69,7 @@
       Text="Building native OsCallsWindowsShim via CMake in $(NativeBuildDir)"
       Importance="High"
     />
-    <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot;" />
+    <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot; --config $(Configuration) -- /m" />
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
