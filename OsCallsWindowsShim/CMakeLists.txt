@@ -28,11 +28,7 @@ target_include_directories(OsCallsWindowsShim PRIVATE
 
 # Windows-specific settings
 if(WIN32)
-    target_compile_definitions(OsCallsWindowsShim PRIVATE
-        _CRT_SECURE_NO_WARNINGS
-        UNICODE
-        _UNICODE
-    )
+    # Windows compile-time defines moved into OcExport.h for centralization
     
     # Link against Windows libraries
     target_link_libraries(OsCallsWindowsShim PRIVATE

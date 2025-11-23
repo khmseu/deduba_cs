@@ -97,13 +97,10 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsecuritydescriptortostringsecuritydescriptorw
  */
-#include "OcExport.h"
 #include "Security.h"
+#include "OcExport.h"
 // windows.h must be first
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
 #include <windows.h>
 // rest of windows headers
 #include <aclapi.h>
@@ -149,69 +146,71 @@ static bool handle_win_sd(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
-extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
-  wchar_t *sddl = nullptr;
-  auto v = new ValueT();
+extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
+                                         bool include_sacl) {
+  extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
+                                           bool include_sacl) {
+    wchar_t *sddl = nullptr;
+    auto v = new ValueT();
 
-  // Determine which security information to retrieve
-  SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION |
-                                 GROUP_SECURITY_INFORMATION |
-                                 DACL_SECURITY_INFORMATION;
+    // Determine which security information to retrieve
+    SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION |
+                                   GROUP_SECURITY_INFORMATION |
+                                   DACL_SECURITY_INFORMATION;
 
-  if (include_sacl) {
-    secInfo |= SACL_SECURITY_INFORMATION;
-  }
-
-  // Get the security descriptor
-  PSECURITY_DESCRIPTOR pSD = nullptr;
-  DWORD result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
-                                       SE_FILE_OBJECT, secInfo,
-                                       nullptr, // Owner SID
-                                       nullptr, // Group SID
-                                       nullptr, // DACL
-                                       nullptr, // SACL
-                                       &pSD);
-
-  if (result != ERROR_SUCCESS) {
-    // If SACL access was denied, try again without SACL
-    if (include_sacl && result == ERROR_PRIVILEGE_NOT_HELD) {
-      secInfo &= ~SACL_SECURITY_INFORMATION;
-      result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
-                                     SE_FILE_OBJECT, secInfo, nullptr, nullptr,
-                                     nullptr, nullptr, &pSD);
+    if (include_sacl) {
+      secInfo |= SACL_SECURITY_INFORMATION;
     }
+
+    // Get the security descriptor
+    PSECURITY_DESCRIPTOR pSD = nullptr;
+    DWORD result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
+                                         SE_FILE_OBJECT, secInfo,
+                                         nullptr, // Owner SID
+                                         nullptr, // Group SID
+                                         nullptr, // DACL
+                                         nullptr, // SACL
+                                         &pSD);
 
     if (result != ERROR_SUCCESS) {
+      // If SACL access was denied, try again without SACL
+      if (include_sacl && result == ERROR_PRIVILEGE_NOT_HELD) {
+        secInfo &= ~SACL_SECURITY_INFORMATION;
+        result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
+                                       SE_FILE_OBJECT, secInfo, nullptr,
+                                       nullptr, nullptr, nullptr, &pSD);
+      }
+
+      if (result != ERROR_SUCCESS) {
+        CreateHandle(v, handle_win_sd, nullptr, nullptr);
+        v->Number = result;
+        return v;
+      }
+    }
+
+    // Convert security descriptor to SDDL string
+    LPWSTR sddlString = nullptr;
+    if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(
+            pSD, SDDL_REVISION_1, secInfo, &sddlString, nullptr)) {
+      DWORD err = GetLastError();
+      LocalFree(pSD);
       CreateHandle(v, handle_win_sd, nullptr, nullptr);
-      v->Number = result;
+      v->Number = err;
       return v;
     }
-  }
 
-  // Convert security descriptor to SDDL string
-  LPWSTR sddlString = nullptr;
-  if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(
-          pSD, SDDL_REVISION_1, secInfo, &sddlString, nullptr)) {
-    DWORD err = GetLastError();
+    // Copy the SDDL string (we need to manage it ourselves)
+    size_t len = wcslen(sddlString);
+    sddl = reinterpret_cast<wchar_t *>(
+        LocalAlloc(LPTR, (len + 1) * sizeof(wchar_t)));
+    wcscpy_s(sddl, len + 1, sddlString);
+
+    // Free the original SDDL string and security descriptor
+    LocalFree(sddlString);
     LocalFree(pSD);
-    CreateHandle(v, handle_win_sd, nullptr, nullptr);
-    v->Number = err;
+
+    CreateHandle(v, handle_win_sd, sddl, nullptr);
+    v->Type = TypeT::IsOk;
     return v;
   }
-
-  // Copy the SDDL string (we need to manage it ourselves)
-  size_t len = wcslen(sddlString);
-  sddl = reinterpret_cast<wchar_t *>(
-      LocalAlloc(LPTR, (len + 1) * sizeof(wchar_t)));
-  wcscpy_s(sddl, len + 1, sddlString);
-
-  // Free the original SDDL string and security descriptor
-  LocalFree(sddlString);
-  LocalFree(pSD);
-
-  CreateHandle(v, handle_win_sd, sddl, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
-}
 } // namespace OsCallsWindows

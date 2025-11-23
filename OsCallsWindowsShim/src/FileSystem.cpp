@@ -80,13 +80,12 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
  */
-#include "OcExport.h"
 #include "FileSystem.h"
+#include "OcExport.h"
 #include <cstring>
 #include <vector>
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
+#if 0
+/* Local WIN32 macros moved to OcExport.h to keep OS-specific defines centralized. */
 #endif
 #include <windows.h>
 #include <winioctl.h>
@@ -134,9 +133,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 #define IO_REPARSE_TAG_MOUNT_POINT (0xA0000003L)
 #endif
 
-#ifndef FIELD_OFFSET
-#define FIELD_OFFSET(type, field) ((LONG)(LONG_PTR) & (((type *)0)->field))
-#endif
+/* FIELD_OFFSET is defined in OcExport.h for Windows. */
 
 namespace OsCallsWindows {
 using namespace OsCalls;
@@ -593,8 +590,7 @@ static bool handle_win_cfn(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *
-win_canonicalize_file_name(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   wchar_t *canonical = nullptr;
   auto v = new ValueT();
 

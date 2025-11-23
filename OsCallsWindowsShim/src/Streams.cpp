@@ -99,15 +99,12 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
-#include "OcExport.h"
 #include "Streams.h"
+#include "OcExport.h"
 #include <algorithm>
 #include <string>
 #include <vector>
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
 #include <windows.h>
 
 namespace OsCallsWindows {
@@ -267,8 +264,8 @@ static bool handle_win_stream_data(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *
-win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
+extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path,
+                                              const wchar_t *stream_name) {
   auto streamData = new StreamData{};
   auto v = new ValueT();
 

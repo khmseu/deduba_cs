@@ -4,10 +4,7 @@
  */
 #include "OcExport.h"
 #include <cstdio>
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
 #include <fileapi.h>
 #include <windows.h>
 
