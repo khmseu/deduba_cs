@@ -72,7 +72,16 @@ public sealed class BackupConfig
     public static BackupConfig FromUtilities()
     {
         var testing = Utilities.Testing;
-        var archiveRoot = testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
+        // Prefer explicit override if present (CI and local scripts can set this)
+        var envArchiveRoot = Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT");
+        string archiveRoot;
+        if (!string.IsNullOrEmpty(envArchiveRoot))
+            archiveRoot = envArchiveRoot;
+        else if (testing)
+            // Use a workspace-local / tmp directory in testing mode so CI and local runs don't attempt to create paths under /home/kai
+            archiveRoot = Path.Combine(Path.GetTempPath(), "ARCHIVE4");
+        else
+            archiveRoot = "/archive/backup";
         var verbose = Utilities.VerboseOutput;
         return new BackupConfig(archiveRoot, 1024L * 1024L * 1024L, testing, verbose);
     }

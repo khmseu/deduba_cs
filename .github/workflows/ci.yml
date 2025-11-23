@@ -37,6 +37,27 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}-${{ matrix.configuration }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Cache native build (OsCallsCommonShim)
+        uses: actions/cache@v4
+        with:
+          path: OsCallsCommonShim/build/${{ matrix.configuration }}
+          key: ${{ runner.os }}-cmake-oscallscshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsCommonShim/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-oscallscshim-${{ matrix.configuration }}-
+      - name: Cache native build (OsCallsLinuxShim)
+        uses: actions/cache@v4
+        with:
+          path: OsCallsLinuxShim/build/${{ matrix.configuration }}
+          key: ${{ runner.os }}-cmake-oscallslshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsLinuxShim/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-oscallslshim-${{ matrix.configuration }}-
 
       - name: Build DeDuBa project (Linux)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
@@ -59,6 +80,7 @@ jobs:
           name: DeDuBa-linux-x64-${{ matrix.configuration }}
           path: |
             dist/DeDuBa-*-linux-x64.tar.gz
+            dist/DeDuBa-*-linux-x64.tar.gz.sha512
           retention-days: 30
 
   # Windows cross-build (MinGW on Linux)
@@ -85,6 +107,20 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}-${{ matrix.configuration }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Cache native build (OsCallsWindowsShim)
+        uses: actions/cache@v4
+        with:
+          path: OsCallsWindowsShim/build-win-x64/bin
+          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsWindowsShim/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-
 
       - name: Build Windows shim (cross)
         run: |
@@ -105,6 +141,7 @@ jobs:
           name: DeDuBa-win-x64-${{ matrix.configuration }}
           path: |
             dist/DeDuBa-*-win-x64.zip
+            dist/DeDuBa-*-win-x64.zip.sha512
           retention-days: 30
 
   # Native Windows build and test (validates on actual Windows)
@@ -201,6 +238,8 @@ jobs:
           mkdir -p release-files
           find artifacts/ -name '*.tar.gz' -exec cp {} release-files/ \;
           find artifacts/ -name '*.zip' -exec cp {} release-files/ \;
+          # Also include checksum files
+          find artifacts/ -name '*.sha512' -exec cp {} release-files/ \;
           echo "=== Release files ==="
           ls -lh release-files/
 

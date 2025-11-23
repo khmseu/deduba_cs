@@ -99,7 +99,13 @@ public class DedubaClass
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
         Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
-        _archive = Utilities.Testing ? "/home/kai/projects/Backup/ARCHIVE4" : "/archive/backup";
+        var envArchiveRoot = Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT");
+        if (!string.IsNullOrEmpty(envArchiveRoot))
+            _archive = envArchiveRoot;
+        else
+            _archive = Utilities.Testing
+                ? Path.Combine(Path.GetTempPath(), "ARCHIVE4")
+                : "/archive/backup";
         Utilities.ConWrite(
             $"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})"
         );
