@@ -17,7 +17,11 @@
     </None>
   </ItemGroup>
   <!-- Configure CMake if not yet configured -->
-  <Target Name="ConfigureNative" BeforeTargets="Build" Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')">
+  <Target
+    Name="ConfigureNative"
+    BeforeTargets="Build"
+    Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')"
+  >
     <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build" />
   </Target>
   <!-- Build native linux shim -->

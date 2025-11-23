@@ -485,9 +485,11 @@ OsCallsWindowsShim/build-win*/
 *.code-profile
 artest.diff
 artest*.diff
+build_native/
 build/
 DeDuBa/aaaa.cs
 DeDuBa/xxx.*
+dist/
 docs/_site/
 docs/api/.manifest
 docs/api/*.yml
@@ -496,4 +498,3 @@ inspectcode.xml
 nohup.out
 perl
 test.ansi
-dist/

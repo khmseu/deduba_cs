@@ -4,7 +4,11 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <!-- Configure CMake once -->
-  <Target Name="ConfigureNative" BeforeTargets="Build" Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')">
+  <Target
+    Name="ConfigureNative"
+    BeforeTargets="Build"
+    Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')"
+  >
     <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build" />
   </Target>
   <!-- Build native shared library via CMake -->
