@@ -44,3 +44,16 @@ Please avoid using literal `\\n` (backslash + letter n) escape sequences in comm
 - Or use `$'...'` quoting: `git commit -m $'First line\n\nBody line 1'`
 
 The CI pipeline includes a lint job that rejects commits containing literal `\\n` sequences to keep history readable and tooling-friendly.
+
+## Local Git hooks
+
+To get the same commit message checks locally that CI enforces, install the repository's git hooks by running:
+
+```bash
+./scripts/install-git-hooks.sh
+```
+
+This sets `core.hooksPath` to the `.githooks/` directory and makes the `commit-msg` hook executable. The hook will reject raw `\\n` occurrences (unless they are single or double-quoted like `'\\n'` or `"\\n"`).
+
+To undo: `git config --unset core.hooksPath`
+
