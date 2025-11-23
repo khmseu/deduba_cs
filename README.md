@@ -34,3 +34,13 @@ On Windows, just run `DeDuBa.exe` in-place.
 ## Changelog
 
 For curated release notes, see `docs/CHANGELOG.md`.
+
+## Commit message best practices
+
+Please avoid using literal `\\n` (backslash + letter n) escape sequences in commit messages. These often appear when commit messages are passed to `git -m` using double-quoted strings (e.g., `git commit -m "line1\\nline2"`), which results in a single-line commit message containing literal `\\n` characters. Use actual line breaks instead, such as:
+
+- Use the interactive editor for multi-line messages: `git commit` and let the editor open
+- Or create a message file and use `git commit -F message.txt`
+- Or use `$'...'` quoting: `git commit -m $'First line\n\nBody line 1'`
+
+The CI pipeline includes a lint job that rejects commits containing literal `\\n` sequences to keep history readable and tooling-friendly.
