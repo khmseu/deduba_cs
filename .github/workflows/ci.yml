@@ -259,6 +259,22 @@ jobs:
           }
           Write-Host "=== End diagnostics ==="
 
+      - name: Show native build folder (Windows)
+        shell: pwsh
+        run: |
+          Write-Host "--- Showing OsCallsWindowsShim/build-win-x64 ---"
+          if (Test-Path OsCallsWindowsShim/build-win-x64) {
+            Get-ChildItem OsCallsWindowsShim/build-win-x64 | Select-Object Name,Mode,Length | Format-Table -AutoSize
+          } else {
+            Write-Host "OsCallsWindowsShim/build-win-x64 not present"
+          }
+
+      - name: Build OsCallsWindowsShim project (Windows) # Diagnostic
+        shell: pwsh
+        run: |
+          Write-Host "=== Building OsCallsWindowsShim project for diagnostics ==="
+          dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} -r win-x64 -v minimal
+
       - name: Build DeDuBa project (Windows)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
