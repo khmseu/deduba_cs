@@ -225,6 +225,8 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     needs: [build-linux, build-windows-cross]
     runs-on: ubuntu-latest
+    env:
+      DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -245,6 +247,42 @@ jobs:
           find artifacts/ -name '*.tar.gz' -exec cp {} release-staging/ \;
           find artifacts/ -name '*.zip' -exec cp {} release-staging/ \;
           ls -lh release-staging/
+
+      - name: Setup .NET for version detection
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Generate release metadata
+        run: |
+          set -euo pipefail
+          mkdir -p release-staging
+          version=$(dotnet msbuild DeDuBa/DeDuBa.csproj -nologo -t:MinVer -getProperty:MinVerVersion 2>/dev/null || echo "0.0.0-unknown")
+          commit="${{ github.sha }}"
+          ref="${{ github.ref }}"
+          run_id="${{ github.run_id }}"
+          config="Release"
+          ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          dedu_archive_root="${{ env.DEDU_ARCHIVE_ROOT }}"
+          meta_file=release-staging/release-metadata.json
+          echo "{\n  \"version\": \"${version}\",\n  \"git_commit\": \"${commit}\",\n  \"git_ref\": \"${ref}\",\n  \"ci_run_id\": \"${run_id}\",\n  \"build_config\": \"${config}\",\n  \"timestamp_utc\": \"${ts}\",\n  \"dedu_archive_root\": \"${dedu_archive_root}\"," > ${meta_file}
+          echo "  \"artifacts\": [" >> ${meta_file}
+          for f in release-staging/*.{tar.gz,zip}; do
+            [ -e "${f}" ] || continue
+            # prefer any precomputed sha512, otherwise compute
+            sha_file="${f}.sha512"
+            if [ -f "${sha_file}" ]; then
+              sha=$(awk '{print $1}' "${sha_file}")
+            else
+              sha=$(sha512sum "${f}" | awk '{print $1}')
+            fi
+            echo "    { \"path\": \"$(basename "${f}")\", \"sha512\": \"${sha}\" }," >> ${meta_file}
+          done
+          # remove trailing comma and finalize JSON
+          sed -i '$ s/,$//' ${meta_file}
+          echo "  ]\n}" >> ${meta_file}
+          echo "Generated metadata:"
+          cat ${meta_file}
 
       - name: Upload consolidated release artifacts
         uses: actions/upload-artifact@v4
@@ -276,8 +314,37 @@ jobs:
           find artifacts/ -name '*.zip' -exec cp {} release-files/ \;
           # Also include checksum files
           find artifacts/ -name '*.sha512' -exec cp {} release-files/ \;
+          # Include release metadata if present
+          if [ -f artifacts/release-staging/release-metadata.json ]; then
+            cp artifacts/release-staging/release-metadata.json release-files/
+          fi
           echo "=== Release files ==="
           ls -lh release-files/
+
+      - name: Verify release artifact checksums
+        run: |
+          set -euo pipefail
+          # Install jq to parse the metadata JSON
+          sudo apt-get update
+          sudo apt-get install -y jq
+          meta='release-files/release-metadata.json'
+          if [ ! -f "${meta}" ]; then
+            echo "No release metadata found; skipping verification"
+            exit 0
+          fi
+          jq -r '.artifacts[] | "\(.path) \(.sha512)"' "${meta}" | while read -r path sha; do
+            p="release-files/${path}"
+            if [ ! -f "${p}" ]; then
+              echo "Missing artifact: ${p}" >&2
+              exit 1
+            fi
+            actual=$(sha512sum "${p}" | awk '{print $1}')
+            if [ "${actual}" != "${sha}" ]; then
+              echo "Checksum mismatch for ${path}: expected ${sha}, got ${actual}" >&2
+              exit 1
+            fi
+          done
+          echo "Artifact checksum verification passed"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
