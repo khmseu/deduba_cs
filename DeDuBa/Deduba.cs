@@ -167,11 +167,27 @@ public class DedubaClass
                             $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
                         );
                     argv =
-                    [
-                        .. argv.Select(FileSystem.Canonicalizefilename)
-                            .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
-                    ];
+                        [
+                            .. argv.Select(FileSystem.Canonicalizefilename)
+                                .Select(node => node["path"]?.ToString())
+                                .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                        ];
+
+                    // Safety: refuse to backup the archive itself or any path inside the archive/data store.
+                    if (!string.IsNullOrEmpty(_archive))
+                    {
+                        foreach (var root in argv)
+                        {
+                            if (string.IsNullOrEmpty(root))
+                                continue;
+                            if (IsPathWithinArchive(root))
+                            {
+                                var msg = $"Refusing to back up '{root}' because it is within the archive path '{_archive}'.";
+                                Utilities.Error(root, nameof(Backup), new InvalidOperationException(msg));
+                                throw new InvalidOperationException(msg);
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -278,6 +294,10 @@ public class DedubaClass
             catch (Exception ex)
             {
                 Utilities.Error(logname, nameof(Utilities.Log.Close), ex);
+                // Rethrow validation errors (e.g. we refused to backup the archive root) so callers/tests can
+                // observe the exception. Other exceptions continue to be handled here.
+                if (ex is InvalidOperationException)
+                    throw;
             }
         }
         finally
@@ -321,6 +341,32 @@ public class DedubaClass
             const string blue = "\u001b[34m";
             const string reset = "\u001b[0m";
             Console.WriteLine($"{blue}Created directory: {path}{reset}");
+        }
+    }
+
+    /// <summary>
+    /// Determines if a given path is equal to or a descendant of the current archive root.
+    /// Returns false if the archive is not configured or the path cannot be resolved.
+    /// </summary>
+    private static bool IsPathWithinArchive(string path)
+    {
+        if (string.IsNullOrEmpty(_archive) || string.IsNullOrEmpty(path))
+            return false;
+        try
+        {
+            var pathFull = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
+            var archiveFull = Path.GetFullPath(_archive).TrimEnd(Path.DirectorySeparatorChar);
+            var comparison = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+            if (pathFull.Equals(archiveFull, comparison))
+                return true;
+            var prefix = archiveFull + Path.DirectorySeparatorChar;
+            return pathFull.StartsWith(prefix, comparison);
+        }
+        catch
+        {
+            return false; // If something goes wrong normal validation will handle it later
         }
     }
 
@@ -420,6 +466,14 @@ public class DedubaClass
             while (workQueue.Count > 0)
             {
                 var entry = workQueue.Dequeue();
+
+                // Skip any entries that live inside the archive/data store so we do not recurse into it
+                if (!string.IsNullOrEmpty(_archive) && IsPathWithinArchive(entry))
+                {
+                    if (Utilities.VerboseOutput)
+                        Utilities.ConWrite($"Skipping archive/internal path during traversal: {entry}");
+                    continue;
+                }
 
                 var volume = Path.GetPathRoot(entry);
                 var directories = Path.GetDirectoryName(entry);
