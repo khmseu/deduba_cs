@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
@@ -12,6 +13,151 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class FileSystem
 {
+    static FileSystem()
+    {
+        try
+        {
+            NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
+            // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
+            _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
+        }
+        catch
+        {
+            // Swallow; detailed errors surfaced when actual P/Invoke attempted.
+        }
+    }
+
+    private const string NativeName = "libOsCallsLinuxShim.so";
+
+    private static IntPtr Resolver(
+        string libraryName,
+        Assembly assembly,
+        DllImportSearchPath? searchPath
+    )
+    {
+        if (libraryName != NativeName)
+            return IntPtr.Zero;
+        var full = FindNativeLibraryPath(NativeName);
+        if (full is null)
+            return IntPtr.Zero;
+        try
+        {
+            // Preload dependency libOsCallsCommonShim.so first if present
+            var libDir = new FileInfo(full).Directory; // Directory containing libOsCallsLinuxShim.so
+
+            // Check for libOsCallsCommonShim.so in same directory first (test scenario)
+            var colocated = Path.Combine(libDir!.FullName, "libOsCallsCommonShim.so");
+            if (File.Exists(colocated))
+            {
+                try
+                {
+                    NativeLibrary.Load(colocated);
+                    return NativeLibrary.Load(full);
+                }
+                catch
+                { /* fallback to walking up */
+                }
+            }
+
+            // Otherwise, walk up to solution root and find it in build output
+            var projectRoot = libDir?.Parent?.Parent?.Parent?.Parent; // ascend to solution root
+            if (projectRoot is not null)
+            {
+                var commonShimDebug = Path.Combine(
+                    projectRoot.FullName,
+                    "OsCallsCommonShim",
+                    "bin",
+                    "Debug",
+                    "net8.0",
+                    "libOsCallsCommonShim.so"
+                );
+                var commonShimRelease = Path.Combine(
+                    projectRoot.FullName,
+                    "OsCallsCommonShim",
+                    "bin",
+                    "Release",
+                    "net8.0",
+                    "libOsCallsCommonShim.so"
+                );
+                foreach (var dep in new[] { commonShimDebug, commonShimRelease })
+                {
+                    if (File.Exists(dep))
+                    {
+                        try
+                        {
+                            NativeLibrary.Load(dep);
+                            break;
+                        }
+                        catch
+                        { /* ignore */
+                        }
+                    }
+                }
+                // If still not resolved by dynamic loader, append common shim directory to LD_LIBRARY_PATH and retry.
+                var commonDir = File.Exists(commonShimDebug)
+                    ? Path.GetDirectoryName(commonShimDebug)!
+                    : (
+                        File.Exists(commonShimRelease)
+                            ? Path.GetDirectoryName(commonShimRelease)!
+                            : null
+                    );
+                if (commonDir is not null)
+                {
+                    var ld = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? string.Empty;
+                    if (!ld.Split(':').Contains(commonDir))
+                    {
+                        var newLd = string.IsNullOrWhiteSpace(ld)
+                            ? commonDir
+                            : commonDir + ":" + ld;
+                        Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", newLd);
+                    }
+                }
+            }
+            return NativeLibrary.Load(full);
+        }
+        catch
+        {
+            return IntPtr.Zero;
+        }
+    }
+
+    private static string? FindNativeLibraryPath(string fileName)
+    {
+        // First check if library was copied to same directory (e.g., during tests)
+        var baseDir = AppContext.BaseDirectory;
+        var colocated = Path.Combine(baseDir, fileName);
+        if (File.Exists(colocated))
+            return colocated;
+
+        // Start at base directory (bin/<config>/net8.0[/RID]) and walk up looking for project folder.
+        var dir = new DirectoryInfo(baseDir);
+        for (var i = 0; i < 8 && dir is not null; i++)
+        {
+            var candidateDebug = Path.Combine(
+                dir.FullName,
+                "OsCallsLinuxShim",
+                "bin",
+                "Debug",
+                "net8.0",
+                fileName
+            );
+            if (File.Exists(candidateDebug))
+                return candidateDebug;
+            var candidateRelease = Path.Combine(
+                dir.FullName,
+                "OsCallsLinuxShim",
+                "bin",
+                "Release",
+                "net8.0",
+                fileName
+            );
+            if (File.Exists(candidateRelease))
+                return candidateRelease;
+            dir = dir.Parent;
+        }
+        return null;
+    }
+
     [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* lstat(string path);

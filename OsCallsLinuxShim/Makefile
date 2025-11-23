@@ -9,7 +9,7 @@ COMMON_INCLUDE := $(if $(PROJECT_DIR),$(PROJECT_DIR),$(CURDIR))/../OsCallsCommon
 COMMON_LIB  := $(if $(PROJECT_DIR),$(PROJECT_DIR),$(CURDIR))/../OsCallsCommonShim/bin/Debug/net8.0
 LIB         := $(if $(PROJECT_DIR),$(PROJECT_DIR),$(CURDIR))/lib
 
-LIBRARIES   := -lacl -L$(COMMON_LIB) -lOsCallsCommonShim -Wl,-rpath,'$$ORIGIN/../../OsCallsCommonShim/bin/Debug/net8.0'
+LIBRARIES   := -lacl -L$(COMMON_LIB) -lOsCallsCommonShim -Wl,-rpath,'$$ORIGIN'
 SHARED_LIB  := libOsCallsLinuxShim.so
 
 all: $(BIN)/$(SHARED_LIB)

@@ -44,7 +44,7 @@
   <Target
     Name="CopyNativeLibsForTests"
     AfterTargets="Build"
-    Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'"
+    Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR '$(RuntimeIdentifier)' == ''"
   >
     <Copy
       SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so"
