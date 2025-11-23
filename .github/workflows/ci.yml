@@ -44,6 +44,20 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}-${{ matrix.configuration }}
           restore-keys: |
             ${{ runner.os }}-nuget-
+      - name: Cache native build (OsCallsWindowsShim)
+        uses: actions/cache@v4
+        with:
+          path: OsCallsWindowsShim/build-win-x64
+          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsWindowsShim/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}-${{ matrix.configuration }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - name: Cache native build (OsCallsCommonShim)
         uses: actions/cache@v4
         with:
