@@ -65,6 +65,9 @@ public class DedubaIntegrationTests : IDisposable
 
         var outsideFile = Path.Combine(parent, "outside.txt");
         var insideFile = Path.Combine(archiveRoot, "inside.txt");
+        // Canonicalize the paths to match logging output and canonicalization performed by Backup
+        outsideFile = Path.GetFullPath(outsideFile);
+        insideFile = Path.GetFullPath(insideFile);
         File.WriteAllText(outsideFile, "outside content");
         File.WriteAllText(insideFile, "inside content that must not be backed up");
 

@@ -66,8 +66,11 @@ public static unsafe partial class ValXfer
         if (wasOk == TypeT.IsError)
         {
             var win32Exception = new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
+            // Report the error via the utilities layer (which may log or rethrow depending on the test harness).
             Utilities.Error(file, op, win32Exception);
-            throw win32Exception;
+            // Always rethrow a generic Exception wrapper with the Win32Exception as InnerException so
+            // callers and tests consistently receive a System.Exception containing the native error.
+            throw new Exception($"{op} failed with error {win32Exception.Message}", win32Exception);
         }
 
         var name =
