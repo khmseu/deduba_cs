@@ -1,7 +1,12 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
+using UtilitiesLibrary;
 using static OsCallsCommon.ValXfer;
 
 namespace OsCallsWindows;
@@ -12,6 +17,26 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class FileSystem
 {
+    private const string NativeName = "OsCallsWindowsShimNative.dll";
+
+    static FileSystem()
+    {
+        try
+        {
+            NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite(
+                    $"OsCallsWindows.FileSystem resolver registered: searching for '{NativeName}'"
+                );
+            // Preload to improve deterministic behavior in CI where PATH changes later.
+            _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
+        }
+        catch
+        {
+            // Swallow - errors surfaced when the P/Invoke is actually invoked
+        }
+    }
+
     [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_lstat(string path);
@@ -52,6 +77,99 @@ public static unsafe partial class FileSystem
     public static JsonNode Canonicalizefilename(string path)
     {
         return ToNode(win_canonicalize_file_name(path), path, nameof(win_canonicalize_file_name));
+    }
+
+    private static IntPtr Resolver(
+        string libraryName,
+        System.Reflection.Assembly assembly,
+        DllImportSearchPath? searchPath
+    )
+    {
+        if (!string.Equals(libraryName, NativeName, StringComparison.OrdinalIgnoreCase))
+            return IntPtr.Zero;
+        try
+        {
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite(
+                    $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
+                );
+            var full = FindNativeLibraryPath(NativeName);
+            if (full is not null)
+            {
+                if (Utilities.IsNativeDebugEnabled())
+                    Utilities.ConWrite($"Resolver: Found native path {full}");
+                try
+                {
+                    return NativeLibrary.Load(full);
+                }
+                catch (Exception e)
+                {
+                    if (Utilities.IsNativeDebugEnabled())
+                        Utilities.ConWrite(
+                            $"Resolver: NativeLibrary.Load failed for {full}: {e.Message}"
+                        );
+                    return IntPtr.Zero;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite($"Resolver error: {e.Message}");
+        }
+        return IntPtr.Zero;
+    }
+
+    private static string? FindNativeLibraryPath(string fileName)
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var colocated = Path.Combine(baseDir, fileName);
+        if (File.Exists(colocated))
+            return colocated;
+        var dir = new DirectoryInfo(baseDir);
+        for (var i = 0; i < 8 && dir is not null; i++)
+        {
+            var candidateDebug = Path.Combine(
+                dir.FullName,
+                "OsCallsWindowsShim",
+                "bin",
+                "Debug",
+                "OsCallsWindowsShimNative.dll"
+            );
+            if (File.Exists(candidateDebug))
+                return candidateDebug;
+            var candidateRelease = Path.Combine(
+                dir.FullName,
+                "OsCallsWindowsShim",
+                "bin",
+                "Release",
+                "OsCallsWindowsShimNative.dll"
+            );
+            if (File.Exists(candidateRelease))
+                return candidateRelease;
+            var candidateBuildDir = Path.Combine(
+                dir.FullName,
+                "OsCallsWindowsShim",
+                "build-win-x64",
+                "bin",
+                "Debug",
+                "OsCallsWindowsShimNative.dll"
+            );
+            if (File.Exists(candidateBuildDir))
+                return candidateBuildDir;
+            candidateBuildDir = Path.Combine(
+                dir.FullName,
+                "OsCallsWindowsShim",
+                "build-win-x64",
+                "bin",
+                "Release",
+                "OsCallsWindowsShimNative.dll"
+            );
+            if (File.Exists(candidateBuildDir))
+                return candidateBuildDir;
+            dir = dir.Parent;
+        }
+        return null;
     }
 
     // Additional Windows-specific methods will be added here:

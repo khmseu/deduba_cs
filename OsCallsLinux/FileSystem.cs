@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
+using UtilitiesLibrary;
 using static OsCallsCommon.ValXfer;
 
 namespace OsCallsLinux;
@@ -18,6 +19,10 @@ public static unsafe partial class FileSystem
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite(
+                    $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeName}'"
+                );
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
             _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
         }
@@ -37,6 +42,17 @@ public static unsafe partial class FileSystem
     {
         if (libraryName != NativeName)
             return IntPtr.Zero;
+        try
+        {
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite(
+                    $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
+                );
+        }
+        catch
+        {
+            // ignore
+        }
         var full = FindNativeLibraryPath(NativeName);
         if (full is null)
             return IntPtr.Zero;

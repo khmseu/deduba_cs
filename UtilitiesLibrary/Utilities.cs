@@ -125,6 +125,37 @@ public class Utilities
     public static bool VerboseOutput = false;
 
     /// <summary>
+    ///     Checks whether native shim debug logging is enabled.
+    ///     This consults <see cref="VerboseOutput" /> and the environment variable
+    ///     DEDUBA_DEBUG_NATIVE. When the env var is set to '1', 'true', or any
+    ///     non-empty value, we enable additional diagnostic output for native
+    ///     runtime events (dll load/unload and resolver attempts) useful in CI.
+    /// </summary>
+    public static bool IsNativeDebugEnabled()
+    {
+        if (VerboseOutput)
+            return true;
+        try
+        {
+            var v = Environment.GetEnvironmentVariable("DEDUBA_DEBUG_NATIVE");
+            if (string.IsNullOrEmpty(v))
+                return false;
+            v = v.Trim();
+            if (
+                v.Equals("1", StringComparison.OrdinalIgnoreCase)
+                || v.Equals("true", StringComparison.OrdinalIgnoreCase)
+            )
+                return true;
+            // Any non-empty value other than explicitly disabled will enable debugging
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     ///     Log stream used by the backup process. When null, errors will be rethrown.
     /// </summary>
     public static StreamWriter? Log;

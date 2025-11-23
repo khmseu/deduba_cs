@@ -14,6 +14,48 @@ namespace OsCallsCommon;
 /// </summary>
 public static unsafe partial class ValXfer
 {
+    static ValXfer()
+    {
+        // Log and track any P/Invoke load attempts originating from this
+        // assembly. Returning IntPtr.Zero allows the runtime to continue
+        // its default resolution algorithm while still giving us visibility
+        // into which native library names the runtime tries to resolve.
+        try
+        {
+            NativeLibrary.SetDllImportResolver(typeof(ValXfer).Assembly, DllImportLoggingResolver);
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite("DllImportResolver registered for OsCallsCommon assembly.");
+        }
+        catch (Exception e)
+        {
+            // Don't fail initialization for diagnostics; report error and continue.
+            Utilities.Error("ValXfer", "SetDllImportResolver", e);
+        }
+    }
+
+    private static IntPtr DllImportLoggingResolver(
+        string libraryName,
+        System.Reflection.Assembly assembly,
+        DllImportSearchPath? searchPath
+    )
+    {
+        try
+        {
+            // Keep the log short but useful: record the requested library name,
+            // the calling assembly, and the configured search path if any.
+            if (Utilities.IsNativeDebugEnabled())
+                Utilities.ConWrite(
+                    $"DllImportResolver: library='{libraryName}' assembly='{assembly?.GetName()?.Name}' searchPath='{searchPath}'"
+                );
+        }
+        catch
+        {
+            // Swallow exceptions - logging should never break resolution.
+        }
+        // Returning IntPtr.Zero allows the runtime's default loader to continue.
+        return IntPtr.Zero;
+    }
+
     /// <summary>
     ///     Value discriminator reported by the native layer for the current cursor position.
     /// </summary>
