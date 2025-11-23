@@ -1,5 +1,5 @@
-using Xunit;
 using UtilitiesLibrary;
+using Xunit;
 
 namespace DeDuBa.Test;
 

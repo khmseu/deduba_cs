@@ -1,7 +1,7 @@
 using System.Reflection;
+using UtilitiesLibrary;
 using Xunit;
 using Xunit.Sdk;
-using UtilitiesLibrary;
 
 namespace DeDuBa.Test;
 
