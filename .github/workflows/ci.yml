@@ -16,6 +16,8 @@ jobs:
   # Linux native build and test
   build-linux:
     runs-on: ubuntu-latest
+    env:
+      DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -34,6 +36,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build libacl1-dev attr zip
+
+      - name: Create archive root
+        run: |
+          mkdir -p "${{ env.DEDU_ARCHIVE_ROOT }}"
 
       - name: Restore dependencies
         run: dotnet restore
@@ -80,6 +86,7 @@ jobs:
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
         env:
           LD_LIBRARY_PATH: "${{ github.workspace }}/OsCallsCommonShim/bin/${{ matrix.configuration }}/net8.0:${{ github.workspace }}/OsCallsLinuxShim/bin/${{ matrix.configuration }}/net8.0"
+          DEDU_ARCHIVE_ROOT: "${{ env.DEDU_ARCHIVE_ROOT }}"
 
       - name: Package Linux artifacts
         if: matrix.configuration == 'Release'
@@ -100,6 +107,8 @@ jobs:
   # Windows cross-build (MinGW on Linux)
   build-windows-cross:
     runs-on: ubuntu-latest
+    env:
+      DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -118,6 +127,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build mingw-w64 zip
+
+      - name: Create archive root
+        run: |
+          mkdir -p "${{ env.DEDU_ARCHIVE_ROOT }}"
 
       - name: Restore dependencies
         run: dotnet restore
@@ -161,6 +174,8 @@ jobs:
   # Native Windows build and test (validates on actual Windows)
   build-windows-native:
     runs-on: windows-latest
+    env:
+      DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -178,11 +193,18 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Create archive root (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ env.DEDU_ARCHIVE_ROOT }}" | Out-Null
+
       - name: Build DeDuBa project (Windows)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
       - name: Run tests (Windows)
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
+        env:
+          DEDU_ARCHIVE_ROOT: "${{ env.DEDU_ARCHIVE_ROOT }}"
 
       - name: Smoke test Windows binary
         if: matrix.configuration == 'Release'
