@@ -113,6 +113,11 @@ jobs:
       - name: Build DeDuBa project (Linux)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
 
+      - name: Enable native debug logs (Linux)
+        if: always()
+        run: |
+          echo "DEDUBA_DEBUG_NATIVE=1" >> $GITHUB_ENV
+
       - name: Run tests
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
         env:
@@ -180,6 +185,11 @@ jobs:
           key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsWindowsShim/**') }}
           restore-keys: |
             ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-
+
+      - name: Enable native debug logs (cross build)
+        if: always()
+        run: |
+          echo "DEDUBA_DEBUG_NATIVE=1" >> $GITHUB_ENV
 
       - name: Build Windows shim (cross)
         run: |
@@ -277,6 +287,13 @@ jobs:
 
       - name: Build DeDuBa project (Windows)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
+
+      - name: Enable native debug logs (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "Setting DEDUBA_DEBUG_NATIVE=1 for subsequent steps"
+          echo "DEDUBA_DEBUG_NATIVE=1" >> $env:GITHUB_ENV
 
       - name: Run tests (Windows)
         run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
