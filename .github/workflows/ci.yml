@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [master, main]
-    tags: [v*]
+    tags: ["v*"]
   pull_request:
     branches: [master, main]
   workflow_dispatch:
@@ -33,7 +33,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build libacl1-dev attr
+          sudo apt-get install -y build-essential cmake ninja-build libacl1-dev attr zip
 
       - name: Restore dependencies
         run: dotnet restore
@@ -81,7 +81,7 @@ jobs:
       - name: Install cross-compile dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build mingw-w64
+          sudo apt-get install -y build-essential cmake ninja-build mingw-w64 zip
 
       - name: Restore dependencies
         run: dotnet restore
