@@ -10,8 +10,10 @@
   </ItemGroup>
   <!-- Cross-compile native DLL via CMake only for Windows RID builds (win-x64) -->
   <PropertyGroup>
-    <NativeBuildDir>$(MSBuildThisFileDirectory)build-win-x64</NativeBuildDir>
-    <CMakeToolchainFile>$(MSBuildThisFileDirectory)cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
+    <!-- Use MSBuildProjectDirectory instead of MSBuildThisFileDirectory to avoid trailing backslash issues on
+         Windows PowerShell command line invocations. NativeBuildDir is based off the project directory. -->
+    <NativeBuildDir>$(MSBuildProjectDirectory)/build-win-x64</NativeBuildDir>
+    <CMakeToolchainFile>$(MSBuildProjectDirectory)/cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
   </PropertyGroup>
   <ItemGroup>
     <!-- Native runtime libraries; copy them into managed output to make them locatable by the P/Invoke loader.
