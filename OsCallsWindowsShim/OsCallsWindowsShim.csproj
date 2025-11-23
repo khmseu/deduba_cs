@@ -36,7 +36,7 @@
   </ItemGroup>
   <Target
     Name="ConfigureNative"
-    Condition="'$(RuntimeIdentifier)' == 'win-x64'"
+    Condition="('$(RuntimeIdentifier)' == 'win-x64') Or ('$(OS)' == 'Windows_NT')"
     BeforeTargets="Build"
   >
     <Message
@@ -48,7 +48,7 @@
   </Target>
   <Target
     Name="BuildNative"
-    Condition="'$(RuntimeIdentifier)' == 'win-x64'"
+    Condition="('$(RuntimeIdentifier)' == 'win-x64') Or ('$(OS)' == 'Windows_NT')"
     DependsOnTargets="ConfigureNative"
     BeforeTargets="Build"
   >
