@@ -2,6 +2,15 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <CMakeBuildFlags />
+    <CMakeBuildFlags Condition="'$(CMakeGenerator)' == 'Ninja'">
+      -- -j4
+    </CMakeBuildFlags
+    >
+    <CMakeBuildFlags Condition="'$(CMakeGenerator)' != '' and '$(CMakeGenerator)' != 'Ninja'">
+      -- /m
+    </CMakeBuildFlags
+    >
   </PropertyGroup>
   <!-- Windows DLL will be built using MSBuild/CMake in the future -->
   <!-- For now, this is a placeholder project -->
@@ -24,8 +33,12 @@
          property below expands to "-G <generator>" only when a generator is set. -->
     <CMakeGenerator Condition="'$(OS)' != 'Windows_NT'">Ninja</CMakeGenerator>
     <CMakeGeneratorExtraArgs Condition="'$(OS)' == 'Windows_NT'">-A x64</CMakeGeneratorExtraArgs>
-    <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'">-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
-    <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''">-G &quot;$(CMakeGenerator)&quot;</CMakeGeneratorFlag>
+    <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'"
+      >-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs
+    >
+    <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''"
+      >-G "$(CMakeGenerator)"</CMakeGeneratorFlag
+    >
   </PropertyGroup>
   <ItemGroup>
     <!-- Native runtime libraries; copy them into managed output to make them locatable by the
@@ -81,7 +94,9 @@
       Text="Building native OsCallsWindowsShim via CMake in $(NativeBuildDir)"
       Importance="High"
     />
-    <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot; --config $(Configuration) -- /m" />
+    <!-- Build with optional tool flags: use -j for ninja, /m for MSBuild generator (when explicitly set).
+         If CMakeGenerator is empty (relying on defaults), we avoid passing generator-specific flags. -->
+    <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot; --config $(Configuration) $(CMakeBuildFlags)" />
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
