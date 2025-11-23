@@ -42,6 +42,102 @@ public class DedubaClass
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
+    /// <summary>
+    ///     Ensures the native shim libraries are discoverable by configuring LD_LIBRARY_PATH at runtime.
+    ///     This is primarily needed when running <c>dotnet test</c> where the environment is not
+    ///     pre-configured. If the variables already contain the shim paths, nothing is changed.
+    /// </summary>
+    private static void EnsureNativeLibraryPath()
+    {
+        try
+        {
+            if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
+                return; // Only relevant for POSIX dynamic loader
+
+            var existing = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? string.Empty;
+            if (existing.Contains("OsCallsLinuxShim") && existing.Contains("OsCallsCommonShim"))
+                return; // Already set
+
+            // Derive solution root relative to test / runtime base directory.
+            // AppContext.BaseDirectory points to bin/<config>/net8.0[/RID]/ for the managed assembly.
+            var baseDir = AppContext.BaseDirectory;
+            // Walk up until we find the solution file or a directory containing the shim projects.
+            var current = new DirectoryInfo(baseDir);
+            DirectoryInfo? root = null;
+            for (var i = 0; i < 8 && current is not null; i++)
+            {
+                if (File.Exists(Path.Combine(current.FullName, "DeDuBa.sln")))
+                {
+                    root = current;
+                    break;
+                }
+                if (
+                    Directory.Exists(Path.Combine(current.FullName, "OsCallsLinuxShim"))
+                    && Directory.Exists(Path.Combine(current.FullName, "OsCallsCommonShim"))
+                )
+                {
+                    root = current;
+                    break;
+                }
+                current = current.Parent;
+            }
+
+            if (root is null)
+                return; // Could not resolve root; skip silently
+
+            var commonShim = Path.Combine(
+                root.FullName,
+                "OsCallsCommonShim",
+                "bin",
+                "Debug",
+                "net8.0"
+            );
+            var linuxShim = Path.Combine(
+                root.FullName,
+                "OsCallsLinuxShim",
+                "bin",
+                "Debug",
+                "net8.0"
+            );
+
+            // Prefer Release if Debug not present
+            if (!Directory.Exists(commonShim))
+                commonShim = Path.Combine(
+                    root.FullName,
+                    "OsCallsCommonShim",
+                    "bin",
+                    "Release",
+                    "net8.0"
+                );
+            if (!Directory.Exists(linuxShim))
+                linuxShim = Path.Combine(
+                    root.FullName,
+                    "OsCallsLinuxShim",
+                    "bin",
+                    "Release",
+                    "net8.0"
+                );
+
+            var paths = new List<string> { commonShim, linuxShim }
+                .Where(Directory.Exists)
+                .ToList();
+            if (paths.Count == 0)
+                return; // Nothing to add
+
+            var newValue = string.Join(
+                ':',
+                paths.Concat(string.IsNullOrWhiteSpace(existing) ? [] : [existing])
+            );
+            Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", newValue);
+        }
+        catch (Exception ex)
+        {
+            // Non-fatal: log only in verbose/testing mode
+            if (Utilities.VerboseOutput || Utilities.Testing)
+                Utilities.ConWrite($"EnsureNativeLibraryPath: {ex.Message}");
+        }
+    }
+
     // ############################################################################
     // Live status counters for console output
     private static long _statusFilesDone;
@@ -96,6 +192,8 @@ public class DedubaClass
     /// <param name="argv">Input paths to back up. Paths are canonicalized and validated.</param>
     public static void Backup(string[] argv)
     {
+        // Ensure native shim search path before any P/Invoke into OsCallsLinux.
+        EnsureNativeLibraryPath();
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
         Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
 
