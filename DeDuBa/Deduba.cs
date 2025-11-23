@@ -328,10 +328,7 @@ public class DedubaClass
     }
 
     // ############################################################################
-    // find place for hashed file, or note we already have it
-
-    /// <summary>
-    //     Structured data
+    // Structured data
     //
     // unpacked: [ ... [ ... ] ... 'string' \number ... ]
     //

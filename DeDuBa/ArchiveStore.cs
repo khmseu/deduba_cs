@@ -6,6 +6,11 @@ using UtilitiesLibrary;
 
 namespace DeDuBa;
 
+/// <summary>
+///     Implementation of content-addressable archive storage with automatic deduplication.
+///     Uses SHA-512 hashing and BZip2 compression. Automatically reorganizes storage directories
+///     when they exceed configurable entry thresholds.
+/// </summary>
 public sealed class ArchiveStore : IArchiveStore
 {
     private readonly ConcurrentDictionary<string, string> _arlist = new();
@@ -15,6 +20,12 @@ public sealed class ArchiveStore : IArchiveStore
     private readonly object _reorgLock = new();
     private readonly ConcurrentDictionary<string, long> _stats = new();
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ArchiveStore" /> class.
+    /// </summary>
+    /// <param name="config">Configuration settings for the archive.</param>
+    /// <param name="log">Optional logging callback for diagnostic output.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config" /> is null.</exception>
     public ArchiveStore(BackupConfig config, Action<string>? log = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -38,19 +49,26 @@ public sealed class ArchiveStore : IArchiveStore
         }
     }
 
+    /// <inheritdoc />
     public string DataPath => _config.DataPath;
 
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, string> Arlist => _arlist;
 
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Preflist =>
         _preflist.ToDictionary(
             kvp => kvp.Key,
             kvp => (IReadOnlyCollection<string>)kvp.Value.ToList().AsReadOnly()
         );
 
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, long> Stats => _stats;
+
+    /// <inheritdoc />
     public long PackSum { get; private set; }
 
+    /// <inheritdoc />
     public void BuildIndex()
     {
         var root = _config.DataPath;
@@ -61,6 +79,7 @@ public sealed class ArchiveStore : IArchiveStore
             MkarlistInternal(entry);
     }
 
+    /// <inheritdoc />
     public string? GetTargetPathForHash(string hash)
     {
         if (_config.Verbose)
@@ -183,6 +202,7 @@ public sealed class ArchiveStore : IArchiveStore
         return Path.Combine(_config.DataPath, prefix, hash);
     }
 
+    /// <inheritdoc />
     public string SaveData(ReadOnlySpan<byte> data)
     {
         var hashBytes = SHA512.HashData(data);
@@ -239,6 +259,7 @@ public sealed class ArchiveStore : IArchiveStore
         return hash;
     }
 
+    /// <inheritdoc />
     public List<string> SaveStream(
         Stream fileStream,
         long size,
@@ -270,6 +291,11 @@ public sealed class ArchiveStore : IArchiveStore
         return hashes;
     }
 
+    /// <summary>
+    ///     Recursively scans a directory entry and populates the hash and prefix indexes.
+    ///     Processes hex-prefixed directories and hash files, building the internal tracking structures.
+    /// </summary>
+    /// <param name="entry">Absolute path to the directory or file entry to process.</param>
     private void MkarlistInternal(string entry)
     {
         if (entry == _config.DataPath)
@@ -335,11 +361,23 @@ public sealed class ArchiveStore : IArchiveStore
         }
     }
 
+    /// <summary>
+    ///     Joins a storage prefix with a child segment, ensuring no leading slash.
+    ///     Guarantees the result stays relative for safe <see cref="Path.Combine" /> operations.
+    /// </summary>
+    /// <param name="prefix">Parent prefix path (e.g., "aa/bb" or empty string).</param>
+    /// <param name="segment">Child segment to append (e.g., "cc").</param>
+    /// <returns>Joined path without leading slash (e.g., "aa/bb/cc" or "cc").</returns>
     private static string JoinPrefix(string prefix, string segment)
     {
         return string.IsNullOrEmpty(prefix) ? segment : $"{prefix}/{segment}";
     }
 
+    /// <summary>
+    ///     Creates a directory and optionally logs creation in blue text if verbose mode is enabled.
+    ///     Idempotent operation (succeeds if directory already exists).
+    /// </summary>
+    /// <param name="path">Absolute path to the directory to create.</param>
     private void CreateDirectoryWithLogging(string path)
     {
         Directory.CreateDirectory(path);
