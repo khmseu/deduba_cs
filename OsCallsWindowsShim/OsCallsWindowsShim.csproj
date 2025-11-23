@@ -10,21 +10,28 @@
   </ItemGroup>
   <!-- Cross-compile native DLL via CMake only for Windows RID builds (win-x64) -->
   <PropertyGroup>
-    <!-- Use MSBuildProjectDirectory instead of MSBuildThisFileDirectory to avoid trailing backslash issues on
+    <!-- Use MSBuildProjectDirectory instead of MSBuildThisFileDirectory to avoid trailing backslash
+    issues on
          Windows PowerShell command line invocations. NativeBuildDir is based off the project directory. -->
     <NativeBuildDir>$(MSBuildProjectDirectory)/build-win-x64</NativeBuildDir>
     <CMakeToolchainFile>$(MSBuildProjectDirectory)/cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Platform-aware CMake generator and args to avoid using mingw on Windows runners -->
-    <CMakeGenerator Condition="'$(OS)' == 'Windows_NT'">Visual Studio 17 2022</CMakeGenerator>
+    <!-- Platform-aware CMake generator and args.
+         On Windows we want to rely on CMake defaults (Visual Studio generator
+         if available), so leave $(CMakeGenerator) empty. On non-Windows we
+         explicitly use Ninja and a mingw toolchain file. The CMakeGeneratorFlag
+         property below expands to "-G <generator>" only when a generator is set. -->
     <CMakeGenerator Condition="'$(OS)' != 'Windows_NT'">Ninja</CMakeGenerator>
     <CMakeGeneratorExtraArgs Condition="'$(OS)' == 'Windows_NT'">-A x64</CMakeGeneratorExtraArgs>
     <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'">-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
+    <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''">-G &quot;$(CMakeGenerator)&quot;</CMakeGeneratorFlag>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Native runtime libraries; copy them into managed output to make them locatable by the P/Invoke loader.
-         Some generators / toolchains prepend 'lib' and/or place the file at different output paths, so include
+    <!-- Native runtime libraries; copy them into managed output to make them locatable by the
+    P/Invoke loader.
+         Some generators / toolchains prepend 'lib' and/or place the file at different output paths, so
+    include
          the likely names/locations that the CMake generator may produce. -->
     <None Update="build-win-x64/bin/OsCallsWindowsShimNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -35,7 +42,8 @@
     <None Update="build-win-x64/bin/libOsCallsWindowsShim.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <!-- Also keep per-configuration/browser RID variant paths in case other runners produce these locations -->
+    <!-- Also keep per-configuration/browser RID variant paths in case other runners produce these
+    locations -->
     <None Update="build-win-x64/bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -53,10 +61,14 @@
       Importance="High"
     />
     <MakeDir Directories="$(NativeBuildDir)" />
-    <!-- Run CMake from the project directory to avoid trailing backslash/quote issues when invoked under PowerShell. -->
+    <!-- Run CMake from the project directory to avoid trailing backslash/quote issues when
+         invoked under PowerShell. Use $(CMakeGeneratorFlag) if a generator is configured,
+         otherwise rely on CMake defaults on the host. -->
+    <Message Text="CMake generator flag: $(CMakeGeneratorFlag)" Importance="Low" />
+    <Message Text="CMake extra args: $(CMakeGeneratorExtraArgs)" Importance="Low" />
     <Exec
       WorkingDirectory="$(MSBuildProjectDirectory)"
-      Command="cmake -G &quot;$(CMakeGenerator)&quot; . -B &quot;$(NativeBuildDir)&quot; $(CMakeGeneratorExtraArgs)"
+      Command="cmake $(CMakeGeneratorFlag) -S . -B &quot;$(NativeBuildDir)&quot; $(CMakeGeneratorExtraArgs)"
     />
   </Target>
   <Target
@@ -73,7 +85,8 @@
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
-      <!-- Include multiple possible names and paths that the CMake build may produce. The Copy task ignores missing
+      <!-- Include multiple possible names and paths that the CMake build may produce. The Copy task
+      ignores missing
            files if we guard using the Condition attribute on the copy operation. -->
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/OsCallsWindowsShimNative.dll" />
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/libOsCallsWindowsShim.dll" />
@@ -82,7 +95,8 @@
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll" />
       <SharedLib Include="$(MSBuildThisFileDirectory)bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll" />
     </ItemGroup>
-    <!-- Copy to the expected name so the managed LibraryImport 'OsCallsWindowsShimNative.dll' will be resolved. -->
+    <!-- Copy to the expected name so the managed LibraryImport 'OsCallsWindowsShimNative.dll' will
+    be resolved. -->
     <Copy
       SourceFiles="@(SharedLib)"
       DestinationFiles="@(SharedLib-&gt;'$(OutputPath)OsCallsWindowsShimNative.dll')"
