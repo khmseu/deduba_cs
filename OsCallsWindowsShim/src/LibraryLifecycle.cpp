@@ -2,6 +2,7 @@
  * LibraryLifecycle.cpp
  * Log library load/unload events for diagnostics.
  */
+#include "OcExport.h"
 #include <cstdio>
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX

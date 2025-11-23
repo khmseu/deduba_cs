@@ -1,3 +1,4 @@
+#include "OcExport.h"
 #include "Acl.h"
 #include <acl/libacl.h>
 #include <cerrno>

@@ -1,3 +1,4 @@
+#include "OcExport.h"
 #include "UserGroupDatabase.h"
 #include <cerrno>
 #include <grp.h>

@@ -1,3 +1,4 @@
+#include "OcExport.h"
 #include "FileSystem.h"
 #include <cerrno>
 #include <climits>

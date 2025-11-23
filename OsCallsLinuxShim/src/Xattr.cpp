@@ -1,3 +1,4 @@
+#include "OcExport.h"
 #include "Xattr.h"
 #include <cerrno>
 #include <cstdlib>

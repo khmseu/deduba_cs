@@ -1,3 +1,4 @@
+#include "OcExport.h"
 #include "ValXfer.h"
 
 namespace OsCalls {

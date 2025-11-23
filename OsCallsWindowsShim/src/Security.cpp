@@ -97,6 +97,7 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsecuritydescriptortostringsecuritydescriptorw
  */
+#include "OcExport.h"
 #include "Security.h"
 // windows.h must be first
 #define WIN32_LEAN_AND_MEAN

@@ -99,6 +99,7 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
+#include "OcExport.h"
 #include "Streams.h"
 #include <algorithm>
 #include <string>

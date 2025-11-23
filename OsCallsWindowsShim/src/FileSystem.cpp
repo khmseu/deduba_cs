@@ -80,6 +80,7 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
  */
+#include "OcExport.h"
 #include "FileSystem.h"
 #include <cstring>
 #include <vector>
