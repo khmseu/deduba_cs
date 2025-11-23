@@ -19,14 +19,14 @@
   <!-- Configure CMake if not yet configured -->
   <Target
     Name="ConfigureNative"
-    BeforeTargets="Build" 
+    BeforeTargets="Build"
     Condition="!Exists('$(MSBuildProjectDirectory)/build/$(Configuration)/CMakeCache.txt')"
   >
-     <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build/$(Configuration) -DCMAKE_BUILD_TYPE=$(Configuration)" />
+    <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build/$(Configuration) -DCMAKE_BUILD_TYPE=$(Configuration)" />
   </Target>
   <!-- Build native linux shim -->
   <Target Name="BuildNative" BeforeTargets="Build" DependsOnTargets="ConfigureNative">
-     <Exec Command="cmake --build $(MSBuildProjectDirectory)/build/$(Configuration) --target OsCallsLinuxShim" />
+    <Exec Command="cmake --build $(MSBuildProjectDirectory)/build/$(Configuration) --target OsCallsLinuxShim" />
   </Target>
   <Target Name="CopyNativeLibs" AfterTargets="Publish">
     <Copy SourceFiles="$(OutputPath)libOsCallsLinuxShim.so" DestinationFolder="$(PublishDir)" />
@@ -36,6 +36,10 @@
     <ItemGroup>
       <SharedLib Include="bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so" />
     </ItemGroup>
-     <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" Condition="Exists('%(SharedLib.Identity)')" />
+    <Copy
+      SourceFiles="@(SharedLib)"
+      DestinationFolder="$(OutputPath)"
+      Condition="Exists('%(SharedLib.Identity)')"
+    />
   </Target>
 </Project>

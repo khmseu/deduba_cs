@@ -304,30 +304,30 @@ This document captures completed work, near-term, and mid-term enhancements for 
 ## Backlog Summary Table
 
 | Area                        | Status     | Priority | Notes                                                |
-|-----------------------------|------------|----------|------------------------------------------------------|
+| --------------------------- | ---------- | -------- | ---------------------------------------------------- |
 | **Distribution & CI**       |            |          |                                                      |
-| CI build matrix             | ✅ Done     | High     | Implemented in `.github/workflows/ci.yml`            |
-| Artifact upload             | ✅ Done     | High     | Versioned archives uploaded on Release builds        |
-| Release automation          | ✅ Done     | High     | Auto-release on `v*` tags with changelog             |
-| Packaging scripts           | ✅ Done     | High     | `scripts/package.sh` with MinVer versioning          |
-| Windows validation          | ✅ Done     | High     | Native Windows runner + smoke test                   |
-| Checksums                   | ❌ Pending  | High     | SHA-512 checksums not yet generated                  |
+| CI build matrix             | ✅ Done    | High     | Implemented in `.github/workflows/ci.yml`            |
+| Artifact upload             | ✅ Done    | High     | Versioned archives uploaded on Release builds        |
+| Release automation          | ✅ Done    | High     | Auto-release on `v*` tags with changelog             |
+| Packaging scripts           | ✅ Done    | High     | `scripts/package.sh` with MinVer versioning          |
+| Windows validation          | ✅ Done    | High     | Native Windows runner + smoke test                   |
+| Checksums                   | ❌ Pending | High     | SHA-512 checksums not yet generated                  |
 | CI caching                  | ⚠️ Partial | Medium   | TODO: Cache NuGet packages and native intermediates  |
-| Wine smoke test             | ❌ Pending  | Medium   | Optional: test cross-compiled Windows binary on Wine |
-| Cleanup script              | ❌ Pending  | Low      | `package.sh clean` mode to prune old artifacts       |
+| Wine smoke test             | ❌ Pending | Medium   | Optional: test cross-compiled Windows binary on Wine |
+| Cleanup script              | ❌ Pending | Low      | `package.sh clean` mode to prune old artifacts       |
 | Container image             | 💡 Idea    | Medium   | Future: Docker/OCI image for deployment              |
 | Brew/winget                 | 💡 Idea    | Low      | Distribution via package managers                    |
 | SBOM & signing              | 💡 Idea    | Medium   | Security: generate SBOM, sign binaries               |
 | **ArchiveStore**            |            |          |                                                      |
-| Core refactor               | ✅ Done     | High     | `IArchiveStore` interface implemented with tests     |
-| Async variants              | ❌ Pending  | Medium   | `SaveStreamAsync`, `BuildIndexAsync`                 |
-| Index persistence           | ❌ Pending  | High     | Avoid full re-index on startup                       |
-| Atomic writes               | ❌ Pending  | Medium   | Temp file + move for reliability                     |
-| Compaction/GC               | ❌ Pending  | Medium   | Remove unused chunks, retention policies             |
-| Restore tooling             | ❌ Pending  | High     | CLI for restore, integrity verification              |
+| Core refactor               | ✅ Done    | High     | `IArchiveStore` interface implemented with tests     |
+| Async variants              | ❌ Pending | Medium   | `SaveStreamAsync`, `BuildIndexAsync`                 |
+| Index persistence           | ❌ Pending | High     | Avoid full re-index on startup                       |
+| Atomic writes               | ❌ Pending | Medium   | Temp file + move for reliability                     |
+| Compaction/GC               | ❌ Pending | Medium   | Remove unused chunks, retention policies             |
+| Restore tooling             | ❌ Pending | High     | CLI for restore, integrity verification              |
 | Encryption at rest          | 💡 Idea    | Low      | AES-GCM with key rotation                            |
-| Observability               | ❌ Pending  | Medium   | ILogger integration, Prometheus metrics              |
-| Concurrency tests           | ❌ Pending  | Medium   | Simultaneous saves, reorg under load                 |
+| Observability               | ❌ Pending | Medium   | ILogger integration, Prometheus metrics              |
+| Concurrency tests           | ❌ Pending | Medium   | Simultaneous saves, reorg under load                 |
 | **High-Level OS API**       |            |          |                                                      |
 | Interface design            | 💡 Idea    | High     | `IHighLevelOsApi` in `OsCallsCommon`                 |
 | Linux implementation        | 💡 Idea    | High     | Wrap existing `FileSystem`/`Xattr`/`Acl`             |
@@ -337,7 +337,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 | Cross-platform integration  | 💡 Idea    | Medium   | Validate normalized output across platforms          |
 | **Observability (General)** |            |          |                                                      |
 | Metrics export              | 💡 Idea    | Low      | Stdout JSON lines or Prometheus endpoint             |
-| Structured logging          | ❌ Pending  | Medium   | Pipeline for long-running tasks                      |
+| Structured logging          | ❌ Pending | Medium   | Pipeline for long-running tasks                      |
 | OpenTelemetry integration   | 💡 Idea    | Low      | Distributed tracing for complex workflows            |
 
 ---
