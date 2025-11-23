@@ -52,12 +52,6 @@ public class DedubaClass
     // ############################################################################
     // Temporary on-disk hashes for backup data management
     // ############################################################################
-    // arlist: hash -> part of filename between $data_path and actual file
-    private static readonly Dictionary<string, string> Arlist = [];
-
-    // preflist: list of files and directories under a given prefix
-    // (as \0-separated list)
-    private static readonly Dictionary<string, string> Preflist = [];
 
     // private static Finfo ToFinfo<T>(T? fi) where T : FileSystemInfo
     // {
@@ -209,7 +203,6 @@ public class DedubaClass
 
                 // tie % arlist,   'DB_File', undef;    #, "$tmpp.arlist";
                 // tie % preflist, 'DB_File', undef;    #, "$tmpp.preflist";
-                Preflist[""] = "";
 
                 Utilities.ConWrite("Getting archive state\n");
                 // Initialize config & archive store
@@ -228,31 +221,20 @@ public class DedubaClass
                 if (Utilities.VerboseOutput)
                 {
                     Utilities.ConWrite("Before backup:\n");
-                    foreach (var kvp in _archiveStore?.Arlist ?? Arlist)
+                    foreach (var kvp in _archiveStore!.Arlist)
                         Utilities.ConWrite(
                             Utilities.Dumper(
-                                new KeyValuePair<string, object?>(
-                                    $"{nameof(Arlist)}['{kvp.Key}']",
-                                    kvp.Value
-                                )
+                                new KeyValuePair<string, object?>($"Arlist['{kvp.Key}']", kvp.Value)
                             )
                         );
 
                     // Iterate over preflist
                     // Iterate over preflist
-                    foreach (
-                        var kvp in _archiveStore?.Preflist
-                            ?? Preflist.ToDictionary(
-                                k => k.Key,
-                                k =>
-                                    (IReadOnlyCollection<string>)
-                                        k.Value.Split('\0', StringSplitOptions.RemoveEmptyEntries)
-                            )
-                    )
+                    foreach (var kvp in _archiveStore!.Preflist)
                         Utilities.ConWrite(
                             Utilities.Dumper(
                                 new KeyValuePair<string, object?>(
-                                    $"{nameof(Preflist)}['{kvp.Key}']",
+                                    $"Preflist['{kvp.Key}']",
                                     kvp.Value
                                 )
                             )
@@ -315,79 +297,6 @@ public class DedubaClass
     // ############################################################################
     // build arlist/preflist
 
-    /// <summary>
-    ///     Recursively scans the archive DATA directory to populate <see cref="Arlist" /> and <see cref="Preflist" />.
-    ///     These dictionaries track all existing hash files and directory prefixes to enable incremental backup
-    ///     and efficient lookup of duplicate data blocks.
-    /// </summary>
-    /// <param name="filePaths">Paths to scan (initially <see cref="_dataPath" />, then recursively expanded).</param>
-    private static void Mkarlist(params string[] filePaths)
-    {
-        if (_archiveStore != null)
-        {
-            _archiveStore.BuildIndex();
-            return;
-        }
-
-        foreach (var entry in filePaths.OrderBy(e => e))
-        {
-            if (entry == _dataPath)
-            {
-                if (Utilities.VerboseOutput)
-                    Utilities.ConWrite($"+ {entry}");
-                try
-                {
-                    var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (Utilities.VerboseOutput)
-                        Console.Write($"\t{entries.Length} entries");
-                    Mkarlist(entries);
-                    if (Utilities.VerboseOutput)
-                        Console.WriteLine($"\tdone {entry}");
-                }
-                catch (Exception ex)
-                {
-                    Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
-                }
-
-                continue;
-            }
-
-            var match = Regex.Match(entry, $"^{Regex.Escape(_dataPath)}/?(.*)/([^/]+)$");
-            var prefix = match.Groups[1].Value;
-            var file = match.Groups[2].Value;
-            if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
-            {
-                if (Utilities.VerboseOutput)
-                    Utilities.ConWrite($"+ {entry}:{prefix}:{file}");
-                Preflist.TryAdd(prefix, "");
-                Preflist[prefix] += $"{file}/\0";
-                try
-                {
-                    var dirEntries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
-                    if (Utilities.VerboseOutput)
-                        Console.Write($"\t{dirEntries.Length} entries");
-                    Mkarlist(dirEntries);
-                    if (Utilities.VerboseOutput)
-                        Console.WriteLine($"\tdone {entry}");
-                }
-                catch (Exception ex)
-                {
-                    Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
-                }
-            }
-            else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
-            {
-                Arlist[file] = prefix;
-                Preflist.TryAdd(prefix, "");
-                Preflist[prefix] += $"{file}\0";
-            }
-            else
-            {
-                Utilities.Warn($"Bad entry in archive: {entry}");
-            }
-        }
-    }
-
     // ############################################################################
     // Helper method to create directories with optional blue console output in test mode
 
@@ -422,133 +331,7 @@ public class DedubaClass
     // find place for hashed file, or note we already have it
 
     /// <summary>
-    ///     Maps a content hash to its storage path in the archive, creating intermediate directories as needed.
-    ///     Returns null if the hash already exists (deduplication), otherwise returns the target file path.
-    ///     Automatically reorganizes directory structures when they exceed 255 entries.
-    /// </summary>
-    /// <param name="hash">Hex-encoded SHA-512 hash of the data block.</param>
-    /// <returns>Absolute path where the data should be written, or null if it already exists.</returns>
-    /// <remarks>
-    ///     Updates <see cref="Arlist" /> and <see cref="Preflist" /> to track the new file.
-    ///     Triggers directory split when prefix directory grows beyond 255 entries.
-    /// </remarks>
-    private static string? Hash2Fn(string hash)
-    {
-        if (_archiveStore != null)
-            return _archiveStore.GetTargetPathForHash(hash);
-        if (Utilities.VerboseOutput)
-            Utilities.ConWrite(Utilities.Dumper(Utilities.D(hash)));
-
-        if (Arlist.TryGetValue(hash, out var value))
-        {
-            _packsum += new FileInfo(Path.Combine(_dataPath, value, hash)).Length;
-            return null;
-        }
-
-        var prefix = hash;
-        var prefixList = Regex
-            .Split(prefix, "(..)")
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .ToList();
-        prefixList.RemoveAt(prefixList.Count - 1);
-
-        while (prefixList.Count > 0)
-        {
-            prefix = string.Join("/", prefixList);
-            if (Preflist.ContainsKey(prefix))
-                break;
-            prefixList.RemoveAt(prefixList.Count - 1);
-        }
-
-        if (prefixList.Count == 0)
-            prefix = string.Join("/", prefixList);
-        var list = Preflist[prefix].Split('\0').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-        var nlist = list.Count;
-
-        if (nlist > 255)
-        {
-            // dir becoming too large, move files into subdirs
-            if (Utilities.VerboseOutput)
-                Utilities.ConWrite($"*** reorganizing '{prefix}' [{nlist} entries]\n");
-            if (Utilities.VerboseOutput)
-                Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(list))}\n");
-
-            var depth = prefixList.Count;
-            var plen = 2 * depth;
-            var newDirs = new HashSet<string>();
-
-            foreach (var f in list)
-                if (f.EndsWith("/"))
-                    newDirs.Add(f);
-
-            for (var n = 0x00; n <= 0xff; n++)
-            {
-                var dir = $"{n:x2}";
-                var de = $"{dir}/";
-                if (!newDirs.Contains(de))
-                {
-                    CreateDirectoryWithLogging(Path.Combine(_dataPath, prefix, dir));
-                    newDirs.Add(de);
-                    Preflist[JoinPrefix(prefix, dir)] = "";
-                }
-            }
-
-            foreach (var f in list)
-                if (!f.EndsWith("/"))
-                {
-                    var dir = f.Substring(plen, 2);
-                    var de = $"{dir}/";
-                    if (!newDirs.Contains(de))
-                    {
-                        CreateDirectoryWithLogging(Path.Combine(_dataPath, prefix, dir));
-                        newDirs.Add(de);
-                    }
-
-                    var from = Path.Combine(_dataPath, prefix, f);
-                    var to = Path.Combine(_dataPath, prefix, dir, f);
-                    try
-                    {
-                        File.Move(from, to);
-                    }
-                    catch (Exception ex)
-                    {
-                        Utilities.Error($"{from} -> {to}", nameof(File.Move), ex);
-                        continue;
-                    }
-
-                    var newpfx = JoinPrefix(prefix, dir);
-                    Arlist[f] = newpfx;
-                    Preflist.TryAdd(newpfx, "");
-                    Preflist[newpfx] += $"{f}\0";
-                }
-
-            Preflist[prefix] = string.Join("\0", newDirs) + "\0";
-            var dir2 = hash.Substring(plen, 2);
-            prefix = JoinPrefix(prefix, dir2);
-
-            // print "\n", __LINE__, ' ', scalar localtime, ' ',  "After reorg:\n" if TESTING;
-            // while (my ($k, $v) = each %arlist) {
-            // print "\n", __LINE__, ' ', scalar localtime, ' ',  Data::Utilities.Dumper->Dump([$v], ["\$arlist{'$k'}"]) if TESTING;
-            //           }
-            // while (my ($k, $v) = each %preflist) {
-            // print "\n", __LINE__, ' ', scalar localtime, ' ',  Data::Utilities.Dumper->Dump([$v], ["\$preflist{'$k'}"]) if TESTING;
-            //           }
-            // print "\n", __LINE__, ' ', scalar localtime, ' ',  "\n" if TESTING;
-        }
-        else
-        {
-            if (Utilities.VerboseOutput)
-                Utilities.ConWrite($"+++ not too large: '{prefix}' entries = {list.Count}\n");
-        }
-
-        Arlist[hash] = prefix;
-        Preflist.TryAdd(prefix, "");
-        Preflist[prefix] += $"{hash}\0";
-        return Path.Combine(_dataPath, prefix, hash);
-    }
-
-    // ############################################################################
-    // Structured data
+    //     Structured data
     //
     // unpacked: [ ... [ ... ] ... 'string' \number ... ]
     //
@@ -579,116 +362,20 @@ public class DedubaClass
     }
 
     /// <summary>
-    ///     Hashes and writes a data chunk into the content-addressable store if not already present.
-    /// </summary>
-    private static string Save_data(string data)
-    {
-        if (_archiveStore != null)
-            return _archiveStore.SaveData(Encoding.UTF8.GetBytes(data));
-        var hashBytes = SHA512.HashData([.. data.ToArray().Select(x => (byte)x)]);
-        var hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-        var outFile = Hash2Fn(hash);
-
-        if (outFile != null)
-        {
-            Bstats.TryAdd("saved_blocks", 0);
-            Bstats["saved_blocks"]++;
-            Bstats.TryAdd("saved_bytes", 0);
-            Bstats["saved_bytes"] += data.Length;
-
-            try
-            {
-                var directory = Path.GetDirectoryName(outFile);
-                if (!string.IsNullOrEmpty(directory))
-                    CreateDirectoryWithLogging(directory);
-
-                var outputStream = File.Create(outFile);
-                var bzip2OutputStream = new BZip2OutputStream(outputStream);
-                bzip2OutputStream.Write(data.Select(x => (byte)x).ToArray());
-                bzip2OutputStream.Close();
-            }
-            catch (Exception ex)
-            {
-                Utilities.Error(outFile, nameof(BZip2OutputStream), ex);
-                _packsum += new FileInfo(outFile).Length;
-                return hash; // ???
-            }
-
-            _packsum += new FileInfo(outFile).Length;
-            if (Utilities.VerboseOutput)
-                Utilities.ConWrite(hash);
-        }
-        else
-        {
-            Bstats.TryAdd("duplicate_blocks", 0);
-            Bstats["duplicate_blocks"]++;
-            Bstats.TryAdd("duplicate_bytes", 0);
-            Bstats["duplicate_bytes"] += data.Length;
-            if (Utilities.VerboseOutput)
-                Utilities.ConWrite($"{hash} already exists");
-        }
-
-        return hash;
-    }
-
-    /// <summary>
-    ///     Reads a file/stream in fixed-size chunks, stores them via <see cref="Save_data" />, and returns their hashes.
+    ///     Reads a file/stream in fixed-size chunks, stores them in the archive, and returns their hashes.
     /// </summary>
     private static List<string> Save_file(Stream fileStream, long size, string tag)
     {
-        var total = size;
         var pathForStatus = (tag ?? "").Split(' ')[0];
-        var hashes = new List<string>();
-        if (_archiveStore != null)
-        {
-            hashes = _archiveStore.SaveStream(
-                fileStream,
-                size,
-                tag ?? "",
-                bytes =>
-                {
-                    _statusBytesDone += bytes;
-                    var processed = Math.Max(0, (int)(size - bytes));
-                    var percent = size > 0 ? processed * 100.0 / size : 100.0;
-                    var queuedRemaining = Math.Max(
-                        0,
-                        _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
-                    );
-                    Utilities.Status(
-                        _statusFilesDone,
-                        _statusDirsDone,
-                        queuedRemaining,
-                        _statusBytesDone,
-                        pathForStatus,
-                        percent
-                    );
-                }
-            );
-            return hashes;
-        }
-        // Live progress for current path while saving
-        // hashes already declared above
-
-        // my @layers = PerlIO::get_layers($file, details => 1);
-        // print "\n", __LINE__, ' ', scalar localtime, ' input: ', Utilities.Dumper(@layers, $size) if TESTING;
-        while (size > 0)
-            try
+        return _archiveStore!.SaveStream(
+            fileStream,
+            size,
+            tag ?? "",
+            bytes =>
             {
-                var data = new byte[Chunksize];
-                var n12 = fileStream.Read(data, 0, (int)Math.Min(Chunksize, size));
-                if (n12 == 0)
-                    break;
-
-                hashes.Add(
-                    Save_data(new string([.. data.AsSpan(0, n12).ToArray().Select(x => (char)x)]))
-                );
-                size -= n12;
-                _ds += n12;
-
-                // Update global byte counter and live status line
-                _statusBytesDone += n12;
-                var processed = total - size;
-                var percent = total > 0 ? processed * 100.0 / total : 100.0;
+                _statusBytesDone += bytes;
+                var processed = Math.Max(0, (int)(size - bytes));
+                var percent = size > 0 ? processed * 100.0 / size : 100.0;
                 var queuedRemaining = Math.Max(
                     0,
                     _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
@@ -702,12 +389,7 @@ public class DedubaClass
                     percent
                 );
             }
-            catch (Exception ex)
-            {
-                Utilities.Error(tag ?? "", nameof(Stream.Read), ex);
-            }
-
-        return hashes;
+        );
     }
 
     // ##############################################################################
