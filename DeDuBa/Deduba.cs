@@ -167,11 +167,11 @@ public class DedubaClass
                             $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
                         );
                     argv =
-                        [
-                            .. argv.Select(FileSystem.Canonicalizefilename)
-                                .Select(node => node["path"]?.ToString())
-                                .Select(path => path != null ? Path.GetFullPath(path) : ""),
-                        ];
+                    [
+                        .. argv.Select(FileSystem.Canonicalizefilename)
+                            .Select(node => node["path"]?.ToString())
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                    ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
                     if (!string.IsNullOrEmpty(_archive))
@@ -182,8 +182,13 @@ public class DedubaClass
                                 continue;
                             if (IsPathWithinArchive(root))
                             {
-                                var msg = $"Refusing to back up '{root}' because it is within the archive path '{_archive}'.";
-                                Utilities.Error(root, nameof(Backup), new InvalidOperationException(msg));
+                                var msg =
+                                    $"Refusing to back up '{root}' because it is within the archive path '{_archive}'.";
+                                Utilities.Error(
+                                    root,
+                                    nameof(Backup),
+                                    new InvalidOperationException(msg)
+                                );
                                 throw new InvalidOperationException(msg);
                             }
                         }
@@ -471,7 +476,9 @@ public class DedubaClass
                 if (!string.IsNullOrEmpty(_archive) && IsPathWithinArchive(entry))
                 {
                     if (Utilities.VerboseOutput)
-                        Utilities.ConWrite($"Skipping archive/internal path during traversal: {entry}");
+                        Utilities.ConWrite(
+                            $"Skipping archive/internal path during traversal: {entry}"
+                        );
                     continue;
                 }
 
@@ -561,6 +568,7 @@ public class DedubaClass
                                 var childEntries = entries
                                     .Where(x => !x.StartsWith(".."))
                                     .Select(x => Path.Combine(entry, x))
+                                    .Where(x => !IsPathWithinArchive(x))
                                     .OrderBy(x => x, StringComparer.Ordinal)
                                     .ToList();
 

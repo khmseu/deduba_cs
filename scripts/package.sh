@@ -67,7 +67,7 @@ EOF
 	log "Created ${DIST_DIR}/${base_name}.tar.gz"
 	# Generate SHA-512 checksum for the archive
 	if command -v sha512sum >/dev/null 2>&1; then
-		sha512sum "${DIST_DIR}/${base_name}.tar.gz" > "${DIST_DIR}/${base_name}.tar.gz.sha512"
+		sha512sum "${DIST_DIR}/${base_name}.tar.gz" >"${DIST_DIR}/${base_name}.tar.gz.sha512"
 		log "Created ${DIST_DIR}/${base_name}.tar.gz.sha512"
 	else
 		log "WARN: sha512sum not available; skipping checksum generation for ${base_name}.tar.gz"
@@ -101,7 +101,7 @@ publish_windows() {
 	log "Created ${DIST_DIR}/${base_name}.zip"
 	# Generate SHA-512 checksum for the zip
 	if command -v sha512sum >/dev/null 2>&1; then
-		sha512sum "${DIST_DIR}/${base_name}.zip" > "${DIST_DIR}/${base_name}.zip.sha512"
+		sha512sum "${DIST_DIR}/${base_name}.zip" >"${DIST_DIR}/${base_name}.zip.sha512"
 		log "Created ${DIST_DIR}/${base_name}.zip.sha512"
 	else
 		log "WARN: sha512sum not available; skipping checksum generation for ${base_name}.zip"
