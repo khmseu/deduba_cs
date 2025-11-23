@@ -6,8 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB SRC_FILES "src/*.cpp")
 
-# Build common shim as subdirectory to ensure dependency
-add_subdirectory(../OsCallsCommonShim ${CMAKE_CURRENT_BINARY_DIR}/_common_build)
+# Link against common shim (built separately or by parent CMake)
+if(NOT TARGET OsCallsCommonShim)
+    add_subdirectory(../OsCallsCommonShim ${CMAKE_CURRENT_BINARY_DIR}/_common_build)
+endif()
 
 add_library(OsCallsLinuxShim SHARED ${SRC_FILES})
 
