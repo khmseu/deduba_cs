@@ -31,7 +31,12 @@
          if available), so leave $(CMakeGenerator) empty. On non-Windows we
          explicitly use Ninja and a mingw toolchain file. The CMakeGeneratorFlag
          property below expands to "-G <generator>" only when a generator is set. -->
-    <CMakeGenerator Condition="'$(OS)' != 'Windows_NT'">Ninja</CMakeGenerator>
+        <CMakeGenerator Condition="'$(OS)' != 'Windows_NT'">Ninja</CMakeGenerator>
+        <!-- When building on Windows, explicitly select the Visual Studio generator and platform
+          to ensure the generated VS solution correctly targets x64. This avoids CMake creating
+          a Win32 project that in turn compiles with a mismatched architecture and causes
+          the 'No Target Architecture' error in Windows SDK headers. -->
+        <CMakeGenerator Condition="'$(OS)' == 'Windows_NT'">Visual Studio 17 2022</CMakeGenerator>
     <CMakeGeneratorExtraArgs Condition="'$(OS)' == 'Windows_NT'">-A x64</CMakeGeneratorExtraArgs>
     <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'"
       >-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs
