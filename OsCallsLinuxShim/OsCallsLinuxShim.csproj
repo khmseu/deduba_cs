@@ -7,9 +7,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="Makefile" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\OsCallsCommonShim\OsCallsCommonShim.csproj" />
   </ItemGroup>
@@ -18,19 +16,22 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Target Name="Make" BeforeTargets="Build" Outputs="$(OutputPath)libOsCallsLinuxShim.so">
-    <Exec
-      EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
-      Command="make"
-    />
+  <!-- Configure CMake if not yet configured -->
+  <Target Name="ConfigureNative" BeforeTargets="Build" Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')">
+    <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build" />
   </Target>
-  <Target Name="MakeClean" BeforeTargets="Clean">
-    <Exec
-      EnvironmentVariables="OUT_DIR=$(OutDir);PROJECT_DIR=$(MSBuildProjectDirectory)"
-      Command="make clean"
-    />
+  <!-- Build native linux shim -->
+  <Target Name="BuildNative" BeforeTargets="Build" DependsOnTargets="ConfigureNative">
+    <Exec Command="cmake --build $(MSBuildProjectDirectory)/build --target OsCallsLinuxShim" />
   </Target>
   <Target Name="CopyNativeLibs" AfterTargets="Publish">
     <Copy SourceFiles="$(OutputPath)libOsCallsLinuxShim.so" DestinationFolder="$(PublishDir)" />
+  </Target>
+  <!-- Ensure library copied to managed output (Debug/Release) -->
+  <Target Name="CopySharedLibrary" AfterTargets="Build">
+    <ItemGroup>
+      <SharedLib Include="bin/Debug/net8.0/libOsCallsLinuxShim.so" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" />
   </Target>
 </Project>

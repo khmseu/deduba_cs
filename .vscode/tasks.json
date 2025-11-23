@@ -2,23 +2,29 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build C++ project",
+      "label": "Build native shims (CMake)",
       "type": "shell",
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "command": "make"
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cmake -S OsCallsCommonShim -B OsCallsCommonShim/build && cmake --build OsCallsCommonShim/build --target OsCallsCommonShim && cmake -S OsCallsLinuxShim -B OsCallsLinuxShim/build && cmake --build OsCallsLinuxShim/build --target OsCallsLinuxShim"
+      ]
     },
     {
-      "label": "Build & run C++ project",
+      "label": "Reconfigure native shims (clean CMake)",
       "type": "shell",
       "group": {
-        "kind": "test",
-        "isDefault": true
+        "kind": "build"
       },
-      "command": "make",
-      "args": ["run"]
+      "command": "bash",
+      "args": [
+        "-lc",
+        "rm -rf OsCallsCommonShim/build OsCallsLinuxShim/build && cmake -S OsCallsCommonShim -B OsCallsCommonShim/build && cmake -S OsCallsLinuxShim -B OsCallsLinuxShim/build"
+      ]
     },
     {
       "type": "msbuild",

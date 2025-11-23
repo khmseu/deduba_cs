@@ -3,12 +3,13 @@
     <OutputType>library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
-  <!-- Build C++ shared library via Makefile -->
-  <Target Name="Make" BeforeTargets="PreBuildEvent">
-    <Exec Command="make -C $(MSBuildProjectDirectory)" />
+  <!-- Configure CMake once -->
+  <Target Name="ConfigureNative" BeforeTargets="Build" Condition="!Exists('$(MSBuildProjectDirectory)/build/CMakeCache.txt')">
+    <Exec Command="cmake -S $(MSBuildProjectDirectory) -B $(MSBuildProjectDirectory)/build" />
   </Target>
-  <Target Name="MakeClean" AfterTargets="Clean">
-    <Exec Command="make -C $(MSBuildProjectDirectory) clean" />
+  <!-- Build native shared library via CMake -->
+  <Target Name="BuildNative" BeforeTargets="Build" DependsOnTargets="ConfigureNative">
+    <Exec Command="cmake --build $(MSBuildProjectDirectory)/build --target OsCallsCommonShim" />
   </Target>
   <!-- Copy the shared library to output directory -->
   <Target Name="CopySharedLibrary" AfterTargets="Build">
