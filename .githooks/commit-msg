@@ -3,27 +3,31 @@
 # unless the sequence is explicitly wrapped in single or double quotes (e.g., '\n' or "\n").
 
 MSGFILE="$1"
-if [ -z "$MSGFILE" ]; then
-  echo "commit-msg hook: missing path to commit message file" >&2
-  exit 0
+if [[ -z ${MSGFILE} ]]; then
+	echo "commit-msg hook: missing path to commit message file" >&2
+	exit 0
 fi
 
 # Count all occurrences of the raw sequence '\n'
-total_count=$(grep -o "\\\\n" "$MSGFILE" | wc -l | tr -d ' ')
-if [ -z "$total_count" ] || [ "$total_count" -eq 0 ]; then
-  exit 0
+# shellcheck disable=SC2312
+total_count=$(grep -o '\\n' "${MSGFILE}" | wc -l | tr -d ' ')
+if [[ -z ${total_count} ]] || [[ ${total_count} -eq 0 ]]; then
+	exit 0
 fi
 
 # Remove allowed quoted occurrences: '\\n' and "\\n" and then count remaining \n occurrences
-sanitized=$(sed -E "s/'\\\\n'//g; s/\"\\\\n\"//g" "$MSGFILE")
-remaining_count=$(printf "%s" "$sanitized" | grep -o "\\\\n" | wc -l | tr -d ' ')
+sanitized=$(sed -E "s/'\\\\n'//g; s/\"\\\\n\"//g" "${MSGFILE}")
+# shellcheck disable=SC2312
+remaining_count=$(printf "%s" "${sanitized}" | grep -o '\\n' | wc -l | tr -d ' ')
 
-if [ -z "$remaining_count" ] || [ "$remaining_count" -eq 0 ]; then
-  # Only quoted occurrences exist -> allow
-  exit 0
+if [[ -z ${remaining_count} ]] || [[ ${remaining_count} -eq 0 ]]; then
+	# Only quoted occurrences exist -> allow
+	exit 0
 fi
 
-echo "ERROR: Commit message contains a literal backslash-n (\\n) sequence that is not quoted." >&2
+# shellcheck disable=SC2028
+echo 'ERROR: Commit message contains a literal backslash-n (\n) sequence that is not quoted.' >&2
+# shellcheck disable=SC2028
 echo "Wrap it in single or double quotes, e.g., '\\n' or \"\\n\" if you intend to include the literal characters." >&2
 echo "Aborting commit." >&2
 exit 1

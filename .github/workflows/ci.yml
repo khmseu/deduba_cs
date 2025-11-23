@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [master, main]
-    tags: ["v*"]
+    tags: [v*]
   pull_request:
     branches: [master, main]
   workflow_dispatch:
@@ -357,27 +357,10 @@ jobs:
       - name: Verify release artifact checksums
         run: |
           set -euo pipefail
-          # Install jq to parse the metadata JSON
-          sudo apt-get update
-          sudo apt-get install -y jq
-          meta='release-files/release-metadata.json'
-          if [ ! -f "${meta}" ]; then
-            echo "No release metadata found; skipping verification"
-            exit 0
+          if ! command -v python3 >/dev/null 2>&1; then
+            echo 'python3 not available; skip checksum verification' && exit 0
           fi
-          jq -r '.artifacts[] | "\(.path) \(.sha512)"' "${meta}" | while read -r path sha; do
-            p="release-files/${path}"
-            if [ ! -f "${p}" ]; then
-              echo "Missing artifact: ${p}" >&2
-              exit 1
-            fi
-            actual=$(sha512sum "${p}" | awk '{print $1}')
-            if [ "${actual}" != "${sha}" ]; then
-              echo "Checksum mismatch for ${path}: expected ${sha}, got ${actual}" >&2
-              exit 1
-            fi
-          done
-          echo "Artifact checksum verification passed"
+          python3 scripts/verify-release-checksums.py --meta release-files/release-metadata.json --dir release-files
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

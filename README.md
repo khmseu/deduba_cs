@@ -56,4 +56,3 @@ To get the same commit message checks locally that CI enforces, install the repo
 This sets `core.hooksPath` to the `.githooks/` directory and makes the `commit-msg` hook executable. The hook will reject raw `\\n` occurrences (unless they are single or double-quoted like `'\\n'` or `"\\n"`).
 
 To undo: `git config --unset core.hooksPath`
-
