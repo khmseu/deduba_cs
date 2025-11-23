@@ -44,7 +44,7 @@
       Importance="High"
     />
     <MakeDir Directories="$(NativeBuildDir)" />
-    <Exec Command="cmake -S &quot;$(MSBuildThisFileDirectory)&quot; -B &quot;$(NativeBuildDir)&quot; -G Ninja -DCMAKE_TOOLCHAIN_FILE=&quot;$(CMakeToolchainFile)&quot;" />
+    <Exec Command="cmake -G Ninja &quot;$(MSBuildThisFileDirectory)&quot; -B &quot;$(NativeBuildDir)&quot; -DCMAKE_TOOLCHAIN_FILE=&quot;$(CMakeToolchainFile)&quot;" />
   </Target>
   <Target
     Name="BuildNative"
