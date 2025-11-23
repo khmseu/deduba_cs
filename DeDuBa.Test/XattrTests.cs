@@ -9,6 +9,8 @@ namespace DeDuBa.Test;
 /// <summary>
 ///     Tests for extended attributes (xattr) functionality via OsCalls.Xattr module.
 /// </summary>
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class XattrTests : IDisposable
 {
     private readonly string _testDirPath;

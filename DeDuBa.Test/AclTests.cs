@@ -8,6 +8,8 @@ namespace DeDuBa.Test;
 /// <summary>
 ///     Tests for ACL (Access Control List) functionality via OsCalls.Acl module.
 /// </summary>
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class AclTests : IDisposable
 {
     private readonly string _testDirPath;

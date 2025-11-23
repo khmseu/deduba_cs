@@ -10,6 +10,8 @@ namespace DeDuBa.Test;
 ///     These tests validate win_lstat, win_readlink, win_canonicalize_file_name,
 ///     win_get_sd, and ADS functionality.
 /// </summary>
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class OsCallsWindowsTests : IDisposable
 {
     private readonly string _testDirPath;

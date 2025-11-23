@@ -3,6 +3,8 @@ using ICSharpCode.SharpZipLib.BZip2;
 
 namespace DeDuBa.Test;
 
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class ArchiveStoreTests : IDisposable
 {
     private readonly BackupConfig _cfg;

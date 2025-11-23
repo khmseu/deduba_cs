@@ -1,5 +1,7 @@
 namespace DeDuBa.Test;
 
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class UnitTest1
 {
     [Fact]

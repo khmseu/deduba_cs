@@ -2,6 +2,8 @@ using UtilitiesLibrary;
 
 namespace DeDuBa.Test;
 
+[Collection("TestEnvironment")]
+[ResetUtilitiesLog]
 public class DedubaIntegrationTests : IDisposable
 {
     private readonly string _tmpDir;
