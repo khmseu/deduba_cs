@@ -203,6 +203,18 @@ Follow **Conventional Commits** format: `<type>(<scope>): <subject>`
   what changed and why; use bullet points when covering multiple notable changes
 - Optional footer: reference issues (Fixes &num;123), breaking changes (BREAKING CHANGE:)
 
+### Commit message caution (CI / tooling)
+
+When creating commit messages from the command line, avoid inserting literal '\\n' escape sequences — use actual line breaks instead. Literal backslash-n sequences often appear when a commit message is passed through a shell double-quoted string and results in a single-line message containing literal '\\n' text, which reduces readability and can break some tooling and automation that parses commit bodies.
+
+Correct examples:
+- Use the interactive editor to compose multi-line messages or
+- Use a heredoc with a commit message file (e.g. `git commit -F message.txt`) or
+- Use quotes to include newline characters by passing a multi-line string to `git commit -m $'message\n\nbody'` (note the `$'...'` quoting) so the shell expands the newline correctly.
+
+Avoid:
+- Passing literal `\\n` sequences inside `-m` commit messages; instead create real newlines in commit bodies.
+
 **Examples:**
 
 ```markdown
