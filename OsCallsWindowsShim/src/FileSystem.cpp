@@ -83,6 +83,10 @@
 #include "FileSystem.h"
 #include <cstring>
 #include <vector>
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <winioctl.h>
 
