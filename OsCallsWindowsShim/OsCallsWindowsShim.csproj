@@ -14,8 +14,23 @@
     <CMakeToolchainFile>$(MSBuildThisFileDirectory)cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Native runtime library; copy it into managed output to make it locatable by the P/Invoke loader -->
-    <None Update="bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll">
+    <!-- Native runtime libraries; copy them into managed output to make them locatable by the P/Invoke loader.
+         Some generators / toolchains prepend 'lib' and/or place the file at different output paths, so include
+         the likely names/locations that the CMake generator may produce. -->
+    <None Update="build-win-x64/bin/OsCallsWindowsShimNative.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="build-win-x64/bin/OsCallsWindowsShim.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="build-win-x64/bin/libOsCallsWindowsShim.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Also keep per-configuration/browser RID variant paths in case other runners produce these locations -->
+    <None Update="build-win-x64/bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -45,12 +60,21 @@
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
+      <!-- Include multiple possible names and paths that the CMake build may produce. The Copy task ignores missing
+           files if we guard using the Condition attribute on the copy operation. -->
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/OsCallsWindowsShimNative.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/libOsCallsWindowsShim.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/OsCallsWindowsShim.dll" />
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)bin/$(Configuration)/net8.0/win-x64/OsCallsWindowsShimNative.dll" />
     </ItemGroup>
+    <!-- Copy to the expected name so the managed LibraryImport 'OsCallsWindowsShimNative.dll' will be resolved. -->
     <Copy
       SourceFiles="@(SharedLib)"
-      DestinationFolder="$(OutputPath)"
+      DestinationFiles="@(SharedLib-&gt;'$(OutputPath)OsCallsWindowsShimNative.dll')"
       Condition="Exists('%(SharedLib.Identity)')"
+      SkipUnchangedFiles="true"
     />
   </Target>
   <Target Name="CleanNative" Condition="Exists('$(NativeBuildDir)')" AfterTargets="Clean">
