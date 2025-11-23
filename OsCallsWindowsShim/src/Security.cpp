@@ -149,8 +149,8 @@ static bool handle_win_sd(ValueT *value) {
   }
 }
 
-extern "C" __declspec(dllexport) ValueT *win_get_sd(const wchar_t *path,
-                                                    bool include_sacl) {
+extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
+extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
   wchar_t *sddl = nullptr;
   auto v = new ValueT();
 

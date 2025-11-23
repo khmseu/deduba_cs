@@ -7,6 +7,7 @@
 #ifndef SECURITY_WINDOWS_H
 #define SECURITY_WINDOWS_H
 
+#include "OcExport.h"
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
@@ -22,7 +23,7 @@ namespace OsCallsWindows {
  * @param include_sacl Whether to include SACL (requires SeSecurityPrivilege)
  * @return ValueT* with SDDL string
  */
-extern "C" __declspec(dllexport) OsCalls::ValueT *
+extern "C" DLL_EXPORT OsCalls::ValueT *
 win_get_sd(const wchar_t *path, bool include_sacl);
 } // namespace OsCallsWindows
 

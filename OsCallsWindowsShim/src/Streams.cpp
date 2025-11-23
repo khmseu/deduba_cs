@@ -187,7 +187,7 @@ static bool handle_win_streams(ValueT *value) {
   return true;
 }
 
-extern "C" __declspec(dllexport) ValueT *win_list_streams(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
   auto streams = new StreamInfo{};
   auto v = new ValueT();
 
@@ -267,7 +267,7 @@ static bool handle_win_stream_data(ValueT *value) {
   }
 }
 
-extern "C" __declspec(dllexport) ValueT *
+extern "C" DLL_EXPORT ValueT *
 win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
   auto streamData = new StreamData{};
   auto v = new ValueT();

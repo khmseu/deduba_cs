@@ -394,7 +394,7 @@ static bool handle_win_lstat(ValueT *value) {
   }
 }
 
-extern "C" __declspec(dllexport) ValueT *win_lstat(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
   auto info = new WinFileInfo{};
   auto v = new ValueT();
 
@@ -488,7 +488,7 @@ static bool handle_win_readlink(ValueT *value) {
   }
 }
 
-extern "C" __declspec(dllexport) ValueT *win_readlink(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
   wchar_t *target = nullptr;
   auto v = new ValueT();
 
@@ -593,7 +593,7 @@ static bool handle_win_cfn(ValueT *value) {
   }
 }
 
-extern "C" __declspec(dllexport) ValueT *
+extern "C" DLL_EXPORT ValueT *
 win_canonicalize_file_name(const wchar_t *path) {
   wchar_t *canonical = nullptr;
   auto v = new ValueT();

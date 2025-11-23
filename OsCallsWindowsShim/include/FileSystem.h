@@ -8,6 +8,7 @@
 #ifndef FILESYSTEM_WINDOWS_H
 #define FILESYSTEM_WINDOWS_H
 
+#include "OcExport.h"
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
@@ -21,7 +22,7 @@ namespace OsCallsWindows {
  * @param path Wide-character path to file
  * @return ValueT* with file attributes, timestamps, size, file ID
  */
-extern "C" __declspec(dllexport) OsCalls::ValueT *
+extern "C" DLL_EXPORT OsCalls::ValueT *
 win_lstat(const wchar_t *path);
 
 /**
@@ -33,7 +34,7 @@ win_lstat(const wchar_t *path);
  * @param path Wide-character path to reparse point
  * @return ValueT* with reparse type and target path
  */
-extern "C" __declspec(dllexport) OsCalls::ValueT *
+extern "C" DLL_EXPORT OsCalls::ValueT *
 win_readlink(const wchar_t *path);
 
 /**
@@ -45,7 +46,7 @@ win_readlink(const wchar_t *path);
  * @param path Wide-character path to resolve
  * @return ValueT* with canonical path string
  */
-extern "C" __declspec(dllexport) OsCalls::ValueT *
+extern "C" DLL_EXPORT OsCalls::ValueT *
 win_canonicalize_file_name(const wchar_t *path);
 } // namespace OsCallsWindows
 
