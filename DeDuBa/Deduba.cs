@@ -336,7 +336,7 @@ public class DedubaClass
     /// </summary>
     /// <param name="path">Absolute path to the directory to create.</param>
     /// <remarks>
-    ///     Uses <see cref="Directory.CreateDirectory" /> which is idempotent (succeeds if directory already exists).
+    ///     Uses <see cref="M:System.IO.Directory.CreateDirectory(System.String)" /> which is idempotent (succeeds if directory already exists).
     /// </remarks>
     private static void CreateDirectoryWithLogging(string path)
     {
