@@ -32,6 +32,7 @@ if(WIN32)
         _CRT_SECURE_NO_WARNINGS
         UNICODE
         _UNICODE
+        NOMINMAX
     )
     
     # Link against Windows libraries
