@@ -70,9 +70,12 @@
     },
     {
       "label": "Clean: solution",
-      "command": "dotnet",
-      "type": "process",
-      "args": ["clean", "${workspaceFolder}/DeDuBa.sln"],
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal && echo 'Removing ARCHIVE4, all bin/ and obj/ folders, and dist/...' && rm -rf \"${workspaceFolder}/ARCHIVE4\" || true && rm -rf \"${workspaceFolder}/dist\" || true && find \"${workspaceFolder}\" -type d -name bin -prune -exec rm -rf {} + || true && find \"${workspaceFolder}\" -type d -name obj -prune -exec rm -rf {} + || true"
+      ],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
@@ -83,7 +86,7 @@
         "kind": "build"
       },
       "problemMatcher": "$msCompile",
-      "detail": "Clean the DeDuBa solution using dotnet clean"
+      "detail": "Clean the DeDuBa solution using dotnet clean and remove ARCHIVE4/, **/bin/, **/obj/, dist/"
     },
     {
       "label": "Docs: Doxygen (C++)",
