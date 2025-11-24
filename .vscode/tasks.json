@@ -140,7 +140,7 @@
       "command": "bash",
       "args": [
         "-lc",
-        "trunk check -ay; dotnet tool restore >/dev/null 2>&1 || true; (dotnet tool run csharpier format . || csharpier format .); clang-format -i */*/*.{h,cpp}"
+        "trunk check -ay; dotnet tool restore >/dev/null 2>&1 || true; (dotnet tool run csharpier format . || csharpier format .); git ls-files -z \"*.h\" \"*.hpp\" \"*.c\" \"*.cpp\" \"*.cc\" \"*.cxx\" \"*.hh\" | xargs -0 -r clang-format -i"
       ],
       "options": {
         "env": {
