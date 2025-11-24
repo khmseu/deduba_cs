@@ -17,9 +17,26 @@
 /* When Doxygen is running, neutralize attributes so that Doxygen does not get
  * confused. */
 #define DLL_EXPORT
-#elif defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) ||            \
+#else
+#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) ||              \
     defined(__MINGW64__)
 #define DLL_EXPORT __declspec(dllexport)
+#else
+#if defined(__GNUC__) || defined(__clang__)
+#define DLL_EXPORT __attribute__((visibility("default")))
+#else
+#define DLL_EXPORT
+#endif
+#endif
+#endif
+
+/*
+ * Non-export Windows-specific defines. These must be available regardless of
+ * whether DOXYGEN is defined (the DOXYGEN guard above only controls the
+ * export symbol used for function declarations in docs).
+ */
+#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) ||              \
+    defined(__MINGW64__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -37,12 +54,6 @@
 #endif
 #ifndef FIELD_OFFSET
 #define FIELD_OFFSET(type, field) ((LONG)(LONG_PTR) & (((type *)0)->field))
-#endif
-#else
-#if defined(__GNUC__) || defined(__clang__)
-#define DLL_EXPORT __attribute__((visibility("default")))
-#else
-#define DLL_EXPORT
 #endif
 #endif
 
