@@ -18,8 +18,7 @@
  * confused. */
 #define DLL_EXPORT
 #else
-#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) ||              \
-    defined(__MINGW64__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) || defined(__MINGW64__)
 #define DLL_EXPORT __declspec(dllexport)
 #else
 #if defined(__GNUC__) || defined(__clang__)
@@ -35,8 +34,7 @@
  * whether DOXYGEN is defined (the DOXYGEN guard above only controls the
  * export symbol used for function declarations in docs).
  */
-#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) ||              \
-    defined(__MINGW64__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) || defined(__MINGW64__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

@@ -34,7 +34,7 @@ extern "C" DLL_EXPORT OsCalls::ValueT *win_list_streams(const wchar_t *path);
  * @param stream_name Wide-character stream name (e.g., "Zone.Identifier")
  * @return ValueT* with stream content as string
  */
-extern "C" DLL_EXPORT OsCalls::ValueT *
+extern "C" DLL_EXPORT OsCalls::ValueT                       *
 win_read_stream(const wchar_t *path, const wchar_t *stream_name);
 } // namespace OsCallsWindows
 

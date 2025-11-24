@@ -126,8 +126,7 @@ static bool handle_win_sd(ValueT *value) {
   case 0:
     if (value->Type == TypeT::IsOk) {
       // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, sddl, -1, nullptr, 0, nullptr,
-                                     nullptr);
+      int size = WideCharToMultiByte(CP_UTF8, 0, sddl, -1, nullptr, 0, nullptr, nullptr);
       if (size > 0) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, sddl, -1, utf8, size, nullptr, nullptr);
@@ -147,17 +146,14 @@ static bool handle_win_sd(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
-                                         bool include_sacl) {
-  extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
-                                           bool include_sacl) {
+extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
+  extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
     wchar_t *sddl = nullptr;
-    auto v = new ValueT();
+    auto     v = new ValueT();
 
     // Determine which security information to retrieve
-    SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION |
-                                   GROUP_SECURITY_INFORMATION |
-                                   DACL_SECURITY_INFORMATION;
+    SECURITY_INFORMATION secInfo =
+        OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
 
     if (include_sacl) {
       secInfo |= SACL_SECURITY_INFORMATION;
@@ -165,8 +161,7 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
 
     // Get the security descriptor
     PSECURITY_DESCRIPTOR pSD = nullptr;
-    DWORD result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
-                                         SE_FILE_OBJECT, secInfo,
+    DWORD result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path), SE_FILE_OBJECT, secInfo,
                                          nullptr, // Owner SID
                                          nullptr, // Group SID
                                          nullptr, // DACL
@@ -177,9 +172,8 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
       // If SACL access was denied, try again without SACL
       if (include_sacl && result == ERROR_PRIVILEGE_NOT_HELD) {
         secInfo &= ~SACL_SECURITY_INFORMATION;
-        result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
-                                       SE_FILE_OBJECT, secInfo, nullptr,
-                                       nullptr, nullptr, nullptr, &pSD);
+        result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path), SE_FILE_OBJECT, secInfo,
+                                       nullptr, nullptr, nullptr, nullptr, &pSD);
       }
 
       if (result != ERROR_SUCCESS) {
@@ -191,8 +185,8 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
 
     // Convert security descriptor to SDDL string
     LPWSTR sddlString = nullptr;
-    if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(
-            pSD, SDDL_REVISION_1, secInfo, &sddlString, nullptr)) {
+    if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(pSD, SDDL_REVISION_1, secInfo,
+                                                              &sddlString, nullptr)) {
       DWORD err = GetLastError();
       LocalFree(pSD);
       CreateHandle(v, handle_win_sd, nullptr, nullptr);
@@ -202,8 +196,7 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path,
 
     // Copy the SDDL string (we need to manage it ourselves)
     size_t len = wcslen(sddlString);
-    sddl = reinterpret_cast<wchar_t *>(
-        LocalAlloc(LPTR, (len + 1) * sizeof(wchar_t)));
+    sddl = reinterpret_cast<wchar_t *>(LocalAlloc(LPTR, (len + 1) * sizeof(wchar_t)));
     wcscpy_s(sddl, len + 1, sddlString);
 
     // Free the original SDDL string and security descriptor

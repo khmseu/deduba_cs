@@ -108,9 +108,9 @@ ValueT *llistxattr(const char *path) {
 
   // First call to get the size needed
   ssize_t buflen = ::llistxattr(path, nullptr, 0);
-  auto en = errno;
+  auto    en = errno;
 
-  char *buffer = nullptr;
+  char             *buffer = nullptr;
   XattrListContext *ctx = nullptr;
 
   if (buflen > 0) {
@@ -157,7 +157,7 @@ ValueT *lgetxattr(const char *path, const char *name) {
 
   // First call to get the size needed
   ssize_t buflen = ::lgetxattr(path, name, nullptr, 0);
-  auto en = errno;
+  auto    en = errno;
 
   char *buffer = nullptr;
   if (buflen > 0) {

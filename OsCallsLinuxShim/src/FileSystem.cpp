@@ -247,8 +247,8 @@ ValueT *lstat(const char *path) {
 ValueT *readlink(const char *path) {
   if (slbufsz <= 0)
     slbufsz = 1024;
-  auto cnt = 0;
-  auto en = 0;
+  auto  cnt = 0;
+  auto  en = 0;
   char *strbuf = nullptr;
   do {
     strbuf = new char[slbufsz];

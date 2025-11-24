@@ -46,7 +46,7 @@ extern "C" {
 ValueT *acl_get_file_access(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_ACCESS);
-  auto en = errno;
+  auto  en = errno;
 
   char *text = nullptr;
   if (acl != nullptr) {
@@ -79,7 +79,7 @@ ValueT *acl_get_file_access(const char *path) {
 ValueT *acl_get_file_default(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_DEFAULT);
-  auto en = errno;
+  auto  en = errno;
 
   char *text = nullptr;
   if (acl != nullptr) {

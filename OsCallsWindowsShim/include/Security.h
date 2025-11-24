@@ -23,8 +23,7 @@ namespace OsCallsWindows {
  * @param include_sacl Whether to include SACL (requires SeSecurityPrivilege)
  * @return ValueT* with SDDL string
  */
-extern "C" DLL_EXPORT OsCalls::ValueT *win_get_sd(const wchar_t *path,
-                                                  bool include_sacl);
+extern "C" DLL_EXPORT OsCalls::ValueT *win_get_sd(const wchar_t *path, bool include_sacl);
 } // namespace OsCallsWindows
 
 #endif // SECURITY_WINDOWS_H

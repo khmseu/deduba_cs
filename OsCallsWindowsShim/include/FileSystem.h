@@ -44,8 +44,7 @@ extern "C" DLL_EXPORT OsCalls::ValueT *win_readlink(const wchar_t *path);
  * @param path Wide-character path to resolve
  * @return ValueT* with canonical path string
  */
-extern "C" DLL_EXPORT OsCalls::ValueT *
-win_canonicalize_file_name(const wchar_t *path);
+extern "C" DLL_EXPORT OsCalls::ValueT *win_canonicalize_file_name(const wchar_t *path);
 } // namespace OsCallsWindows
 
 #endif // FILESYSTEM_WINDOWS_H

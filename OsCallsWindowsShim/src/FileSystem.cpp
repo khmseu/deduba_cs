@@ -94,7 +94,7 @@
 // Define REPARSE_DATA_BUFFER if not available in MinGW headers
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
 typedef struct _REPARSE_DATA_BUFFER {
-  ULONG ReparseTag;
+  ULONG  ReparseTag;
   USHORT ReparseDataLength;
   USHORT Reserved;
 
@@ -104,8 +104,8 @@ typedef struct _REPARSE_DATA_BUFFER {
       USHORT SubstituteNameLength;
       USHORT PrintNameOffset;
       USHORT PrintNameLength;
-      ULONG Flags;
-      WCHAR PathBuffer[1];
+      ULONG  Flags;
+      WCHAR  PathBuffer[1];
     } SymbolicLinkReparseBuffer;
 
     struct {
@@ -113,7 +113,7 @@ typedef struct _REPARSE_DATA_BUFFER {
       USHORT SubstituteNameLength;
       USHORT PrintNameOffset;
       USHORT PrintNameLength;
-      WCHAR PathBuffer[1];
+      WCHAR  PathBuffer[1];
     } MountPointReparseBuffer;
 
     struct {
@@ -122,8 +122,7 @@ typedef struct _REPARSE_DATA_BUFFER {
   };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
-#define REPARSE_DATA_BUFFER_HEADER_SIZE                                        \
-  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+#define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 #endif
 
 #ifndef IO_REPARSE_TAG_SYMLINK
@@ -141,15 +140,15 @@ using namespace OsCalls;
 
 // Helper structure to hold file information
 struct WinFileInfo {
-  DWORD fileAttributes;
+  DWORD         fileAttributes;
   LARGE_INTEGER fileSize;
-  FILETIME creationTime;
-  FILETIME lastAccessTime;
-  FILETIME lastWriteTime;
-  LARGE_INTEGER fileIndex;  // File ID (inode equivalent)
-  DWORD volumeSerialNumber; // Device equivalent
-  DWORD numberOfLinks;
-  DWORD reparseTag;
+  FILETIME      creationTime;
+  FILETIME      lastAccessTime;
+  FILETIME      lastWriteTime;
+  LARGE_INTEGER fileIndex;          // File ID (inode equivalent)
+  DWORD         volumeSerialNumber; // Device equivalent
+  DWORD         numberOfLinks;
+  DWORD         reparseTag;
 };
 
 /**
@@ -166,11 +165,9 @@ struct WinFileInfo {
  * @param access    Desired access mask (default 0 for metadata only).
  * @return HANDLE   Valid handle on success, INVALID_HANDLE_VALUE on failure.
  */
-static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags,
-                            DWORD access = 0) {
-  return CreateFileW(
-      path, access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | extraFlags, nullptr);
+static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags, DWORD access = 0) {
+  return CreateFileW(path, access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | extraFlags, nullptr);
 }
 
 /**
@@ -260,9 +257,9 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
 
   // Convert to seconds and nanoseconds
   const uint64_t EPOCH_DIFF = 11644473600ULL;
-  uint64_t total_100ns = ull.QuadPart;
-  uint64_t seconds = total_100ns / 10000000ULL - EPOCH_DIFF;
-  uint64_t nanoseconds = (total_100ns % 10000000ULL) * 100;
+  uint64_t       total_100ns = ull.QuadPart;
+  uint64_t       seconds = total_100ns / 10000000ULL - EPOCH_DIFF;
+  uint64_t       nanoseconds = (total_100ns % 10000000ULL) * 100;
 
   timespec ts;
   ts.tv_sec = static_cast<time_t>(seconds);
@@ -310,8 +307,7 @@ static bool handle_win_lstat(ValueT *value) {
             false); // Windows doesn't expose char devices this way
     return true;
   case 5:
-    set_val(Boolean, "S_ISDIR",
-            (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+    set_val(Boolean, "S_ISDIR", (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
     return true;
   case 6:
     set_val(Boolean, "S_ISFIFO", false); // Windows doesn't have FIFOs
@@ -434,10 +430,10 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
   info->reparseTag = 0;
   if (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
     // Query reparse point to get tag
-    BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+    BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     DWORD bytesReturned;
-    if (DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
-                        sizeof(buffer), &bytesReturned, nullptr)) {
+    if (DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer),
+                        &bytesReturned, nullptr)) {
       auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
       info->reparseTag = reparseData->ReparseTag;
     }
@@ -466,12 +462,10 @@ static bool handle_win_readlink(ValueT *value) {
   case 0:
     if (value->Type == TypeT::IsOk) {
       // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0,
-                                     nullptr, nullptr);
+      int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0, nullptr, nullptr);
       if (size > 0) {
         auto utf8 = new char[size];
-        WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr,
-                            nullptr);
+        WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr, nullptr);
         value->String = utf8;
         value->Name = "path";
         value->Type = TypeT::IsString;
@@ -488,7 +482,7 @@ static bool handle_win_readlink(ValueT *value) {
 
 extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
   wchar_t *target = nullptr;
-  auto v = new ValueT();
+  auto     v = new ValueT();
 
   // Open the reparse point
   HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
@@ -503,10 +497,10 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
   }
 
   // Get reparse point data
-  BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+  BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   DWORD bytesReturned;
-  if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer,
-                       sizeof(buffer), &bytesReturned, nullptr)) {
+  if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer),
+                       &bytesReturned, nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
     target = new wchar_t[1];
@@ -522,24 +516,18 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
 
   // Extract target path based on reparse tag
   if (reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
-    USHORT targetLength =
-        reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset =
-        reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+    USHORT targetLength = reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
+    USHORT targetOffset = reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
     wcsncpy_s(target, targetLength + 1,
-              &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset],
-              targetLength);
+              &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset], targetLength);
     target[targetLength] = L'\0';
   } else if (reparseData->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-    USHORT targetLength =
-        reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset =
-        reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+    USHORT targetLength = reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
+    USHORT targetOffset = reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
     wcsncpy_s(target, targetLength + 1,
-              &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset],
-              targetLength);
+              &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset], targetLength);
     target[targetLength] = L'\0';
   } else {
     // Unsupported reparse point type
@@ -572,8 +560,7 @@ static bool handle_win_cfn(ValueT *value) {
   case 0:
     if (value->Type == TypeT::IsOk) {
       // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr,
-                                     nullptr);
+      int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr, nullptr);
       if (size > 0) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
@@ -593,7 +580,7 @@ static bool handle_win_cfn(ValueT *value) {
 
 extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   wchar_t *canonical = nullptr;
-  auto v = new ValueT();
+  auto     v = new ValueT();
 
   // Open the file/directory
   HANDLE hFile = win_open_path(path, 0);
@@ -608,8 +595,8 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   }
 
   // Get the final path name
-  DWORD bufferSize = GetFinalPathNameByHandleW(
-      hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+  DWORD bufferSize =
+      GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   if (bufferSize == 0) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
@@ -621,8 +608,8 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   }
 
   canonical = new wchar_t[bufferSize];
-  DWORD result = GetFinalPathNameByHandleW(
-      hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+  DWORD result = GetFinalPathNameByHandleW(hFile, canonical, bufferSize,
+                                           FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   CloseHandle(hFile);
 
   if (result == 0 || result >= bufferSize) {
@@ -649,7 +636,7 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
 
   // Create a new buffer with the stripped path
   size_t len = wcslen(finalPath);
-  auto strippedPath = new wchar_t[len + 1];
+  auto   strippedPath = new wchar_t[len + 1];
   wcscpy_s(strippedPath, len + 1, finalPath);
   delete[] canonical;
 

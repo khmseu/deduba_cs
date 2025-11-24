@@ -116,9 +116,9 @@ using namespace OsCalls;
  * @brief Structure to hold stream information
  */
 struct StreamInfo {
-  std::vector<std::wstring> names;
+  std::vector<std::wstring>  names;
   std::vector<LARGE_INTEGER> sizes;
-  size_t currentIndex;
+  size_t                     currentIndex;
 };
 
 /**
@@ -163,11 +163,11 @@ static bool handle_win_streams(ValueT *value) {
   auto streamObj = new ValueT[2]; // Array with 2 elements
 
   // Stream name
-  int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(),
-                                     -1, nullptr, 0, nullptr, nullptr);
+  int  nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0,
+                                      nullptr, nullptr);
   auto nameUtf8 = new char[nameSize];
-  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nameUtf8,
-                      nameSize, nullptr, nullptr);
+  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nameUtf8, nameSize, nullptr,
+                      nullptr);
 
   streamObj[0].Type = TypeT::IsString;
   streamObj[0].Name = "name";
@@ -191,8 +191,7 @@ extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
   auto v = new ValueT();
 
   WIN32_FIND_STREAM_DATA findStreamData;
-  HANDLE hFind =
-      FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
+  HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
 
   if (hFind == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -250,7 +249,7 @@ static bool handle_win_stream_data(ValueT *value) {
       // Return data as string (or could be bytes)
       // For simplicity, treat as UTF-8 text
       size_t dataSize = streamData->data.size();
-      auto str = new char[dataSize + 1];
+      auto   str = new char[dataSize + 1];
       memcpy(str, streamData->data.data(), dataSize);
       str[dataSize] = '\0';
       value->String = str;
@@ -266,8 +265,7 @@ static bool handle_win_stream_data(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path,
-                                              const wchar_t *stream_name) {
+extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
   auto streamData = new StreamData{};
   auto v = new ValueT();
 
@@ -280,9 +278,8 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path,
   }
 
   // Open the stream
-  HANDLE hFile =
-      CreateFileW(fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE hFile = CreateFileW(fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -303,13 +300,12 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path,
 
   // Read stream content (limit to reasonable size)
   const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024; // 10 MB limit
-  DWORD bytesToRead = static_cast<DWORD>(
-      std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
+  DWORD       bytesToRead =
+      static_cast<DWORD>(std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
 
   streamData->data.resize(bytesToRead);
   DWORD bytesRead = 0;
-  if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead,
-                nullptr)) {
+  if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
     CreateHandle(v, handle_win_stream_data, streamData, nullptr);

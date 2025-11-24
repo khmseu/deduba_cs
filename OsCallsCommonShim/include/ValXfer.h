@@ -36,9 +36,9 @@ typedef bool HandlerT(ValueT *value);
  */
 struct HandleT {
   HandlerT *handler;
-  void *data1;
-  void *data2;
-  int64_t index;
+  void     *data1;
+  void     *data2;
+  int64_t   index;
 };
 
 // Define the TType enum
@@ -60,14 +60,14 @@ enum class TypeT {
  * @brief Native representation of a value in the iteration stream.
  */
 struct ValueT {
-  HandleT Handle;
+  HandleT     Handle;
   const char *Name;
-  TypeT Type;
-  timespec TimeSpec;
-  int64_t Number;
+  TypeT       Type;
+  timespec    TimeSpec;
+  int64_t     Number;
   const char *String;
-  ValueT *Complex;
-  bool Boolean;
+  ValueT     *Complex;
+  bool        Boolean;
 };
 
 /**
@@ -83,11 +83,11 @@ struct ValueT {
  *
  * Example: set_val(Number, "st_ino", inode_value);
  */
-#define set_val(typ, name, val)                                                \
-  do {                                                                         \
-    value->Type = TypeT::Is##typ;                                              \
-    value->Name = name;                                                        \
-    value->typ = val;                                                          \
+#define set_val(typ, name, val)                                                                    \
+  do {                                                                                             \
+    value->Type = TypeT::Is##typ;                                                                  \
+    value->Name = name;                                                                            \
+    value->typ = val;                                                                              \
   } while (0)
 
 /**

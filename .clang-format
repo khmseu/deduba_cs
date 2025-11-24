@@ -21,6 +21,8 @@ AlignConsecutiveAssignments: false
 DerivePointerAlignment: false
 PenaltyReturnTypeOnItsOwnLine: 0
 IndentCaseLabels: false
-Standard: Cpp17
-Language: Cpp
+# Standard and Language were removed due to compatibility issues with some
+# clang-format build configurations. The repo uses 2-space indentation and
+# is based on LLVM style; the version-specific standard can be enforced via
+# compiler flags instead of the formatter if needed.
 ...

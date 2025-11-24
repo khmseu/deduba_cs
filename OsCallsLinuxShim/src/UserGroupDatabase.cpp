@@ -125,10 +125,10 @@ extern "C" {
 ValueT *getpwuid(int64_t uid) {
   if (pwbufsz <= 0)
     pwbufsz = 1024;
-  auto pwbuf = new passwd();
+  auto           pwbuf = new passwd();
   struct passwd *pwbufp = nullptr;
-  auto en = 0;
-  char *strbuf = nullptr;
+  auto           en = 0;
+  char          *strbuf = nullptr;
   do {
     strbuf = new char[pwbufsz];
     en = ::getpwuid_r(uid, pwbuf, strbuf, pwbufsz, &pwbufp);
@@ -158,10 +158,10 @@ ValueT *getpwuid(int64_t uid) {
 ValueT *getgrgid(int64_t gid) {
   if (grbufsz <= 0)
     grbufsz = 1024;
-  auto grbuf = new group();
+  auto          grbuf = new group();
   struct group *grbufp = nullptr;
-  auto en = 0;
-  char *strbuf = nullptr;
+  auto          en = 0;
+  char         *strbuf = nullptr;
   do {
     strbuf = new char[grbufsz];
     en = ::getgrgid_r(gid, grbuf, strbuf, grbufsz, &grbufp);
