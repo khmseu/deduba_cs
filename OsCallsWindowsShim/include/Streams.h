@@ -27,7 +27,8 @@ extern "C" DLL_EXPORT OsCalls::ValueT *win_list_streams(const wchar_t *path);
  * @brief Read content of a specific alternate data stream
  *
  * Opens and reads the specified alternate data stream. Automatically appends
- * :data suffix if not present in stream_name. Limits read to 10MB for safety.
+ * :\c DATA suffix if not present in stream_name. Limits read to 10MB for
+ * safety.
  *
  * @param path Wide-character path to file
  * @param stream_name Wide-character stream name (e.g., "Zone.Identifier")

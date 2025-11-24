@@ -339,6 +339,24 @@ jobs:
           # Try --version to ensure runtime loads
           dist/smoke-test/DeDuBa.exe --help || echo "Help output returned non-zero (expected if no args required)"
 
+  # Doxygen check and Platform.h header validation
+  docs-and-includes-check:
+    runs-on: ubuntu-latest
+    needs: [commit-message-lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+      - name: Run Doxygen + Platform.h include checks
+        run: |
+          chmod +x scripts/check_doxygen_and_platform_header.sh
+          scripts/check_doxygen_and_platform_header.sh
+
   # Consolidate artifacts and prepare for release (runs only on Release builds)
   prepare-release:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')

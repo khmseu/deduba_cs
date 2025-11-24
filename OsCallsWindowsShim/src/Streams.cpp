@@ -14,7 +14,7 @@
  *
  * Alternate Data Streams are accessed using colon notation:
  * @code
- * filename:streamname:$DATA
+ * filename:streamname:&#36;DATA
  * @endcode
  *
  * ### Examples
@@ -69,7 +69,7 @@
  * ### CreateFileW with Stream Syntax
  * Open a specific stream for reading/writing:
  * @code{.cpp}
- * CreateFileW(L"file.txt:StreamName:$DATA", GENERIC_READ, ...)
+ * CreateFileW(L"file.txt:StreamName:&#36;DATA", GENERIC_READ, ...)
  * @endcode
  * - Stream behaves like a separate file
  * - Can be read, written, and sized independently
