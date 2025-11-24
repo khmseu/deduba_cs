@@ -1,9 +1,9 @@
-#ifndef OC_EXPORT_H
-#define OC_EXPORT_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 /*
- * OcExport.h
- * Cross-platform DLL/export macro used by the native shim projects.
+ * Platform.h
+ * Cross-platform DLL_EXPORT macro used by the native shim projects.
  * This header should be included first in each .cpp file, before other
  * includes. It defines DLL_EXPORT appropriately for Windows via
  * __declspec(dllexport) and for other platforms as a no-op or GCC visibility
@@ -57,4 +57,4 @@
 #endif
 #endif
 
-#endif // OC_EXPORT_H
+#endif // PLATFORM_H

@@ -80,12 +80,13 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew
  */
+#include "Platform.h"
+// Platform.h must come first
 #include "FileSystem.h"
-#include "OcExport.h"
 #include <cstring>
 #include <vector>
 #if 0
-/* Local WIN32 macros moved to OcExport.h to keep OS-specific defines centralized. */
+/* Local WIN32 macros moved to Platform.h to keep OS-specific defines centralized. */
 #endif
 #include <windows.h>
 #include <winioctl.h>
@@ -133,7 +134,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 #define IO_REPARSE_TAG_MOUNT_POINT (0xA0000003L)
 #endif
 
-/* FIELD_OFFSET is defined in OcExport.h for Windows. */
+/* FIELD_OFFSET is defined in Platform.h for Windows. */
 
 namespace OsCallsWindows {
 using namespace OsCalls;

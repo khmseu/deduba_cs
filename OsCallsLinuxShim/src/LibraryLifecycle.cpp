@@ -2,7 +2,7 @@
  * LibraryLifecycle.cpp
  * Log library load events for diagnostic purposes on Linux.
  */
-#include "OcExport.h"
+#include "Platform.h"
 #include <cstdio>
 #include <cstdlib>
 #include <dlfcn.h>

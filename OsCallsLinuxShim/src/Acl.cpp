@@ -1,4 +1,5 @@
-#include "OcExport.h"
+#include "Platform.h"
+// Platform.h must come first
 #include "Acl.h"
 #include <acl/libacl.h>
 #include <cerrno>

@@ -1,4 +1,5 @@
-#include "OcExport.h"
+#include "Platform.h"
+// Platform.h must come first
 #include "ValXfer.h"
 
 namespace OsCalls {

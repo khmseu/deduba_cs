@@ -13,23 +13,24 @@
  * ## ADS Syntax
  *
  * Alternate Data Streams are accessed using colon notation:
- * ```
+ * @code
  * filename:streamname:$DATA
- * ```
+ * @endcode
  *
  * ### Examples
- * - `document.txt::$DATA` - Default stream (main file content)
- * - `document.txt:Author:$DATA` - "Author" alternate stream
- * - `document.txt:Zone.Identifier:$DATA` - Internet Explorer download zone
+ * - <code>document.txt::&#36;DATA</code> - Default stream (main file content)
+ * - <code>document.txt:Author:&#36;DATA</code> - "Author" alternate stream
+ * - <code>document.txt:Zone.Identifier:&#36;DATA</code> - Internet Explorer
+ * download zone
  *
  * ### Stream Types
- * While `$DATA` is most common, NTFS supports other stream types:
- * - `$DATA` - File data (default and alternates)
+ * While DATA is most common, NTFS supports other stream types:
+ * - DATA - File data (default and alternates)
  * - `$INDEX_ALLOCATION` - Directory indexes
  * - `$BITMAP` - Allocation bitmaps
  * - `$EA` - Extended attributes
  *
- * Most user-accessible streams are `$DATA` type.
+ * Most user-accessible streams are DATA type.
  *
  * ## Common ADS Use Cases
  *
@@ -61,15 +62,15 @@
  * ### FindFirstStreamW / FindNextStreamW
  * Enumerate all streams attached to a file:
  * - FindStreamInfoStandard: Returns WIN32_FIND_STREAM_DATA
- * - cStreamName: Stream name with syntax `::$DATA` or `:Name:$DATA`
+ * - cStreamName: Stream name with syntax ::\c DATA or :Name::\c DATA
  * - StreamSize: Size of stream data in bytes
  * - Includes default stream (often largest)
  *
  * ### CreateFileW with Stream Syntax
  * Open a specific stream for reading/writing:
- * ```cpp
+ * @code{.cpp}
  * CreateFileW(L"file.txt:StreamName:$DATA", GENERIC_READ, ...)
- * ```
+ * @endcode
  * - Stream behaves like a separate file
  * - Can be read, written, and sized independently
  * - Deleted when all streams in file are deleted
@@ -100,11 +101,11 @@
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
 #include "Streams.h"
-#include "OcExport.h"
+#include "Platform.h"
 #include <algorithm>
 #include <string>
 #include <vector>
-// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in Platform.h
 #include <windows.h>
 
 namespace OsCallsWindows {
@@ -203,7 +204,7 @@ extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
   do {
     std::wstring streamName = findStreamData.cStreamName;
 
-    // Skip the default ::$DATA stream (or optionally include it with a flag)
+    // Skip the default ::\c DATA stream (or optionally include it with a flag)
     // For now, include all streams
     streams->names.push_back(streamName);
     streams->sizes.push_back(findStreamData.StreamSize);
@@ -269,7 +270,7 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path,
   auto streamData = new StreamData{};
   auto v = new ValueT();
 
-  // Construct full stream path: path:streamname:$DATA
+  // Construct full stream path: path:streamname:\c DATA
   std::wstring fullPath = path;
   fullPath += L":";
   fullPath += stream_name;

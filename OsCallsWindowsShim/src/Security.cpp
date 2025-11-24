@@ -97,10 +97,11 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertsecuritydescriptortostringsecuritydescriptorw
  */
+#include "Platform.h"
+// Platform.h must come first
 #include "Security.h"
-#include "OcExport.h"
 // windows.h must be first
-// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in Platform.h
 #include <windows.h>
 // rest of windows headers
 #include <aclapi.h>

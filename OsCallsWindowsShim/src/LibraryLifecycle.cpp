@@ -2,9 +2,9 @@
  * LibraryLifecycle.cpp
  * Log library load/unload events for diagnostics.
  */
-#include "OcExport.h"
+#include "Platform.h"
 #include <cstdio>
-// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in OcExport.h
+// WIN32_LEAN_AND_MEAN and NOMINMAX are defined centrally in Platform.h
 #include <fileapi.h>
 #include <windows.h>
 

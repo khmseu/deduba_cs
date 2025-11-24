@@ -28,7 +28,7 @@ target_include_directories(OsCallsWindowsShim PRIVATE
 
 # Windows-specific settings
 if(WIN32)
-    # Windows compile-time defines moved into OcExport.h for centralization
+    # Windows compile-time defines moved into Platform.h for centralization
     
     # Link against Windows libraries
     target_link_libraries(OsCallsWindowsShim PRIVATE
