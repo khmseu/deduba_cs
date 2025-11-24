@@ -1,0 +1,26 @@
+# Based on the coding style observed in the repo.
+#  - 2-space indentation
+#  - Attach braces to signatures
+#  - Pointer alignment with identifier (ValueT *value)
+#  - Limit lines to 100 (reasonably relaxed)
+---
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 100
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+BreakBeforeBraces: Attach
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Right
+NamespaceIndentation: Inner
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: false
+DerivePointerAlignment: false
+PenaltyReturnTypeOnItsOwnLine: 0
+IndentCaseLabels: false
+Standard: Cpp17
+Language: Cpp
+...
