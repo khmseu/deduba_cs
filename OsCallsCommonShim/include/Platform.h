@@ -57,8 +57,6 @@
 #endif
 #endif
 
-#endif // PLATFORM_H
-
 /*
  * Linux feature macros
  *
@@ -80,3 +78,5 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 #endif
+
+#endif // PLATFORM_H
