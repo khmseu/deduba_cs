@@ -55,27 +55,28 @@ for dir in "${SHIM_DIRS[@]}"; do
           # remove CR
           sub("\r$", "", line);
           if (in_comment) {
-            if (match(line, "\*/")) {
+            # check for end of block comment
+            if (index(line, "*/") > 0) {
               in_comment = 0;
               # remove up to end of comment and continue processing the rest of the line
-              sub("^.*\*/", "", line);
-              if (match(line, "^\s*#\s*include")) { print line; exit; }
+              sub("^.*\*\/", "", line);
+              if (match(line, "^[[:space:]]*#\s*include")) { print line; exit; }
             }
             next;
           }
           # start of block comment
-          if (match(line, "^\s*/\*")) {
-            if (match(line, "\*/")) {
-              sub("^.*\*/", "", line);
+          if (match(line, "^[[:space:]]*/\*")) {
+            if (index(line, "*/") > 0) {
+              sub("^.*\*\/", "", line);
             } else {
               in_comment = 1; next;
             }
           }
           # single line comment
-          if (match(line, "^\s*//")) next;
+          if (match(line, "^[[:space:]]*//")) next;
           # blank
-          if (match(line, "^\s*$")) next;
-          if (match(line, "^\s*#\s*include")) { print line; exit; }
+          if (match(line, "^[[:space:]]*$")) next;
+          if (match(line, "^[[:space:]]*#\s*include")) { print line; exit; }
         }
       ' "$file" || true)
 
