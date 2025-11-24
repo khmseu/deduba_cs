@@ -13,7 +13,7 @@ target_include_directories(OsCallsCommonShim PUBLIC
 target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
 
 # Ensure consistent feature-test macros for Linux builds (also fallback in Platform.h)
-if(UNIX AND NOT APPLE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(OsCallsCommonShim PRIVATE _GNU_SOURCE _DEFAULT_SOURCE _ATFILE_SOURCE="1" _FILE_OFFSET_BITS=64)
 endif()
 

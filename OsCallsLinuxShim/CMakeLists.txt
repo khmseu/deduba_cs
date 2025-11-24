@@ -21,7 +21,7 @@ target_include_directories(OsCallsLinuxShim PRIVATE
 target_compile_options(OsCallsLinuxShim PRIVATE -Wall -Wextra -fPIC -ggdb)
 
 # Ensure consistent feature-test macros for Linux builds (also fallback in Platform.h)
-if(UNIX AND NOT APPLE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(OsCallsLinuxShim PRIVATE _GNU_SOURCE _DEFAULT_SOURCE _ATFILE_SOURCE="1" _FILE_OFFSET_BITS=64)
 endif()
 
