@@ -52,6 +52,40 @@
       "detail": "Build the DeDuBa.csproj project using dotnet build"
     },
     {
+      "label": "Clean: DeDuBa.csproj",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["clean", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "options": {
+        "env": {
+          "DOTNET_ROOT": "${env:HOME}/.dotnet",
+          "PATH": "${env:HOME}/.dotnet:${env:PATH}"
+        }
+      },
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": "$msCompile",
+      "detail": "Clean the DeDuBa.csproj project using dotnet clean"
+    },
+    {
+      "label": "Clean: solution",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["clean", "${workspaceFolder}/DeDuBa.sln"],
+      "options": {
+        "env": {
+          "DOTNET_ROOT": "${env:HOME}/.dotnet",
+          "PATH": "${env:HOME}/.dotnet:${env:PATH}"
+        }
+      },
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": "$msCompile",
+      "detail": "Clean the DeDuBa solution using dotnet clean"
+    },
+    {
       "label": "Docs: Doxygen (C++)",
       "type": "shell",
       "command": "doxygen",
