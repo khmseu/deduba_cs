@@ -354,8 +354,7 @@ jobs:
           sudo apt-get install -y doxygen graphviz
       - name: Run Doxygen + Platform.h include checks
         run: |
-          chmod +x scripts/check_doxygen_and_platform_header.sh
-          scripts/check_doxygen_and_platform_header.sh
+          python3 scripts/check_doxygen_and_platform_header.py
 
   # Consolidate artifacts and prepare for release (runs only on Release builds)
   prepare-release:
