@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csharp",
+    "ms-vscode.cmake-tools",
+    "twxs.cmake",
+    "ms-vscode.cpptools",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "xaver.clang-format",
+    "cschlosser.doxdocgen",
+    "DavidAnson.vscode-markdownlint",
+    "eamodio.gitlens",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "timonwong.shellcheck",
+    "formulahendry.dotnet-test-explorer",
+    "EditorConfig.EditorConfig",
+    "ms-vscode.powershell"
+  ],
+  "unwantedRecommendations": [
+    "ms-python.vscode-pylance"
+  ]
+}
