@@ -58,3 +58,25 @@
 #endif
 
 #endif // PLATFORM_H
+
+/*
+ * Linux feature macros
+ *
+ * These feature-test macros are commonly defined for Linux builds so that
+ * system header behavior is consistent across environments. They are set here
+ * as fallbacks if the build system (CMake) did not already define them.
+ */
+#if defined(__linux__) || defined(__gnu_linux__)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+#ifndef _ATFILE_SOURCE
+#define _ATFILE_SOURCE
+#endif
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64
+#endif
+#endif

@@ -480,6 +480,10 @@ inc/
 OsCallsWindowsShim/build-win-x64/
 OsCallsWindowsShim/build-win*/
 
+# Local test archive used by integration tests
+ARCHIVE4/
+doxygen/
+
 #others
 .github/copilot-instructions.md.backup
 *.code-profile
@@ -498,7 +502,3 @@ inspectcode.xml
 nohup.out
 perl
 test.ansi
-
-# Local test archive used by integration tests
-ARCHIVE4/
-doxygen/
