@@ -1,3 +1,20 @@
 {
-  "cmake.sourceDirectory": "/bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindowsShim"
+  "cmake.sourceDirectory": "/bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindowsShim",
+  "cmake.configureOnOpen": true,
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "clangd.path": "clangd",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "xaver.clang-format",
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[c]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
 }

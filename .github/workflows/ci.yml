@@ -46,7 +46,7 @@ jobs:
   # Linux native build and test
   build-linux:
     runs-on: ubuntu-latest
-    needs: [commit-message-lint]
+    needs: [commit-message-lint, docs-and-includes-check]
     env:
       DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
@@ -151,7 +151,7 @@ jobs:
   # Windows cross-build (MinGW on Linux)
   build-windows-cross:
     runs-on: ubuntu-latest
-    needs: [commit-message-lint]
+    needs: [commit-message-lint, docs-and-includes-check]
     env:
       DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
@@ -232,7 +232,7 @@ jobs:
   # Native Windows build and test (validates on actual Windows)
   build-windows-native:
     runs-on: windows-latest
-    needs: [commit-message-lint]
+    needs: [commit-message-lint, docs-and-includes-check]
     env:
       DEDU_ARCHIVE_ROOT: "${{ github.workspace }}/ARCHIVE4"
     strategy:
