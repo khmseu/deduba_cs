@@ -100,8 +100,8 @@
  * @see
  * https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
  */
-#include "Platform.h"
 #include "Streams.h"
+#include "Platform.h"
 #include <algorithm>
 #include <string>
 #include <vector>
