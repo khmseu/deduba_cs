@@ -1,9 +1,7 @@
-<Project>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- Repo root folder (this file lives at the root) -->
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
-  <!-- Run workspace-level cleanup after Clean for the DeDuBa project only. -->
   <Target
     Name="WorkspaceClean"
     AfterTargets="Clean"
@@ -13,19 +11,34 @@
       Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)"
       Importance="High"
     />
-    <!-- Remove any recursive 'bin' and 'obj' directories in the workspace. -->
+
     <ItemGroup>
-      <DirsToRemove Include="$(RepoRoot)**/bin" />
-      <DirsToRemove Include="$(RepoRoot)**/obj" />
       <DirsToRemove Include="$(RepoRoot)build" />
       <DirsToRemove Include="$(RepoRoot)build_native" />
       <DirsToRemove Include="$(RepoRoot)artifacts" />
       <DirsToRemove Include="$(RepoRoot)dist" />
       <DirsToRemove Include="$(RepoRoot)ARCHIVE4" />
       <DirsToRemove Include="$(RepoRoot)docs/_site" />
+      <DirsToRemove Include="$(RepoRoot)docs/doxygen" />
     </ItemGroup>
+    <Message Text="WorkspaceClean: DirsToRemove='@(DirsToRemove)'" Importance="High" />
     <RemoveDir Directories="@(DirsToRemove)" ContinueOnError="true" />
-    <!-- Remove generated docs/api YAML files. -->
-    <Delete Files="$(RepoRoot)docs/api/*.yml" ContinueOnError="true" />
+
+    <ItemGroup>
+      <NestedBins Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'bin', System.IO.SearchOption.AllDirectories))" />
+      <NestedObjs Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'obj', System.IO.SearchOption.AllDirectories))" />
+      <AllDirsToRemove Include="@(DirsToRemove);@(NestedBins);@(NestedObjs)" />
+    </ItemGroup>
+    <Message Text="WorkspaceClean: discovered nested bins='@(NestedBins)'" Importance="Low" />
+    <Message Text="WorkspaceClean: discovered nested objs='@(NestedObjs)'" Importance="Low" />
+    <RemoveDir Directories="@(AllDirsToRemove)" ContinueOnError="true" />
+
+    <ItemGroup>
+      <DocsApiYml Include="$(RepoRoot)docs/api/*.yml" />
+      <DocsApiYml Include="$(RepoRoot)docs/api/.manifest" />
+    </ItemGroup>
+    <Message Text="WorkspaceClean: RepoRoot='$(RepoRoot)'" Importance="High" />
+    <Message Text="WorkspaceClean: DocsApiYml='@(DocsApiYml)'" Importance="High" />
+    <Delete Files="@(DocsApiYml)" ContinueOnError="true" />
   </Target>
 </Project>
