@@ -74,7 +74,7 @@
       "command": "bash",
       "args": [
         "-lc",
-        "dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal && echo 'Removing ARCHIVE4, all bin/ and obj/ folders, and dist/...' && rm -rf \"${workspaceFolder}/ARCHIVE4\" || true && rm -rf \"${workspaceFolder}/dist\" || true && find \"${workspaceFolder}\" -type d -name bin -prune -exec rm -rf {} + || true && find \"${workspaceFolder}\" -type d -name obj -prune -exec rm -rf {} + || true"
+        "set -x; dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal; echo \"Removing ARCHIVE4, artifacts, all bin/ and obj/ folders, dist, build, and build_native...\"; rm -rf \"${workspaceFolder}/ARCHIVE4\" || true; rm -rf \"${workspaceFolder}/dist\" || true; rm -rf \"${workspaceFolder}/artifacts\" || true; rm -rf \"${workspaceFolder}/build\" || true; rm -rf \"${workspaceFolder}/build_native\" || true; find \"${workspaceFolder}\" -type d -name bin -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name obj -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build_native -prune -exec rm -rf {} + || true; git ls-files --others -i --exclude-standard > ignored_files_list.txt"
       ],
       "options": {
         "env": {
@@ -86,7 +86,7 @@
         "kind": "build"
       },
       "problemMatcher": "$msCompile",
-      "detail": "Clean the DeDuBa solution using dotnet clean and remove ARCHIVE4/, **/bin/, **/obj/, dist/"
+      "detail": "Clean the DeDuBa solution using dotnet clean and remove ARCHIVE4/, artifacts/, **/bin/, **/obj/, **/build, build_native/, and dist/"
     },
     {
       "label": "Docs: Doxygen (C++)",

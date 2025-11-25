@@ -502,3 +502,4 @@ inspectcode.xml
 nohup.out
 perl
 test.ansi
+ignored_files_list.txt
