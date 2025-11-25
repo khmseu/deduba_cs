@@ -30,8 +30,19 @@ def sha512_of_file(path: str) -> str:
 def main(argv: Optional[list[str]] = None) -> int:
     argv = argv or sys.argv[1:]
     parser = argparse.ArgumentParser(description="Verify release artifact checksums")
-    parser.add_argument("--meta", "--meta-file", dest="meta", default="release-files/release-metadata.json", help="Release metadata JSON file")
-    parser.add_argument("--dir", dest="dir", default="release-files", help="Directory containing release files")
+    parser.add_argument(
+        "--meta",
+        "--meta-file",
+        dest="meta",
+        default="release-files/release-metadata.json",
+        help="Release metadata JSON file",
+    )
+    parser.add_argument(
+        "--dir",
+        dest="dir",
+        default="release-files",
+        help="Directory containing release files",
+    )
     args = parser.parse_args(argv)
 
     meta_path = args.meta
@@ -67,7 +78,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"No expected sha512 present for {basename}; skipping")
             continue
         if actual != expected:
-            print(f"Checksum mismatch for {basename}: expected {expected}, got {actual}")
+            print(
+                f"Checksum mismatch for {basename}: expected {expected}, got {actual}"
+            )
             errors += 1
         else:
             print(f"Verified: {basename}")

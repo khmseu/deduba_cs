@@ -16,7 +16,5 @@
     "EditorConfig.EditorConfig",
     "ms-vscode.powershell"
   ],
-  "unwantedRecommendations": [
-    "ms-python.vscode-pylance"
-  ]
+  "unwantedRecommendations": ["ms-python.vscode-pylance"]
 }

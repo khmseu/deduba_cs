@@ -3,11 +3,16 @@
     <!-- Repo root folder (this file lives at the root) -->
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
-
   <!-- Run workspace-level cleanup after Clean for the DeDuBa project only. -->
-  <Target Name="WorkspaceClean" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'DeDuBa'">
-    <Message Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)" Importance="High" />
-
+  <Target
+    Name="WorkspaceClean"
+    AfterTargets="Clean"
+    Condition="'$(MSBuildProjectName)' == 'DeDuBa'"
+  >
+    <Message
+      Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)"
+      Importance="High"
+    />
     <!-- Remove any recursive 'bin' and 'obj' directories in the workspace. -->
     <ItemGroup>
       <DirsToRemove Include="$(RepoRoot)**/bin" />
@@ -19,9 +24,7 @@
       <DirsToRemove Include="$(RepoRoot)ARCHIVE4" />
       <DirsToRemove Include="$(RepoRoot)docs/_site" />
     </ItemGroup>
-
     <RemoveDir Directories="@(DirsToRemove)" ContinueOnError="true" />
-
     <!-- Remove generated docs/api YAML files. -->
     <Delete Files="$(RepoRoot)docs/api/*.yml" ContinueOnError="true" />
   </Target>
