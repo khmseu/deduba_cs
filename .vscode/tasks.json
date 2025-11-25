@@ -74,7 +74,7 @@
       "command": "bash",
       "args": [
         "-lc",
-        "set -x; dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal; echo \"Removing ARCHIVE4, artifacts, all bin/ and obj/ folders, dist, build, and build_native...\"; rm -rf \"${workspaceFolder}/ARCHIVE4\" || true; rm -rf \"${workspaceFolder}/dist\" || true; rm -rf \"${workspaceFolder}/artifacts\" || true; rm -rf \"${workspaceFolder}/build\" || true; rm -rf \"${workspaceFolder}/build_native\" || true; find \"${workspaceFolder}\" -type d -name bin -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name obj -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build_native -prune -exec rm -rf {} + || true; git ls-files --others -i --exclude-standard > ignored_files_list.txt"
+        "set -x; dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal; echo \"Removing ARCHIVE4, artifacts, all bin/ and obj/ folders, dist, build, build_native, docs/_site, and docs/api/*.yml...\"; rm -rf \"${workspaceFolder}/ARCHIVE4\" || true; rm -rf \"${workspaceFolder}/dist\" || true; rm -rf \"${workspaceFolder}/artifacts\" || true; rm -rf \"${workspaceFolder}/build\" || true; rm -rf \"${workspaceFolder}/build_native\" || true; rm -rf \"${workspaceFolder}/docs/_site\" || true; find \"${workspaceFolder}/docs/api\" -maxdepth 1 -type f -name \"*.yml\" -exec rm -f {} + || true; find \"${workspaceFolder}\" -type d -name bin -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name obj -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build -prune -exec rm -rf {} + || true; find \"${workspaceFolder}\" -type d -name build_native -prune -exec rm -rf {} + || true; git ls-files --others -i --exclude-standard > ignored_files_list.txt"
       ],
       "options": {
         "env": {
@@ -86,7 +86,7 @@
         "kind": "build"
       },
       "problemMatcher": "$msCompile",
-      "detail": "Clean the DeDuBa solution using dotnet clean and remove ARCHIVE4/, artifacts/, **/bin/, **/obj/, **/build, build_native/, and dist/"
+      "detail": "Clean the DeDuBa solution using dotnet clean and remove ARCHIVE4/, artifacts/, **/bin/, **/obj/, **/build, build_native/, dist/, docs/_site, and docs/api/*.yml"
     },
     {
       "label": "Docs: Doxygen (C++)",
