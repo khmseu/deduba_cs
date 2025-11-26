@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Provide friendly error messages when the script exits prematurely.
+die() {
+	echo "[package] ERROR: $*" >&2
+	exit 1
+}
+# Track the last command for helpful diagnostics on failure.
+last_cmd=""
+trap 'last_cmd="$BASH_COMMAND"' DEBUG
+trap 'rc=$?; if [ $rc -ne 0 ]; then echo "[package] ERROR: Command \"$last_cmd\" failed with exit code $rc (line ${BASH_LINENO[0]})" >&2; fi' EXIT
+
+# Ensure dotnet is available before doing any work (it's required for all actions)
+if ! command -v dotnet >/dev/null 2>&1; then
+	die "dotnet is required to build and package DeDuBa. Please install the .NET SDK (https://dotnet.microsoft.com/)."
+fi
+
 # Package DeDuBa into distributable archives for linux-x64 and/or win-x64.
 # Produces self-contained single-file builds plus required native shims.
 #
@@ -21,6 +36,12 @@ mkdir -p "${DIST_DIR}"
 
 log() { echo "[package] $*"; }
 
+check_cmd() {
+	if ! command -v "$1" >/dev/null 2>&1; then
+		die "Required command '$1' not found. Please install it and re-run this script."
+	fi
+}
+
 get_version() {
 	# Prefer msbuild property if available; fallback to parsing build output.
 	if VERSION_LINE=$(dotnet msbuild "${ROOT_DIR}/DeDuBa/DeDuBa.csproj" -nologo -t:MinVer -getProperty:MinVerVersion 2>/dev/null); then
@@ -38,13 +59,13 @@ publish_linux() {
 	local base_name="DeDuBa-${VERSION}-${rid}"
 	local out_dir="${DIST_DIR}/${base_name}"
 	log "Building native shims for ${rid} (${CONFIG})"
-	dotnet build "${ROOT_DIR}/OsCallsCommonShim/OsCallsCommonShim.csproj" -c "${CONFIG}" >/dev/null
-	dotnet build "${ROOT_DIR}/OsCallsLinuxShim/OsCallsLinuxShim.csproj" -c "${CONFIG}" >/dev/null
+	dotnet build "${ROOT_DIR}/OsCallsCommonShim/OsCallsCommonShim.csproj" -c "${CONFIG}" >/dev/null || die "Building OsCallsCommonShim failed"
+	dotnet build "${ROOT_DIR}/OsCallsLinuxShim/OsCallsLinuxShim.csproj" -c "${CONFIG}" >/dev/null || die "Building OsCallsLinuxShim failed"
 
 	log "Publishing managed app for ${rid} (${CONFIG})"
 	dotnet publish "${ROOT_DIR}/DeDuBa/DeDuBa.csproj" -c "${CONFIG}" -r "${rid}" \
 		-p:PublishSingleFile=true -p:SelfContained=true -p:IncludeNativeLibrariesForSelfExtract=true \
-		-o "${out_dir}" >/dev/null
+		-o "${out_dir}" >/dev/null || die "dotnet publish failed for ${rid}"
 
 	# Copy native shims next to the binary
 	local shim_common="${ROOT_DIR}/OsCallsCommonShim/bin/${CONFIG}/net8.0/libOsCallsCommonShim.so"
@@ -63,6 +84,7 @@ EOF
 	chmod +x "${out_dir}/run.sh"
 
 	# Archive
+	check_cmd tar
 	(cd "${DIST_DIR}" && tar czf "${base_name}.tar.gz" "$(basename "${out_dir}")")
 	log "Created ${DIST_DIR}/${base_name}.tar.gz"
 	# Generate SHA-512 checksum for the archive
@@ -79,12 +101,12 @@ publish_windows() {
 	local base_name="DeDuBa-${VERSION}-${rid}"
 	local out_dir="${DIST_DIR}/${base_name}"
 	log "Building native shim (cross) for ${rid} (${CONFIG})"
-	dotnet build "${ROOT_DIR}/OsCallsWindowsShim/OsCallsWindowsShim.csproj" -c "${CONFIG}" -r "${rid}" >/dev/null
+	dotnet build "${ROOT_DIR}/OsCallsWindowsShim/OsCallsWindowsShim.csproj" -c "${CONFIG}" -r "${rid}" >/dev/null || die "Building OsCallsWindowsShim for ${rid} failed"
 
 	log "Publishing managed app for ${rid} (${CONFIG})"
 	dotnet publish "${ROOT_DIR}/DeDuBa/DeDuBa.csproj" -c "${CONFIG}" -r "${rid}" \
 		-p:PublishSingleFile=true -p:SelfContained=true -p:IncludeNativeLibrariesForSelfExtract=true \
-		-o "${out_dir}" >/dev/null
+		-o "${out_dir}" >/dev/null || die "dotnet publish failed for ${rid}"
 
 	# Copy native DLLs produced by the Windows shim build (copy all to be safe)
 	local shim_bin="${ROOT_DIR}/OsCallsWindowsShim/build-win-x64/bin"
@@ -97,6 +119,7 @@ publish_windows() {
 	fi
 
 	# Archive (zip)
+	check_cmd zip
 	(cd "${DIST_DIR}" && zip -qr "${base_name}.zip" "$(basename "${out_dir}")")
 	log "Created ${DIST_DIR}/${base_name}.zip"
 	# Generate SHA-512 checksum for the zip
