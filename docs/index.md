@@ -11,7 +11,7 @@ Browse the complete C# API documentation for DeDuBa, OsCalls, and UtilitiesLibra
 **Key namespaces:**
 
 - [DeDuBa](api/DeDuBa.yml) - Main backup logic
-- [OsCalls](api/OsCalls.yml) - Native filesystem interop layer
+- [OsCallsCommon](api/OsCallsCommon.yml) - Native filesystem interop layer
 - [UtilitiesLibrary](api/UtilitiesLibrary.yml) - Shared utilities
 
 ### [C++ API Reference (Doxygen)](doxygen/html/index.html)
