@@ -25,7 +25,8 @@
     <ItemGroup>
       <NestedBins Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'bin', System.IO.SearchOption.AllDirectories))" />
       <NestedObjs Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'obj', System.IO.SearchOption.AllDirectories))" />
-      <AllDirsToRemove Include="@(DirsToRemove);@(NestedBins);@(NestedObjs)" />
+      <NestedBuilds Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'build', System.IO.SearchOption.AllDirectories))" />
+      <AllDirsToRemove Include="@(DirsToRemove);@(NestedBins);@(NestedObjs);@(NestedBuilds)" />
     </ItemGroup>
     <Message Text="WorkspaceClean: discovered nested bins='@(NestedBins)'" Importance="Low" />
     <Message Text="WorkspaceClean: discovered nested objs='@(NestedObjs)'" Importance="Low" />

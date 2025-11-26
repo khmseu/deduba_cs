@@ -20,6 +20,7 @@ lint:
   disabled:
     - git-diff-check
   enabled:
+    - clang-format@16.0.3
     - taplo@0.10.0
     - bandit@1.9.2
     - black@25.11.0
