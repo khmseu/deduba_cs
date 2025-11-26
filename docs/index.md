@@ -18,7 +18,8 @@ Browse the complete C# API documentation for DeDuBa, OsCalls, and UtilitiesLibra
 
 ### [C++ API Reference (Doxygen)](doxygen/html/index.html)
 
-Native shim library documentation (`libOsCallsShim.so`) exposing POSIX syscalls.
+Doxygen-generated reference documentation for the native shim libraries (OsCalls*Shim).
+These shim libraries implement platform-specific filesystem and metadata APIs (POSIX and Win32) that the managed `OsCalls` wrappers depend on.
 
 ### [Articles](articles/intro.md)
 
