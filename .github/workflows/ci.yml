@@ -7,6 +7,8 @@ on:
   pull_request:
     branches: [master, main]
   workflow_dispatch:
+  schedule:
+    - cron: 0 4 * * * # run daily at 04:00 UTC for scheduled artifact cleanup
 
 permissions:
   contents: read
@@ -138,6 +140,18 @@ jobs:
           chmod +x scripts/package.sh
           scripts/package.sh linux-x64 ${{ matrix.configuration }}
 
+      - name: Validate artifacts for upload (Linux)
+        if: matrix.configuration == 'Release'
+        run: |
+          set -euo pipefail
+          echo 'Listing working dist directory:'
+          ls -alh dist || true
+          # fail early if there are no generated files matching expected patterns
+          if ! ls dist/DeDuBa-*-linux-x64.tar.gz >/dev/null 2>&1; then
+            echo 'ERROR: expected Linux artifacts (dist/DeDuBa-*-linux-x64.tar.gz) not found'
+            exit 1
+          fi
+
       - name: Upload Linux artifacts
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v4
@@ -218,6 +232,17 @@ jobs:
         run: |
           chmod +x scripts/package.sh
           scripts/package.sh win-x64 ${{ matrix.configuration }}
+
+      - name: Validate artifacts for upload (Windows cross)
+        if: matrix.configuration == 'Release'
+        run: |
+          set -euo pipefail
+          echo 'Listing working dist directory:'
+          ls -alh dist || true
+          if ! ls dist/DeDuBa-*-win-x64.zip >/dev/null 2>&1; then
+            echo 'ERROR: expected Windows artifacts (dist/DeDuBa-*-win-x64.zip) not found'
+            exit 1
+          fi
 
       - name: Upload Windows artifacts
         if: matrix.configuration == 'Release'
@@ -403,6 +428,16 @@ jobs:
           find artifacts/ -name '*.zip' -exec cp {} release-staging/ \;
           ls -lh release-staging/
 
+      - name: Validate release staging artifacts
+        run: |
+          set -euo pipefail
+          echo 'Listing release staging directory:'
+          ls -alh release-staging || true
+          if ! ls release-staging/*.{tar.gz,zip} >/dev/null 2>&1; then
+            echo 'ERROR: expected artifacts in release-staging but none were found'
+            exit 1
+          fi
+
       - name: Setup .NET for version detection
         uses: actions/setup-dotnet@v4
         with:
@@ -445,6 +480,47 @@ jobs:
           name: DeDuBa-release-all
           path: release-staging/
           retention-days: 90
+
+  # GC artifacts that exceed retention threshold: Daily or manual run
+  artifact-cleanup:
+    name: Artifact cleanup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Cleanup old artifacts (github-script)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const daysToKeep = parseInt(process.env.DAYS_TO_KEEP || '30', 10);
+            const skipNames = ['DeDuBa-release-all', 'DeDuBa-release-staging'];
+            const threshold = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000);
+            core.info(`Artifacts older than ${daysToKeep} days (before ${threshold.toISOString()}) will be deleted unless on skip list`);
+            const perPage = 100;
+            let page = 1;
+            let deleted = 0;
+            while (true) {
+                const resp = await github.rest.actions.listArtifactsForRepo({ owner: context.repo.owner, repo: context.repo.repo, per_page: perPage, page });
+                if (!resp.data || !resp.data.artifacts) break;
+                const artifacts = resp.data.artifacts;
+                if (artifacts.length === 0) break;
+                for (const a of artifacts) {
+                    const created = new Date(a.created_at);
+                    if (created < threshold && !skipNames.includes(a.name)) {
+                        core.info(`Deleting artifact ${a.id} (${a.name}) created ${created.toISOString()}`);
+                        await github.rest.actions.deleteArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: a.id });
+                        deleted++;
+                    } else {
+                        core.info(`Keeping artifact ${a.id} (${a.name}) created ${created.toISOString()}`);
+                    }
+                }
+                if (artifacts.length < perPage) break;
+                page++;
+            }
+            core.info(`Total artifacts deleted: ${deleted}`);
 
   # Create GitHub release from artifacts (only on version tags)
   release:
