@@ -12,6 +12,8 @@ Browse the complete C# API documentation for DeDuBa, OsCalls, and UtilitiesLibra
 
 - [DeDuBa](api/DeDuBa.yml) - Main backup logic
 - [OsCallsCommon](api/OsCallsCommon.yml) - Native filesystem interop layer
+- [OsCallsLinux](api/OsCallsLinux.yml) - Linux-specific native APIs (POSIX)
+- [OsCallsWindows](api/OsCallsWindows.yml) - Windows-specific native APIs (Win32)
 - [UtilitiesLibrary](api/UtilitiesLibrary.yml) - Shared utilities
 
 ### [C++ API Reference (Doxygen)](doxygen/html/index.html)
