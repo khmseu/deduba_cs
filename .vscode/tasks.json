@@ -74,7 +74,7 @@
       "command": "bash",
       "args": [
         "-lc",
-        "set -x; dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal; echo \"dotnet clean executed; workspace-level artifacts removed via Directory.Build.targets; regenerating ignored list...\"; git ls-files --others -i --exclude-standard > ignored_files_list.txt"
+        "dotnet clean \"${workspaceFolder}/DeDuBa.sln\" --verbosity minimal; git ls-files --others -i --exclude-standard > ignored_files_list.txt"
       ],
       "options": {
         "env": {
@@ -86,7 +86,7 @@
         "kind": "build"
       },
       "problemMatcher": "$msCompile",
-      "detail": "Clean the DeDuBa solution using dotnet clean (workspace cleanup integrated into Directory.Build.targets)"
+      "detail": "Clean the DeDuBa solution using dotnet clean"
     },
     {
       "label": "Docs: Doxygen (C++)",
@@ -175,10 +175,7 @@
       "label": "Format: Trunk + CSharpier",
       "type": "shell",
       "command": "bash",
-      "args": [
-        "-lc",
-        "trunk check -ay; dotnet tool restore >/dev/null 2>&1 || true; (dotnet tool run csharpier format . || csharpier format .); git ls-files -z \"*.h\" \"*.hpp\" \"*.c\" \"*.cpp\" \"*.cc\" \"*.cxx\" \"*.hh\" | xargs -0 -r clang-format -i"
-      ],
+      "args": ["-lc", "'${workspaceFolder}/scripts/format-all.sh'"],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",

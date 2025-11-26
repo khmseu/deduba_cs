@@ -13,6 +13,7 @@ in Python for more robust parsing and clearer error messages.
 import argparse
 import re
 import shutil
+# trunk-ignore(bandit/B404)
 import subprocess
 import sys
 from pathlib import Path
@@ -28,9 +29,14 @@ SHIM_DIRS = [
 
 
 def run_doxygen(doxyfile: Path) -> subprocess.CompletedProcess:
-    cmd = ["doxygen", str(doxyfile)]
     # run doxygen in docs directory (so that INPUT paths are relative)
-    proc = subprocess.run(cmd, cwd=doxyfile.parent, capture_output=True, text=True)
+    # trunk-ignore(bandit/B603)
+    proc = subprocess.run(
+        ["/usr/bin/doxygen", str(doxyfile)],
+        cwd=doxyfile.parent,
+        capture_output=True,
+        text=True,
+    )
     return proc
 
 

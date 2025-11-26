@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="Current"
-         xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://schemas.microsoft.com/developer/msbuild/2003 https://raw.githubusercontent.com/dotnet/msbuild/main/src/Schema/markdown/xsd/MSBuildLanguage.xsd">
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
@@ -15,7 +11,6 @@
       Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)"
       Importance="High"
     />
-
     <ItemGroup>
       <DirsToRemove Include="$(RepoRoot)build" />
       <DirsToRemove Include="$(RepoRoot)build_native" />
@@ -27,7 +22,6 @@
     </ItemGroup>
     <Message Text="WorkspaceClean: DirsToRemove='@(DirsToRemove)'" Importance="High" />
     <RemoveDir Directories="@(DirsToRemove)" ContinueOnError="true" />
-
     <ItemGroup>
       <NestedBins Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'bin', System.IO.SearchOption.AllDirectories))" />
       <NestedObjs Include="$([System.IO.Directory]::GetDirectories('$(RepoRoot)', 'obj', System.IO.SearchOption.AllDirectories))" />
@@ -36,7 +30,6 @@
     <Message Text="WorkspaceClean: discovered nested bins='@(NestedBins)'" Importance="Low" />
     <Message Text="WorkspaceClean: discovered nested objs='@(NestedObjs)'" Importance="Low" />
     <RemoveDir Directories="@(AllDirsToRemove)" ContinueOnError="true" />
-
     <ItemGroup>
       <DocsApiYml Include="$(RepoRoot)docs/api/*.yml" />
       <DocsApiYml Include="$(RepoRoot)docs/api/.manifest" />
