@@ -39,6 +39,18 @@ public static unsafe partial class FileSystem
 
     [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static partial ValueT* windows_GetFileInformationByHandle(string path);
+
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static partial ValueT* windows_DeviceIoControl_GetReparsePoint(string path);
+
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static partial ValueT* windows_GetFinalPathNameByHandleW(string path);
+
+    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_lstat(string path);
 
     [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
@@ -77,6 +89,51 @@ public static unsafe partial class FileSystem
     public static JsonNode Canonicalizefilename(string path)
     {
         return ToNode(win_canonicalize_file_name(path), path, nameof(win_canonicalize_file_name));
+    }
+
+    /// <summary>
+    ///     Gets file information using Windows GetFileInformationByHandle API.
+    ///     Primary implementation - wraps windows_GetFileInformationByHandle native export.
+    /// </summary>
+    /// <param name="path">Filesystem path to inspect.</param>
+    /// <returns>A JsonObject containing file attributes (size, timestamps, attributes, file ID, etc.).</returns>
+    public static JsonNode WindowsGetFileInformationByHandle(string path)
+    {
+        return ToNode(
+            windows_GetFileInformationByHandle(path),
+            path,
+            nameof(windows_GetFileInformationByHandle)
+        );
+    }
+
+    /// <summary>
+    ///     Reads reparse point data using Windows DeviceIoControl with FSCTL_GET_REPARSE_POINT.
+    ///     Primary implementation - wraps windows_DeviceIoControl_GetReparsePoint native export.
+    /// </summary>
+    /// <param name="path">Path of the reparse point to read.</param>
+    /// <returns>A JsonNode with reparse type and target information.</returns>
+    public static JsonNode WindowsDeviceIoControlGetReparsePoint(string path)
+    {
+        return ToNode(
+            windows_DeviceIoControl_GetReparsePoint(path),
+            path,
+            nameof(windows_DeviceIoControl_GetReparsePoint)
+        );
+    }
+
+    /// <summary>
+    ///     Gets canonical path using Windows GetFinalPathNameByHandleW API.
+    ///     Primary implementation - wraps windows_GetFinalPathNameByHandleW native export.
+    /// </summary>
+    /// <param name="path">Original input path.</param>
+    /// <returns>A JsonNode with a <c>path</c> field set to the canonical path.</returns>
+    public static JsonNode WindowsGetFinalPathNameByHandleW(string path)
+    {
+        return ToNode(
+            windows_GetFinalPathNameByHandleW(path),
+            path,
+            nameof(windows_GetFinalPathNameByHandleW)
+        );
     }
 
     private static IntPtr Resolver(
