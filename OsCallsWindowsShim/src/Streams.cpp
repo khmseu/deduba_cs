@@ -131,7 +131,7 @@ struct StreamInfo {
  * @param value Pointer to ValueT with Handle.data1 containing StreamInfo*.
  * @return true if more streams remain, false when iteration completes.
  */
-static bool handle_win_streams(ValueT *value) {
+static bool handle_FindFirstStreamW(ValueT *value) {
   auto streams = reinterpret_cast<StreamInfo *>(value->Handle.data1);
 
   if (value->Handle.index == 0) {
@@ -186,7 +186,7 @@ static bool handle_win_streams(ValueT *value) {
   return true;
 }
 
-extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   auto streams = new StreamInfo{};
   auto v = new ValueT();
 
@@ -195,7 +195,7 @@ extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
 
   if (hFind == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_win_streams, streams, nullptr);
+    CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
     v->Number = err;
     return v;
   }
@@ -215,14 +215,19 @@ extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
 
   // ERROR_HANDLE_EOF is expected at the end of enumeration
   if (lastErr != ERROR_HANDLE_EOF && streams->names.empty()) {
-    CreateHandle(v, handle_win_streams, streams, nullptr);
+    CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
     v->Number = lastErr;
     return v;
   }
 
-  CreateHandle(v, handle_win_streams, streams, nullptr);
+  CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
+  return windows_FindFirstStreamW(path);
 }
 
 /**
@@ -241,7 +246,7 @@ struct StreamData {
  * @param value Pointer to ValueT with Handle.data1 containing StreamData*.
  * @return true on first call if successful, false to signal completion.
  */
-static bool handle_win_stream_data(ValueT *value) {
+static bool handle_ReadFile_Stream(ValueT *value) {
   auto streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
   switch (value->Handle.index) {
   case 0:
@@ -265,7 +270,7 @@ static bool handle_win_stream_data(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
+extern "C" DLL_EXPORT ValueT *windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   auto streamData = new StreamData{};
   auto v = new ValueT();
 
@@ -283,7 +288,7 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_win_stream_data, streamData, nullptr);
+    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
     v->Number = err;
     return v;
   }
@@ -293,7 +298,7 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t
   if (!GetFileSizeEx(hFile, &fileSize)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_win_stream_data, streamData, nullptr);
+    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
     v->Number = err;
     return v;
   }
@@ -308,7 +313,7 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t
   if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_win_stream_data, streamData, nullptr);
+    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
     v->Number = err;
     return v;
   }
@@ -316,8 +321,13 @@ extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t
   CloseHandle(hFile);
   streamData->data.resize(bytesRead); // Adjust to actual bytes read
 
-  CreateHandle(v, handle_win_stream_data, streamData, nullptr);
+  CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
+  return windows_ReadFile_Stream(path, stream_name);
 }
 } // namespace OsCallsWindows

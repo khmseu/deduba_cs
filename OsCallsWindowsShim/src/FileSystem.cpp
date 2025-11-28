@@ -268,7 +268,7 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
 }
 
 /**
- * @brief Handler for win_lstat results - iterates through file metadata fields.
+ * @brief Handler for windows_GetFileInformationByHandle results - iterates through file metadata fields.
  *
  * Yields file information fields sequentially in POSIX stat order: st_dev,
  * st_ino, st_mode, file type flags (S_ISDIR, S_ISREG, S_ISLNK, etc.), st_nlink,
@@ -278,7 +278,7 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
  * @param value Pointer to ValueT with Handle.data1 containing WinFileInfo*.
  * @return true if more fields remain, false when iteration completes.
  */
-static bool handle_win_lstat(ValueT *value) {
+static bool handle_GetFileInformationByHandle(ValueT *value) {
   auto info = reinterpret_cast<WinFileInfo *>(value->Handle.data1);
   switch (value->Handle.index) {
   case 0:
@@ -388,7 +388,7 @@ static bool handle_win_lstat(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *path) {
   auto info = new WinFileInfo{};
   auto v = new ValueT();
 
@@ -397,7 +397,7 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_win_lstat, info, nullptr);
+    CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
     v->Number = err;
     return v;
   }
@@ -407,7 +407,7 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
   if (!GetFileInformationByHandle(hFile, &fileInfo)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_win_lstat, info, nullptr);
+    CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
     v->Number = err;
     return v;
   }
@@ -441,9 +441,14 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
 
   CloseHandle(hFile);
 
-  CreateHandle(v, handle_win_lstat, info, nullptr);
+  CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
+  return windows_GetFileInformationByHandle(path);
 }
 
 /**
@@ -456,7 +461,7 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
  * path.
  * @return true on first call if successful, false to signal completion.
  */
-static bool handle_win_readlink(ValueT *value) {
+static bool handle_DeviceIoControl_GetReparsePoint(ValueT *value) {
   auto target = reinterpret_cast<wchar_t *>(value->Handle.data1);
   switch (value->Handle.index) {
   case 0:
@@ -480,7 +485,7 @@ static bool handle_win_readlink(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *windows_DeviceIoControl_GetReparsePoint(const wchar_t *path) {
   wchar_t *target = nullptr;
   auto     v = new ValueT();
 
@@ -491,7 +496,7 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
     DWORD err = GetLastError();
     target = new wchar_t[1];
     target[0] = L'\0';
-    CreateHandle(v, handle_win_readlink, target, nullptr);
+    CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
     v->Number = err;
     return v;
   }
@@ -505,7 +510,7 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
     CloseHandle(hFile);
     target = new wchar_t[1];
     target[0] = L'\0';
-    CreateHandle(v, handle_win_readlink, target, nullptr);
+    CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
     v->Number = err;
     return v;
   }
@@ -533,14 +538,19 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
     // Unsupported reparse point type
     target = new wchar_t[1];
     target[0] = L'\0';
-    CreateHandle(v, handle_win_readlink, target, nullptr);
+    CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
     v->Number = ERROR_NOT_SUPPORTED;
     return v;
   }
 
-  CreateHandle(v, handle_win_readlink, target, nullptr);
+  CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
+  return windows_DeviceIoControl_GetReparsePoint(path);
 }
 
 /**
@@ -554,7 +564,7 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
  * canonical path.
  * @return true on first call if successful, false to signal completion.
  */
-static bool handle_win_cfn(ValueT *value) {
+static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
   auto cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
   switch (value->Handle.index) {
   case 0:
@@ -578,7 +588,7 @@ static bool handle_win_cfn(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
+extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *path) {
   wchar_t *canonical = nullptr;
   auto     v = new ValueT();
 
@@ -589,7 +599,7 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
     DWORD err = GetLastError();
     canonical = new wchar_t[1];
     canonical[0] = L'\0';
-    CreateHandle(v, handle_win_cfn, canonical, nullptr);
+    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
     v->Number = err;
     return v;
   }
@@ -602,7 +612,7 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
     CloseHandle(hFile);
     canonical = new wchar_t[1];
     canonical[0] = L'\0';
-    CreateHandle(v, handle_win_cfn, canonical, nullptr);
+    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
     v->Number = err;
     return v;
   }
@@ -617,7 +627,7 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
     delete[] canonical;
     canonical = new wchar_t[1];
     canonical[0] = L'\0';
-    CreateHandle(v, handle_win_cfn, canonical, nullptr);
+    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
     v->Number = err;
     return v;
   }
@@ -640,8 +650,13 @@ extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   wcscpy_s(strippedPath, len + 1, finalPath);
   delete[] canonical;
 
-  CreateHandle(v, handle_win_cfn, strippedPath, nullptr);
+  CreateHandle(v, handle_GetFinalPathNameByHandleW, strippedPath, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
+  return windows_GetFinalPathNameByHandleW(path);
 }
 } // namespace OsCallsWindows

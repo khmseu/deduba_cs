@@ -11,13 +11,34 @@
 #include "ValXfer.h"
 
 namespace OsCallsWindows {
+// ============================================================================
+// Windows API-named exports (primary implementations)
+// ============================================================================
+
+/**
+ * @brief Get security descriptor using GetNamedSecurityInfoW and convert to SDDL
+ *
+ * Calls GetNamedSecurityInfoW to retrieve security descriptor (owner, group,
+ * DACL, optional SACL), then ConvertSecurityDescriptorToStringSecurityDescriptorW
+ * to convert to SDDL string format for portable storage and analysis.
+ * If include_sacl is true but SeSecurityPrivilege is not held, gracefully
+ * downgrades to DACL-only retrieval.
+ *
+ * @param path Wide-character path to file
+ * @param include_sacl Whether to include SACL (requires SeSecurityPrivilege)
+ * @return ValueT* with SDDL string
+ */
+extern "C" DLL_EXPORT OsCalls::ValueT *windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl);
+
+// ============================================================================
+// Legacy compatibility wrappers (forward to windows_* functions)
+// ============================================================================
+
 /**
  * @brief Get security descriptor in SDDL format
  *
- * Retrieves Windows security descriptor (owner, group, DACL, optional SACL)
- * and converts to SDDL string format for portable storage and analysis.
- * If include_sacl is true but SeSecurityPrivilege is not held, gracefully
- * downgrades to DACL-only retrieval.
+ * Legacy wrapper that forwards to windows_GetNamedSecurityInfoW.
+ * Provided for backward compatibility.
  *
  * @param path Wide-character path to file
  * @param include_sacl Whether to include SACL (requires SeSecurityPrivilege)

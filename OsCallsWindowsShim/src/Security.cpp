@@ -120,7 +120,7 @@ using namespace OsCalls;
  * string.
  * @return true on first call if successful, false to signal completion.
  */
-static bool handle_win_sd(ValueT *value) {
+static bool handle_GetNamedSecurityInfoW(ValueT *value) {
   auto sddl = reinterpret_cast<wchar_t *>(value->Handle.data1);
   switch (value->Handle.index) {
   case 0:
@@ -146,7 +146,7 @@ static bool handle_win_sd(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
+extern "C" DLL_EXPORT ValueT *windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
   wchar_t *sddl = nullptr;
   auto     v = new ValueT();
 
@@ -176,7 +176,7 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl)
     }
 
     if (result != ERROR_SUCCESS) {
-      CreateHandle(v, handle_win_sd, nullptr, nullptr);
+      CreateHandle(v, handle_GetNamedSecurityInfoW, nullptr, nullptr);
       v->Number = result;
       return v;
     }
@@ -188,7 +188,7 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl)
                                                             &sddlString, nullptr)) {
     DWORD err = GetLastError();
     LocalFree(pSD);
-    CreateHandle(v, handle_win_sd, nullptr, nullptr);
+    CreateHandle(v, handle_GetNamedSecurityInfoW, nullptr, nullptr);
     v->Number = err;
     return v;
   }
@@ -202,8 +202,13 @@ extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl)
   LocalFree(sddlString);
   LocalFree(pSD);
 
-  CreateHandle(v, handle_win_sd, sddl, nullptr);
+  CreateHandle(v, handle_GetNamedSecurityInfoW, sddl, nullptr);
   v->Type = TypeT::IsOk;
   return v;
+}
+
+// Legacy compatibility wrapper
+extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
+  return windows_GetNamedSecurityInfoW(path, include_sacl);
 }
 } // namespace OsCallsWindows
