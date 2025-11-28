@@ -122,5 +122,77 @@ namespace DeDuBa.Test
                 NativeLibrary.Free(handle);
             }
         }
+
+        [Fact]
+        public void CSharpLinuxWrappersMirrorMethods()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return;
+            var tmp = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tmp, "hello");
+                // LStat
+                var j1 = FileSystem.LStat(tmp);
+                var j2 = FileSystem.LinuxLStat(tmp);
+                Assert.Equal(j1.ToJsonString(), j2.ToJsonString());
+
+                // ReadLink (create symlink for test)
+                var link = tmp + "-link";
+                try
+                {
+                    File.Delete(link);
+                    System.IO.File.Create(link).Close();
+                    File.Delete(link);
+                    // Create symlink to tmp
+                    var si = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ln", $"-s {tmp} {link}") { UseShellExecute = false });
+                    si?.WaitForExit();
+                }
+                catch { }
+                var rl1 = FileSystem.ReadLink(link); // reading link path (symlink)
+                var rl2 = FileSystem.LinuxReadLink(link);
+                Assert.Equal(rl1.ToJsonString(), rl2.ToJsonString());
+
+                // Canonicalize
+                var c1 = FileSystem.Canonicalizefilename(tmp);
+                var c2 = FileSystem.LinuxCanonicalizeFileName(tmp);
+                Assert.Equal(c1.ToJsonString(), c2.ToJsonString());
+
+                // Xattr list/get
+                var x1 = Xattr.ListXattr(tmp);
+                var x2 = Xattr.LinuxListXattr(tmp);
+                Assert.Equal(x1.ToJsonString(), x2.ToJsonString());
+                // Only try to GetXattr if an attribute exists (to avoid errors when none are set)
+                var list = Xattr.ListXattr(tmp);
+                if (list is System.Text.Json.Nodes.JsonArray arr && arr.Count > 0)
+                {
+                    var attrName = arr[0]!.ToString();
+                    var gx1 = Xattr.GetXattr(tmp, attrName);
+                    var gx2 = Xattr.LinuxGetXattr(tmp, attrName);
+                    Assert.Equal(gx1.ToJsonString(), gx2.ToJsonString());
+                }
+
+                // User/Group DB
+                var ug1 = UserGroupDatabase.GetPwUid(0);
+                var ug2 = UserGroupDatabase.LinuxGetPwUid(0);
+                Assert.Equal(ug1.ToJsonString(), ug2.ToJsonString());
+                var gg1 = UserGroupDatabase.GetGrGid(0);
+                var gg2 = UserGroupDatabase.LinuxGetGrGid(0);
+                Assert.Equal(gg1.ToJsonString(), gg2.ToJsonString());
+
+                // ACL (use a directory path for default ACL)
+                var a1 = Acl.GetFileAccess(tmp);
+                var a2 = Acl.LinuxGetFileAccess(tmp);
+                Assert.Equal(a1.ToJsonString(), a2.ToJsonString());
+                var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                Directory.CreateDirectory(dir);
+                var d1 = Acl.GetFileDefault(dir);
+                var d2 = Acl.LinuxGetFileDefault(dir);
+                Assert.Equal(d1.ToJsonString(), d2.ToJsonString());
+            }
+            finally
+            {
+                File.Delete(tmp);
+            }
+        }
     }
 }

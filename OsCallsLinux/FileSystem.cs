@@ -228,6 +228,12 @@ public static unsafe partial class FileSystem
     }
 
     /// <summary>
+    ///     Platform-prefixed wrapper for calling the LStat functionality: preferred naming for OS-specific wrappers.
+    ///     This mirrors <see cref="LStat(string)"/> and is intended for direct use by OS-prefixed API code.
+    /// </summary>
+    public static JsonNode LinuxLStat(string path) => LStat(path);
+
+    /// <summary>
     ///     Reads the target of a symbolic link.
     /// </summary>
     /// <param name="path">Path of the symlink to read.</param>
@@ -243,6 +249,11 @@ public static unsafe partial class FileSystem
     }
 
     /// <summary>
+    ///     Platform-prefixed wrapper for ReadLink.
+    /// </summary>
+    public static JsonNode LinuxReadLink(string path) => ReadLink(path);
+
+    /// <summary>
     ///     Resolves a path to its canonical absolute form (resolving symlinks and relative segments).
     /// </summary>
     /// <param name="path">Original input path.</param>
@@ -256,6 +267,11 @@ public static unsafe partial class FileSystem
         }
         return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for canonicalize_file_name.
+    /// </summary>
+    public static JsonNode LinuxCanonicalizeFileName(string path) => Canonicalizefilename(path);
 
     // Inlined former convenience predicates (IsDir/IsReg/IsLnk) directly at call sites for minor perf/readability tweaks.
 }

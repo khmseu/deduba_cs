@@ -33,6 +33,11 @@ public static unsafe partial class Xattr
     }
 
     /// <summary>
+    ///     Platform-prefixed wrapper for listing xattrs.
+    /// </summary>
+    public static JsonNode LinuxListXattr(string path) => ListXattr(path);
+
+    /// <summary>
     ///     Gets the value of a specific extended attribute (not following symlinks).
     /// </summary>
     /// <param name="path">Filesystem path to read xattr from.</param>
@@ -47,6 +52,11 @@ public static unsafe partial class Xattr
         }
         return ValXfer.ToNode(lgetxattr(path, name), path, nameof(lgetxattr));
     }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for getting a specific xattr.
+    /// </summary>
+    public static JsonNode LinuxGetXattr(string path, string name) => GetXattr(path, name);
 
     [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

@@ -33,6 +33,11 @@ public static unsafe partial class Acl
     }
 
     /// <summary>
+    ///     Platform-prefixed wrapper for GetFileAccess.
+    /// </summary>
+    public static JsonNode LinuxGetFileAccess(string path) => GetFileAccess(path);
+
+    /// <summary>
     ///     Reads the default ACL from the specified filesystem path (directory).
     ///     Returns the ACL in short text format.
     /// </summary>
@@ -47,6 +52,11 @@ public static unsafe partial class Acl
         }
         return ValXfer.ToNode(acl_get_file_default(path), path, nameof(acl_get_file_default));
     }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for GetFileDefault.
+    /// </summary>
+    public static JsonNode LinuxGetFileDefault(string path) => GetFileDefault(path);
 
     [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

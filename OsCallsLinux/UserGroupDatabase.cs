@@ -63,6 +63,11 @@ public static unsafe partial class UserGroupDatabase
     }
 
     /// <summary>
+    ///     Platform-prefixed wrapper for GetPwUid.
+    /// </summary>
+    public static JsonNode LinuxGetPwUid(long uid) => GetPwUid(uid);
+
+    /// <summary>
     ///     Retrieves group database entry for a group id.
     /// </summary>
     /// <param name="gid">Numeric group id.</param>
@@ -76,4 +81,9 @@ public static unsafe partial class UserGroupDatabase
         }
         return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
     }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for GetGrGid.
+    /// </summary>
+    public static JsonNode LinuxGetGrGid(long gid) => GetGrGid(gid);
 }
