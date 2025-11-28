@@ -315,6 +315,8 @@ This document captures completed work, near-term, and mid-term enhancements for 
   - ✅ Added compatibility wrappers for existing `lstat`, `readlink`, `canonicalize_file_name`.
   - ✅ Added runtime delegate binding to prefer `linux_*` exports with a fallback to legacy P/Invoke.
   - ✅ Added Linux unit tests and CI symbol verification.
+   - ✅ Expanded OS-prefixed shim exports: added `linux_llistxattr`, `linux_lgetxattr`, `linux_getpwuid`, `linux_getgrgid`, `linux_acl_get_file_access`, `linux_acl_get_file_default`.
+   - ✅ Added compatibility wrappers for the above functions and updated managed runtime bindings and tests accordingly.
 
   Suggested next step: implement the equivalent `windows_` exports and runtime binding for Windows shims, preserve wrappers, and extend tests/CI accordingly.
 
