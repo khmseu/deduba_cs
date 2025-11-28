@@ -299,7 +299,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - **Week 3:** Implement Windows, replicate for Windows-sensitive code paths
 - **Week 4:** Finish migration and tests, add CI cross-platform coverage
 
-### 3.10 Common Shim Names (refactor) 💡 Idea
+## 3.10 Common Shim Names (refactor) 💡 Idea
 
 **Status:** Not started
 
@@ -310,6 +310,13 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
   - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
   - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
+  **Recent progress:**
+  - ✅ Implemented Linux shim-triad exports with OS-prefixed names: `linux_lstat`, `linux_readlink`, `linux_canonicalize_file_name`.
+  - ✅ Added compatibility wrappers for existing `lstat`, `readlink`, `canonicalize_file_name`.
+  - ✅ Added runtime delegate binding to prefer `linux_*` exports with a fallback to legacy P/Invoke.
+  - ✅ Added Linux unit tests and CI symbol verification.
+
+  Suggested next step: implement the equivalent `windows_` exports and runtime binding for Windows shims, preserve wrappers, and extend tests/CI accordingly.
 
 ---
 
