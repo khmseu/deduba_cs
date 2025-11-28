@@ -54,21 +54,21 @@ public static unsafe partial class UserGroupDatabase
     /// <returns>A JsonNode with typical fields like pw_name, pw_uid, pw_gid, etc.</returns>
     public static JsonNode GetPwUid(long uid)
     {
-           return LinuxGetPwUid(uid);
+        return LinuxGetPwUid(uid);
     }
 
     /// <summary>
     ///     Platform-prefixed wrapper for GetPwUid.
     /// </summary>
-        public static JsonNode LinuxGetPwUid(long uid)
+    public static JsonNode LinuxGetPwUid(long uid)
+    {
+        if (_linux_getpwuid is not null)
         {
-            if (_linux_getpwuid is not null)
-            {
-                var ptr = _linux_getpwuid(uid);
-                return ToNode((ValueT*)ptr, $"user {uid}", "linux_getpwuid");
-            }
-            return ToNode(getpwuid(uid), $"user {uid}", nameof(getpwuid));
+            var ptr = _linux_getpwuid(uid);
+            return ToNode((ValueT*)ptr, $"user {uid}", "linux_getpwuid");
         }
+        return ToNode(getpwuid(uid), $"user {uid}", nameof(getpwuid));
+    }
 
     /// <summary>
     ///     Retrieves group database entry for a group id.
@@ -77,19 +77,19 @@ public static unsafe partial class UserGroupDatabase
     /// <returns>A JsonNode with fields like gr_name, gr_gid, etc.</returns>
     public static JsonNode GetGrGid(long gid)
     {
-           return LinuxGetGrGid(gid);
+        return LinuxGetGrGid(gid);
     }
 
     /// <summary>
     ///     Platform-prefixed wrapper for GetGrGid.
     /// </summary>
-        public static JsonNode LinuxGetGrGid(long gid)
+    public static JsonNode LinuxGetGrGid(long gid)
+    {
+        if (_linux_getgrgid is not null)
         {
-            if (_linux_getgrgid is not null)
-            {
-                var ptr = _linux_getgrgid(gid);
-                return ToNode((ValueT*)ptr, $"group {gid}", "linux_getgrgid");
-            }
-            return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
+            var ptr = _linux_getgrgid(gid);
+            return ToNode((ValueT*)ptr, $"group {gid}", "linux_getgrgid");
         }
+        return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
+    }
 }
