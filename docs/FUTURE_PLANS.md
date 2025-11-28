@@ -317,6 +317,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
   - ✅ Added Linux unit tests and CI symbol verification.
   - ✅ Expanded OS-prefixed shim exports: added `linux_llistxattr`, `linux_lgetxattr`, `linux_getpwuid`, `linux_getgrgid`, `linux_acl_get_file_access`, `linux_acl_get_file_default`.
   - ✅ Added compatibility wrappers for the above functions and updated managed runtime bindings and tests accordingly.
+  - ✅ Added Linux-prefixed C# wrappers (e.g., `LinuxLStat`, `LinuxReadLink`, `LinuxGetFileAccess`, etc.) that delegate to existing platform shim methods.
 
   Suggested next step: implement the equivalent `windows_` exports and runtime binding for Windows shims, preserve wrappers, and extend tests/CI accordingly.
 
