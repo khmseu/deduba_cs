@@ -24,6 +24,14 @@ public static unsafe partial class Acl
     /// <returns>JsonNode with "acl_text" field containing the ACL string, or error number.</returns>
     public static JsonNode GetFileAccess(string path)
     {
+        return LinuxGetFileAccess(path);
+    }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for GetFileAccess.
+    /// </summary>
+    public static JsonNode LinuxGetFileAccess(string path)
+    {
         if (_linux_acl_get_file_access is not null)
         {
             var ptr = _linux_acl_get_file_access(path);
@@ -33,17 +41,20 @@ public static unsafe partial class Acl
     }
 
     /// <summary>
-    ///     Platform-prefixed wrapper for GetFileAccess.
-    /// </summary>
-    public static JsonNode LinuxGetFileAccess(string path) => GetFileAccess(path);
-
-    /// <summary>
     ///     Reads the default ACL from the specified filesystem path (directory).
     ///     Returns the ACL in short text format.
     /// </summary>
     /// <param name="path">Filesystem path (must be a directory).</param>
     /// <returns>JsonNode with "acl_text" field containing the ACL string, or error number.</returns>
     public static JsonNode GetFileDefault(string path)
+    {
+        return LinuxGetFileDefault(path);
+    }
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for GetFileDefault.
+    /// </summary>
+    public static JsonNode LinuxGetFileDefault(string path)
     {
         if (_linux_acl_get_file_default is not null)
         {
@@ -52,11 +63,6 @@ public static unsafe partial class Acl
         }
         return ValXfer.ToNode(acl_get_file_default(path), path, nameof(acl_get_file_default));
     }
-
-    /// <summary>
-    ///     Platform-prefixed wrapper for GetFileDefault.
-    /// </summary>
-    public static JsonNode LinuxGetFileDefault(string path) => GetFileDefault(path);
 
     [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

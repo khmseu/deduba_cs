@@ -217,7 +217,13 @@ public static unsafe partial class FileSystem
     /// </summary>
     /// <param name="path">Filesystem path to inspect.</param>
     /// <returns>A JsonObject containing stat fields (st_dev, st_ino, st_mode, ...).</returns>
-    public static JsonNode LStat(string path)
+    public static JsonNode LStat(string path) => LinuxLStat(path);
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for calling the LStat functionality: preferred naming for OS-specific wrappers.
+    ///     This mirrors <see cref="LStat(string)"/> and is intended for direct use by OS-prefixed API code.
+    /// </summary>
+    public static JsonNode LinuxLStat(string path)
     {
         if (_linux_lstat_fn is not null)
         {
@@ -228,17 +234,16 @@ public static unsafe partial class FileSystem
     }
 
     /// <summary>
-    ///     Platform-prefixed wrapper for calling the LStat functionality: preferred naming for OS-specific wrappers.
-    ///     This mirrors <see cref="LStat(string)"/> and is intended for direct use by OS-prefixed API code.
-    /// </summary>
-    public static JsonNode LinuxLStat(string path) => LStat(path);
-
-    /// <summary>
     ///     Reads the target of a symbolic link.
     /// </summary>
     /// <param name="path">Path of the symlink to read.</param>
     /// <returns>A JsonNode with a <c>path</c> field set to the symlink target string.</returns>
-    public static JsonNode ReadLink(string path)
+    public static JsonNode ReadLink(string path) => LinuxReadLink(path);
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for ReadLink.
+    /// </summary>
+    public static JsonNode LinuxReadLink(string path)
     {
         if (_linux_readlink_fn is not null)
         {
@@ -249,16 +254,16 @@ public static unsafe partial class FileSystem
     }
 
     /// <summary>
-    ///     Platform-prefixed wrapper for ReadLink.
-    /// </summary>
-    public static JsonNode LinuxReadLink(string path) => ReadLink(path);
-
-    /// <summary>
     ///     Resolves a path to its canonical absolute form (resolving symlinks and relative segments).
     /// </summary>
     /// <param name="path">Original input path.</param>
     /// <returns>A JsonNode with a <c>path</c> field set to the canonical path.</returns>
-    public static JsonNode Canonicalizefilename(string path)
+    public static JsonNode Canonicalizefilename(string path) => LinuxCanonicalizeFileName(path);
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for canonicalize_file_name.
+    /// </summary>
+    public static JsonNode LinuxCanonicalizeFileName(string path)
     {
         if (_linux_cfn_fn is not null)
         {
@@ -267,11 +272,6 @@ public static unsafe partial class FileSystem
         }
         return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
-
-    /// <summary>
-    ///     Platform-prefixed wrapper for canonicalize_file_name.
-    /// </summary>
-    public static JsonNode LinuxCanonicalizeFileName(string path) => Canonicalizefilename(path);
 
     // Inlined former convenience predicates (IsDir/IsReg/IsLnk) directly at call sites for minor perf/readability tweaks.
 }

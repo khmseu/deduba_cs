@@ -22,7 +22,12 @@ public static unsafe partial class Xattr
     /// </summary>
     /// <param name="path">Filesystem path to read xattrs from.</param>
     /// <returns>JsonArray containing the names of all extended attributes, or error.</returns>
-    public static JsonNode ListXattr(string path)
+    public static JsonNode ListXattr(string path) => LinuxListXattr(path);
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for listing xattrs.
+    /// </summary>
+    public static JsonNode LinuxListXattr(string path)
     {
         if (_linux_llistxattr is not null)
         {
@@ -33,17 +38,17 @@ public static unsafe partial class Xattr
     }
 
     /// <summary>
-    ///     Platform-prefixed wrapper for listing xattrs.
-    /// </summary>
-    public static JsonNode LinuxListXattr(string path) => ListXattr(path);
-
-    /// <summary>
     ///     Gets the value of a specific extended attribute (not following symlinks).
     /// </summary>
     /// <param name="path">Filesystem path to read xattr from.</param>
     /// <param name="name">Name of the extended attribute to retrieve.</param>
     /// <returns>JsonNode with "value" field containing the attribute value as a string, or error.</returns>
-    public static JsonNode GetXattr(string path, string name)
+    public static JsonNode GetXattr(string path, string name) => LinuxGetXattr(path, name);
+
+    /// <summary>
+    ///     Platform-prefixed wrapper for getting a specific xattr.
+    /// </summary>
+    public static JsonNode LinuxGetXattr(string path, string name)
     {
         if (_linux_lgetxattr is not null)
         {
@@ -52,11 +57,6 @@ public static unsafe partial class Xattr
         }
         return ValXfer.ToNode(lgetxattr(path, name), path, nameof(lgetxattr));
     }
-
-    /// <summary>
-    ///     Platform-prefixed wrapper for getting a specific xattr.
-    /// </summary>
-    public static JsonNode LinuxGetXattr(string path, string name) => GetXattr(path, name);
 
     [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
