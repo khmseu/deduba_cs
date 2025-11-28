@@ -268,7 +268,8 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
 }
 
 /**
- * @brief Handler for windows_GetFileInformationByHandle results - iterates through file metadata fields.
+ * @brief Handler for windows_GetFileInformationByHandle results - iterates through file metadata
+ * fields.
  *
  * Yields file information fields sequentially in POSIX stat order: st_dev,
  * st_ino, st_mode, file type flags (S_ISDIR, S_ISREG, S_ISLNK, etc.), st_nlink,

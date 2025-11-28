@@ -270,7 +270,8 @@ static bool handle_ReadFile_Stream(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
+extern "C" DLL_EXPORT ValueT *
+windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   auto streamData = new StreamData{};
   auto v = new ValueT();
 

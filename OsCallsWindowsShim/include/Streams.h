@@ -40,7 +40,8 @@ extern "C" DLL_EXPORT OsCalls::ValueT *windows_FindFirstStreamW(const wchar_t *p
  * @param stream_name Wide-character stream name (e.g., "Zone.Identifier")
  * @return ValueT* with stream content as string
  */
-extern "C" DLL_EXPORT OsCalls::ValueT *windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name);
+extern "C" DLL_EXPORT OsCalls::ValueT                       *
+windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name);
 
 // ============================================================================
 // Legacy compatibility wrappers (forward to windows_* functions)

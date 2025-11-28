@@ -146,7 +146,8 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
   }
 }
 
-extern "C" DLL_EXPORT ValueT *windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
+extern "C" DLL_EXPORT ValueT *
+windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
   wchar_t *sddl = nullptr;
   auto     v = new ValueT();
 
