@@ -12,6 +12,8 @@ namespace DeDuBa.Test
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr ShimFn([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr ShimUidDelegate(long uid);
 
         private static string FindLibPath()
         {
@@ -44,6 +46,12 @@ namespace DeDuBa.Test
                 Assert.True(NativeLibrary.TryGetExport(handle, "linux_lstat", out _), "linux_lstat must exist");
                 Assert.True(NativeLibrary.TryGetExport(handle, "linux_readlink", out _), "linux_readlink must exist");
                 Assert.True(NativeLibrary.TryGetExport(handle, "linux_canonicalize_file_name", out _), "linux_canonicalize_file_name must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_llistxattr", out _), "linux_llistxattr must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_lgetxattr", out _), "linux_lgetxattr must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_getpwuid", out _), "linux_getpwuid must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_getgrgid", out _), "linux_getgrgid must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_acl_get_file_access", out _), "linux_acl_get_file_access must exist");
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_acl_get_file_default", out _), "linux_acl_get_file_default must exist");
             }
             finally
             {
@@ -82,6 +90,36 @@ namespace DeDuBa.Test
             finally
             {
                 File.Delete(tmp);
+            }
+        }
+
+        [Fact]
+        public unsafe void LinuxGetpwuidAndWrapperProduceSameOutput()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return;
+            var lib = FindLibPath();
+            var handle = NativeLibrary.Load(lib);
+            try
+            {
+                Assert.True(NativeLibrary.TryGetExport(handle, "linux_getpwuid", out var linux_fptr), "linux_getpwuid export expected");
+                Assert.True(NativeLibrary.TryGetExport(handle, "getpwuid", out var raw_fptr), "getpwuid export expected");
+                var linux_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(linux_fptr, typeof(ShimUidDelegate));
+                var raw_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(raw_fptr, typeof(ShimUidDelegate));
+                var uid = (long)System.Environment.UserName.GetHashCode();
+                // Use current user ID from system
+                var cuid = (long)System.Diagnostics.Process.GetCurrentProcess().Id; // fallback in case
+                // Better: get UID from environment
+                try { uid = (long)System.Convert.ToInt32(System.Environment.GetEnvironmentVariable("UID") ?? System.Environment.UserName); } catch { }
+                // Use getpwuid for root (uid 0) as known safe
+                var v1 = linux_del(0);
+                var v2 = raw_del(0);
+                var j1 = ToNode((ValueT*)v1, "uid 0", "linux_getpwuid");
+                var j2 = ToNode((ValueT*)v2, "uid 0", "getpwuid");
+                Assert.Equal(j1.ToJsonString(), j2.ToJsonString());
+            }
+            finally
+            {
+                NativeLibrary.Free(handle);
             }
         }
     }

@@ -122,7 +122,7 @@ extern "C" {
  * @param uid Numeric user ID to look up.
  * @return ValueT* cursor with passwd fields or error number.
  */
-ValueT *getpwuid(int64_t uid) {
+ValueT *linux_getpwuid(int64_t uid) {
   if (pwbufsz <= 0)
     pwbufsz = 1024;
   auto           pwbuf = new passwd();
@@ -146,6 +146,9 @@ ValueT *getpwuid(int64_t uid) {
   return v;
 };
 
+// Backwards-compatibility wrapper: call linux_* implementation
+ValueT *getpwuid(int64_t uid) { return linux_getpwuid(uid); };
+
 /**
  * @brief Queries the group database for a group ID.
  *
@@ -155,7 +158,7 @@ ValueT *getpwuid(int64_t uid) {
  * @param gid Numeric group ID to look up.
  * @return ValueT* cursor with group fields or error number.
  */
-ValueT *getgrgid(int64_t gid) {
+ValueT *linux_getgrgid(int64_t gid) {
   if (grbufsz <= 0)
     grbufsz = 1024;
   auto          grbuf = new group();
@@ -178,5 +181,8 @@ ValueT *getgrgid(int64_t gid) {
     v->Number = en;
   return v;
 };
+
+// Backwards-compatibility wrapper: call linux_* implementation
+ValueT *getgrgid(int64_t gid) { return linux_getgrgid(gid); };
 }
 } // namespace OsCalls

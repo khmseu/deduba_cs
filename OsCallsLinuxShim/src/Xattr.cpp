@@ -103,7 +103,7 @@ extern "C" {
  * @return ValueT* cursor yielding array of attribute name strings or error
  * number.
  */
-ValueT *llistxattr(const char *path) {
+ValueT *linux_llistxattr(const char *path) {
   errno = 0;
 
   // First call to get the size needed
@@ -141,6 +141,9 @@ ValueT *llistxattr(const char *path) {
   return v;
 }
 
+// Backwards-compatibility wrapper: call the linux_* prefixed implementation.
+ValueT *llistxattr(const char *path) { return linux_llistxattr(path); };
+
 /**
  * @brief Gets the value of a specific extended attribute (not following
  * symlinks).
@@ -152,7 +155,7 @@ ValueT *llistxattr(const char *path) {
  * @param name Name of the extended attribute to retrieve.
  * @return ValueT* cursor with attribute value as string or error number.
  */
-ValueT *lgetxattr(const char *path, const char *name) {
+ValueT *linux_lgetxattr(const char *path, const char *name) {
   errno = 0;
 
   // First call to get the size needed
@@ -181,5 +184,8 @@ ValueT *lgetxattr(const char *path, const char *name) {
 
   return v;
 }
+
+// Backwards-compatibility wrapper: call the linux_* prefixed implementation.
+ValueT *lgetxattr(const char *path, const char *name) { return linux_lgetxattr(path, name); };
 }
 } // namespace OsCalls

@@ -43,7 +43,7 @@ extern "C" {
  * @param path Filesystem path to read ACL from.
  * @return ValueT* cursor with ACL text string or error number.
  */
-ValueT *acl_get_file_access(const char *path) {
+ValueT *linux_acl_get_file_access(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_ACCESS);
   auto  en = errno;
@@ -66,6 +66,7 @@ ValueT *acl_get_file_access(const char *path) {
 
   return v;
 }
+ValueT *acl_get_file_access(const char *path) { return linux_acl_get_file_access(path); };
 
 /**
  * @brief Reads the default ACL from a directory.
@@ -76,7 +77,7 @@ ValueT *acl_get_file_access(const char *path) {
  * @param path Filesystem path (must be a directory).
  * @return ValueT* cursor with ACL text string or error number.
  */
-ValueT *acl_get_file_default(const char *path) {
+ValueT *linux_acl_get_file_default(const char *path) {
   errno = 0;
   acl_t acl = ::acl_get_file(path, ACL_TYPE_DEFAULT);
   auto  en = errno;
@@ -99,5 +100,6 @@ ValueT *acl_get_file_default(const char *path) {
 
   return v;
 }
+ValueT *acl_get_file_default(const char *path) { return linux_acl_get_file_default(path); };
 }
 } // namespace OsCalls

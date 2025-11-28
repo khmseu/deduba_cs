@@ -30,6 +30,9 @@ ValueT *acl_get_file_access(const char *path);
  * @return ValueT cursor with ACL text or error.
  */
 ValueT *acl_get_file_default(const char *path);
+/* Linux-prefixed shim exports */
+ValueT *linux_acl_get_file_access(const char *path);
+ValueT *linux_acl_get_file_default(const char *path);
 }
 
 /** @} */

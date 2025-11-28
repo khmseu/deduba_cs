@@ -24,6 +24,9 @@ ValueT *getpwuid(std::int64_t uid);
  * @return ValueT cursor with group structure fields (gr_name, gr_gid, gr_mem).
  */
 ValueT *getgrgid(std::int64_t gid);
+/* Linux-prefixed shim exports */
+ValueT *linux_getpwuid(std::int64_t uid);
+ValueT *linux_getgrgid(std::int64_t gid);
 }
 } // namespace OsCalls
 

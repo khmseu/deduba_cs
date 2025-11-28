@@ -32,6 +32,9 @@ ValueT *llistxattr(const char *path);
  * @return ValueT cursor with xattr value as string or error.
  */
 ValueT *lgetxattr(const char *path, const char *name);
+/* Linux-prefixed shim exports */
+ValueT *linux_llistxattr(const char *path);
+ValueT *linux_lgetxattr(const char *path, const char *name);
 }
 
 /** @} */

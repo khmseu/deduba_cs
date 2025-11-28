@@ -122,7 +122,7 @@ jobs:
           # find compiled shared library
           LIB=$(find OsCallsLinuxShim/bin -type f -name libOsCallsLinuxShim.so | head -n1)
           if [ -z "$LIB" ]; then echo "libOsCallsLinuxShim.so not found"; exit 1; fi
-          readelf -Ws "$LIB" | grep -E 'linux_lstat|linux_readlink|linux_canonicalize_file_name' || { echo 'Missing linux_* exports'; readelf -Ws "$LIB"; exit 1; }
+          readelf -Ws "$LIB" | grep -E 'linux_lstat|linux_readlink|linux_canonicalize_file_name|linux_llistxattr|linux_lgetxattr|linux_getpwuid|linux_getgrgid|linux_acl_get_file_access|linux_acl_get_file_default' || { echo 'Missing linux_* exports'; readelf -Ws "$LIB"; exit 1; }
 
       - name: Enable native debug logs (Linux)
         if: always()
