@@ -68,7 +68,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build libacl1-dev attr zip
+          sudo apt-get install -y build-essential cmake ninja-build libacl1-dev attr zip binutils
 
       - name: Create archive root
         run: |
@@ -114,6 +114,15 @@ jobs:
 
       - name: Build DeDuBa project (Linux)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
+      - name: Build OsCallsLinuxShim project (Linux)
+        run: dotnet build OsCallsLinuxShim/OsCallsLinuxShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
+      - name: Verify linux_* shim exports exist (Linux)
+        if: matrix.configuration == 'Release'
+        run: |
+          # find compiled shared library
+          LIB=$(find OsCallsLinuxShim/bin -type f -name libOsCallsLinuxShim.so | head -n1)
+          if [ -z "$LIB" ]; then echo "libOsCallsLinuxShim.so not found"; exit 1; fi
+          readelf -Ws "$LIB" | grep -E 'linux_lstat|linux_readlink|linux_canonicalize_file_name' || { echo 'Missing linux_* exports'; readelf -Ws "$LIB"; exit 1; }
 
       - name: Enable native debug logs (Linux)
         if: always()

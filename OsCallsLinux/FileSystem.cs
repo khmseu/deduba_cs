@@ -25,6 +25,25 @@ public static unsafe partial class FileSystem
                 );
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
             _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
+            // Best-effort: try to bind linux_* exports if present and create delegates.
+            try
+            {
+                var full = FindNativeLibraryPath(NativeName);
+                if (!string.IsNullOrWhiteSpace(full))
+                {
+                    var handle = NativeLibrary.Load(full);
+                    if (NativeLibrary.TryGetExport(handle, "linux_lstat", out var ptr))
+                        _linux_lstat_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
+                    if (NativeLibrary.TryGetExport(handle, "linux_readlink", out ptr))
+                        _linux_readlink_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
+                    if (NativeLibrary.TryGetExport(handle, "linux_canonicalize_file_name", out ptr))
+                        _linux_cfn_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
+                }
+            }
+            catch
+            {
+                // ignore — fallback to P/Invoke will be used
+            }
         }
         catch
         {
@@ -33,6 +52,13 @@ public static unsafe partial class FileSystem
     }
 
     private const string NativeName = "libOsCallsLinuxShim.so";
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private unsafe delegate IntPtr ShimFnDelegate([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
+
+    private static ShimFnDelegate? _linux_lstat_fn;
+    private static ShimFnDelegate? _linux_readlink_fn;
+    private static ShimFnDelegate? _linux_cfn_fn;
 
     private static IntPtr Resolver(
         string libraryName,
@@ -193,6 +219,11 @@ public static unsafe partial class FileSystem
     /// <returns>A JsonObject containing stat fields (st_dev, st_ino, st_mode, ...).</returns>
     public static JsonNode LStat(string path)
     {
+        if (_linux_lstat_fn is not null)
+        {
+            var ptr = _linux_lstat_fn(path);
+            return ToNode((ValueT*)ptr, path, "linux_lstat");
+        }
         return ToNode(lstat(path), path, nameof(lstat));
     }
 
@@ -203,6 +234,11 @@ public static unsafe partial class FileSystem
     /// <returns>A JsonNode with a <c>path</c> field set to the symlink target string.</returns>
     public static JsonNode ReadLink(string path)
     {
+        if (_linux_readlink_fn is not null)
+        {
+            var ptr = _linux_readlink_fn(path);
+            return ToNode((ValueT*)ptr, path, "linux_readlink");
+        }
         return ToNode(readlink(path), path, nameof(readlink));
     }
 
@@ -213,6 +249,11 @@ public static unsafe partial class FileSystem
     /// <returns>A JsonNode with a <c>path</c> field set to the canonical path.</returns>
     public static JsonNode Canonicalizefilename(string path)
     {
+        if (_linux_cfn_fn is not null)
+        {
+            var ptr = _linux_cfn_fn(path);
+            return ToNode((ValueT*)ptr, path, "linux_canonicalize_file_name");
+        }
         return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
 

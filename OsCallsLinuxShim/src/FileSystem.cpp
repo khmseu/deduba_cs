@@ -221,7 +221,7 @@ extern "C" {
  * @param path Filesystem path to inspect.
  * @return ValueT* cursor initialized with stat data or error number.
  */
-ValueT *lstat(const char *path) {
+ValueT *linux_lstat(const char *path) {
   auto stbuf = new struct stat();
   errno = 0;
   auto rc = ::lstat(path, stbuf);
@@ -235,6 +235,9 @@ ValueT *lstat(const char *path) {
   return v;
 };
 
+// Backwards-compatibility wrapper: call the linux_* prefixed implementation.
+ValueT *lstat(const char *path) { return linux_lstat(path); };
+
 /**
  * @brief Reads the target of a symbolic link and returns it as a string.
  *
@@ -244,7 +247,7 @@ ValueT *lstat(const char *path) {
  * @param path Path to the symbolic link.
  * @return ValueT* cursor with symlink target string or error number.
  */
-ValueT *readlink(const char *path) {
+ValueT *linux_readlink(const char *path) {
   if (slbufsz <= 0)
     slbufsz = 1024;
   auto  cnt = 0;
@@ -271,6 +274,9 @@ ValueT *readlink(const char *path) {
   return v;
 };
 
+// Backwards-compatibility wrapper: call the linux_* prefixed implementation.
+ValueT *readlink(const char *path) { return linux_readlink(path); };
+
 /**
  * @brief Resolves a path to its canonical absolute form.
  *
@@ -280,7 +286,7 @@ ValueT *readlink(const char *path) {
  * @param path Input path (relative or absolute, may contain symlinks).
  * @return ValueT* cursor with canonical path string or error number.
  */
-ValueT *canonicalize_file_name(const char *path) {
+ValueT *linux_canonicalize_file_name(const char *path) {
   // ::chown("*** before ***", errno, (intptr_t)path);
   errno = 0;
   auto cfn = ::canonicalize_file_name(path);
@@ -294,5 +300,8 @@ ValueT *canonicalize_file_name(const char *path) {
     v->Number = en;
   return v;
 };
+
+// Backwards-compatibility wrapper: call the linux_* prefixed implementation.
+ValueT *canonicalize_file_name(const char *path) { return linux_canonicalize_file_name(path); };
 }
 } // namespace OsCalls

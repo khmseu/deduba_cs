@@ -44,6 +44,12 @@ ValueT *readlink(const char *path);
  * @return ValueT cursor with "path" field containing canonical absolute path.
  */
 ValueT *canonicalize_file_name(const char *path);
+    
+	/* New shim-prefixed exports (Linux) - Add OS-prefixed symbols so the managed layer
+	   can bind to OS-prefixed names and fall back to legacy names when needed. */
+	ValueT *linux_lstat(const char *path);
+	ValueT *linux_readlink(const char *path);
+	ValueT *linux_canonicalize_file_name(const char *path);
 }
 } // namespace OsCalls
 
