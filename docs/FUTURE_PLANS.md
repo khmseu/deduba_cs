@@ -384,13 +384,13 @@ This document captures completed work, near-term, and mid-term enhancements for 
 ## Appendix: More Plans (merged from docs/More_Plans.md)
 
 - **Common Shim Names (refactor)** - this will require refactoring the existing code
-   - For an OS function named `SomeFunction`:
-      - Encapsulate it with a C++ method `OSNAME_SomeFunction`
-      - Add a result translator private method `handle_SomeFunction` on the native side
-      - Provide a C# wrapper `OsNameSomeFunction` in the platform C# shim
-   - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
-      - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
-      - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
+  - For an OS function named `SomeFunction`:
+    - Encapsulate it with a C++ method `OSNAME_SomeFunction`
+    - Add a result translator private method `handle_SomeFunction` on the native side
+    - Provide a C# wrapper `OsNameSomeFunction` in the platform C# shim
+  - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
+    - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
+    - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
 
 *Note:* This appendix consolidates additional ideas kept separately in `docs/More_Plans.md` and is intended to make the roadmap complete in one place.
 
@@ -408,4 +408,3 @@ Below are the tasks already marked as completed across the roadmap (confirmed `�
 - ArchiveStore core refactor and design choices (IArchiveStore, implementation) ✅ COMPLETED
 
 If you'd like, I can also add a short list of remaining `✅` (completed) items to the top of the document for quick scanning or filter these into a separate `docs/COMPLETED_ITEMS.md` file.
-
