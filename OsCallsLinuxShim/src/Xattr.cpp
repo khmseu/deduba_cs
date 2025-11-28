@@ -142,7 +142,9 @@ ValueT *linux_llistxattr(const char *path) {
 }
 
 // Backwards-compatibility wrapper: call the linux_* prefixed implementation.
-ValueT *llistxattr(const char *path) { return linux_llistxattr(path); };
+ValueT *llistxattr(const char *path) {
+  return linux_llistxattr(path);
+};
 
 /**
  * @brief Gets the value of a specific extended attribute (not following
@@ -186,6 +188,8 @@ ValueT *linux_lgetxattr(const char *path, const char *name) {
 }
 
 // Backwards-compatibility wrapper: call the linux_* prefixed implementation.
-ValueT *lgetxattr(const char *path, const char *name) { return linux_lgetxattr(path, name); };
+ValueT *lgetxattr(const char *path, const char *name) {
+  return linux_lgetxattr(path, name);
+};
 }
 } // namespace OsCalls

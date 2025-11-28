@@ -147,7 +147,9 @@ ValueT *linux_getpwuid(int64_t uid) {
 };
 
 // Backwards-compatibility wrapper: call linux_* implementation
-ValueT *getpwuid(int64_t uid) { return linux_getpwuid(uid); };
+ValueT *getpwuid(int64_t uid) {
+  return linux_getpwuid(uid);
+};
 
 /**
  * @brief Queries the group database for a group ID.
@@ -183,6 +185,8 @@ ValueT *linux_getgrgid(int64_t gid) {
 };
 
 // Backwards-compatibility wrapper: call linux_* implementation
-ValueT *getgrgid(int64_t gid) { return linux_getgrgid(gid); };
+ValueT *getgrgid(int64_t gid) {
+  return linux_getgrgid(gid);
+};
 }
 } // namespace OsCalls

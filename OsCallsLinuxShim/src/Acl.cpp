@@ -66,7 +66,9 @@ ValueT *linux_acl_get_file_access(const char *path) {
 
   return v;
 }
-ValueT *acl_get_file_access(const char *path) { return linux_acl_get_file_access(path); };
+ValueT *acl_get_file_access(const char *path) {
+  return linux_acl_get_file_access(path);
+};
 
 /**
  * @brief Reads the default ACL from a directory.
@@ -100,6 +102,8 @@ ValueT *linux_acl_get_file_default(const char *path) {
 
   return v;
 }
-ValueT *acl_get_file_default(const char *path) { return linux_acl_get_file_default(path); };
+ValueT *acl_get_file_default(const char *path) {
+  return linux_acl_get_file_default(path);
+};
 }
 } // namespace OsCalls
