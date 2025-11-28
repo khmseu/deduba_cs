@@ -299,6 +299,18 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - **Week 3:** Implement Windows, replicate for Windows-sensitive code paths
 - **Week 4:** Finish migration and tests, add CI cross-platform coverage
 
+### 3.10 Common Shim Names (refactor) 💡 Idea
+
+**Status:** Not started
+
+- For an OS function named `SomeFunction`:
+  - Encapsulate it with a C++ method `OSNAME_SomeFunction`
+  - Add a result translator private method `handle_SomeFunction` on the native side
+  - Provide a C# wrapper `OsNameSomeFunction` in the platform C# shim
+- The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
+  - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
+  - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
+
 ---
 
 ## Backlog Summary Table
@@ -335,6 +347,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 | Unit tests with mocks       | 💡 Idea    | High     | Mock interface for backup logic tests                |
 | Migration to new API        | 💡 Idea    | High     | Replace direct P/Invoke in `Deduba.cs`               |
 | Cross-platform integration  | 💡 Idea    | Medium   | Validate normalized output across platforms          |
+| Common shim naming refactor | 💡 Idea    | Medium   | Harmonize C++ shim names and C# wrappers (see docs/More_Plans.md) |
 | **Observability (General)** |            |          |                                                      |
 | Metrics export              | 💡 Idea    | Low      | Stdout JSON lines or Prometheus endpoint             |
 | Structured logging          | ❌ Pending | Medium   | Pipeline for long-running tasks                      |
@@ -365,3 +378,34 @@ This document captures completed work, near-term, and mid-term enhancements for 
 
 - 2025-11-16: Initial creation (distribution roadmap)
 - 2025-11-23: Merged ArchiveStore refactor notes and High-Level OS API plan; added completion status for all items
+
+---
+
+## Appendix: More Plans (merged from docs/More_Plans.md)
+
+- **Common Shim Names (refactor)** - this will require refactoring the existing code
+   - For an OS function named `SomeFunction`:
+      - Encapsulate it with a C++ method `OSNAME_SomeFunction`
+      - Add a result translator private method `handle_SomeFunction` on the native side
+      - Provide a C# wrapper `OsNameSomeFunction` in the platform C# shim
+   - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
+      - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
+      - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
+
+*Note:* This appendix consolidates additional ideas kept separately in `docs/More_Plans.md` and is intended to make the roadmap complete in one place.
+
+---
+
+## Snapshot: Completed Plans
+
+Below are the tasks already marked as completed across the roadmap (confirmed `✅ COMPLETED` in the roadmap):
+
+- CI integration (Part 1: Distribution & Release Automation) — build matrix, tests, CMake shims ✅ COMPLETED
+- Artifact upload (versioned archives, MinVer) ✅ COMPLETED
+- Packaging scripts (`scripts/package.sh`) ✅ COMPLETED
+- Windows validation (native runner + smoke test) ✅ COMPLETED
+- Release automation (MinVer, release job, changelog) ✅ COMPLETED
+- ArchiveStore core refactor and design choices (IArchiveStore, implementation) ✅ COMPLETED
+
+If you'd like, I can also add a short list of remaining `✅` (completed) items to the top of the document for quick scanning or filter these into a separate `docs/COMPLETED_ITEMS.md` file.
+
