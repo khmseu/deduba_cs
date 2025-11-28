@@ -236,7 +236,9 @@ ValueT *linux_lstat(const char *path) {
 };
 
 // Backwards-compatibility wrapper: call the linux_* prefixed implementation.
-ValueT *lstat(const char *path) { return linux_lstat(path); };
+ValueT *lstat(const char *path) {
+  return linux_lstat(path);
+};
 
 /**
  * @brief Reads the target of a symbolic link and returns it as a string.
@@ -275,7 +277,9 @@ ValueT *linux_readlink(const char *path) {
 };
 
 // Backwards-compatibility wrapper: call the linux_* prefixed implementation.
-ValueT *readlink(const char *path) { return linux_readlink(path); };
+ValueT *readlink(const char *path) {
+  return linux_readlink(path);
+};
 
 /**
  * @brief Resolves a path to its canonical absolute form.
@@ -302,6 +306,8 @@ ValueT *linux_canonicalize_file_name(const char *path) {
 };
 
 // Backwards-compatibility wrapper: call the linux_* prefixed implementation.
-ValueT *canonicalize_file_name(const char *path) { return linux_canonicalize_file_name(path); };
+ValueT *canonicalize_file_name(const char *path) {
+  return linux_canonicalize_file_name(path);
+};
 }
 } // namespace OsCalls

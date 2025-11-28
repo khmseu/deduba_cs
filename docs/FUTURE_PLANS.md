@@ -310,7 +310,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
   - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
   - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
-  **Recent progress:**
+    **Recent progress:**
   - ✅ Implemented Linux shim-triad exports with OS-prefixed names: `linux_lstat`, `linux_readlink`, `linux_canonicalize_file_name`.
   - ✅ Added compatibility wrappers for existing `lstat`, `readlink`, `canonicalize_file_name`.
   - ✅ Added runtime delegate binding to prefer `linux_*` exports with a fallback to legacy P/Invoke.
@@ -322,43 +322,43 @@ This document captures completed work, near-term, and mid-term enhancements for 
 
 ## Backlog Summary Table
 
-| Area                        | Status     | Priority | Notes                                                |
-| --------------------------- | ---------- | -------- | ---------------------------------------------------- |
-| **Distribution & CI**       |            |          |                                                      |
-| CI build matrix             | ✅ Done    | High     | Implemented in `.github/workflows/ci.yml`            |
-| Artifact upload             | ✅ Done    | High     | Versioned archives uploaded on Release builds        |
-| Release automation          | ✅ Done    | High     | Auto-release on `v*` tags with changelog             |
-| Packaging scripts           | ✅ Done    | High     | `scripts/package.sh` with MinVer versioning          |
-| Windows validation          | ✅ Done    | High     | Native Windows runner + smoke test                   |
-| Checksums                   | ❌ Pending | High     | SHA-512 checksums not yet generated                  |
-| CI caching                  | ⚠️ Partial | Medium   | TODO: Cache NuGet packages and native intermediates  |
-| Wine smoke test             | ❌ Pending | Medium   | Optional: test cross-compiled Windows binary on Wine |
-| Cleanup script              | ❌ Pending | Low      | `package.sh clean` mode to prune old artifacts       |
-| Container image             | 💡 Idea    | Medium   | Future: Docker/OCI image for deployment              |
-| Brew/winget                 | 💡 Idea    | Low      | Distribution via package managers                    |
-| SBOM & signing              | 💡 Idea    | Medium   | Security: generate SBOM, sign binaries               |
-| **ArchiveStore**            |            |          |                                                      |
-| Core refactor               | ✅ Done    | High     | `IArchiveStore` interface implemented with tests     |
-| Async variants              | ❌ Pending | Medium   | `SaveStreamAsync`, `BuildIndexAsync`                 |
-| Index persistence           | ❌ Pending | High     | Avoid full re-index on startup                       |
-| Atomic writes               | ❌ Pending | Medium   | Temp file + move for reliability                     |
-| Compaction/GC               | ❌ Pending | Medium   | Remove unused chunks, retention policies             |
-| Restore tooling             | ❌ Pending | High     | CLI for restore, integrity verification              |
-| Encryption at rest          | 💡 Idea    | Low      | AES-GCM with key rotation                            |
-| Observability               | ❌ Pending | Medium   | ILogger integration, Prometheus metrics              |
-| Concurrency tests           | ❌ Pending | Medium   | Simultaneous saves, reorg under load                 |
-| **High-Level OS API**       |            |          |                                                      |
-| Interface design            | 💡 Idea    | High     | `IHighLevelOsApi` in `OsCallsCommon`                 |
-| Linux implementation        | 💡 Idea    | High     | Wrap existing `FileSystem`/`Xattr`/`Acl`             |
-| Windows implementation      | 💡 Idea    | High     | Wrap `FileSystem`/`Streams`/`Security`               |
-| Unit tests with mocks       | 💡 Idea    | High     | Mock interface for backup logic tests                |
-| Migration to new API        | 💡 Idea    | High     | Replace direct P/Invoke in `Deduba.cs`               |
-| Cross-platform integration  | 💡 Idea    | Medium   | Validate normalized output across platforms          |
+| Area                        | Status     | Priority | Notes                                                             |
+| --------------------------- | ---------- | -------- | ----------------------------------------------------------------- |
+| **Distribution & CI**       |            |          |                                                                   |
+| CI build matrix             | ✅ Done    | High     | Implemented in `.github/workflows/ci.yml`                         |
+| Artifact upload             | ✅ Done    | High     | Versioned archives uploaded on Release builds                     |
+| Release automation          | ✅ Done    | High     | Auto-release on `v*` tags with changelog                          |
+| Packaging scripts           | ✅ Done    | High     | `scripts/package.sh` with MinVer versioning                       |
+| Windows validation          | ✅ Done    | High     | Native Windows runner + smoke test                                |
+| Checksums                   | ❌ Pending | High     | SHA-512 checksums not yet generated                               |
+| CI caching                  | ⚠️ Partial | Medium   | TODO: Cache NuGet packages and native intermediates               |
+| Wine smoke test             | ❌ Pending | Medium   | Optional: test cross-compiled Windows binary on Wine              |
+| Cleanup script              | ❌ Pending | Low      | `package.sh clean` mode to prune old artifacts                    |
+| Container image             | 💡 Idea    | Medium   | Future: Docker/OCI image for deployment                           |
+| Brew/winget                 | 💡 Idea    | Low      | Distribution via package managers                                 |
+| SBOM & signing              | 💡 Idea    | Medium   | Security: generate SBOM, sign binaries                            |
+| **ArchiveStore**            |            |          |                                                                   |
+| Core refactor               | ✅ Done    | High     | `IArchiveStore` interface implemented with tests                  |
+| Async variants              | ❌ Pending | Medium   | `SaveStreamAsync`, `BuildIndexAsync`                              |
+| Index persistence           | ❌ Pending | High     | Avoid full re-index on startup                                    |
+| Atomic writes               | ❌ Pending | Medium   | Temp file + move for reliability                                  |
+| Compaction/GC               | ❌ Pending | Medium   | Remove unused chunks, retention policies                          |
+| Restore tooling             | ❌ Pending | High     | CLI for restore, integrity verification                           |
+| Encryption at rest          | 💡 Idea    | Low      | AES-GCM with key rotation                                         |
+| Observability               | ❌ Pending | Medium   | ILogger integration, Prometheus metrics                           |
+| Concurrency tests           | ❌ Pending | Medium   | Simultaneous saves, reorg under load                              |
+| **High-Level OS API**       |            |          |                                                                   |
+| Interface design            | 💡 Idea    | High     | `IHighLevelOsApi` in `OsCallsCommon`                              |
+| Linux implementation        | 💡 Idea    | High     | Wrap existing `FileSystem`/`Xattr`/`Acl`                          |
+| Windows implementation      | 💡 Idea    | High     | Wrap `FileSystem`/`Streams`/`Security`                            |
+| Unit tests with mocks       | 💡 Idea    | High     | Mock interface for backup logic tests                             |
+| Migration to new API        | 💡 Idea    | High     | Replace direct P/Invoke in `Deduba.cs`                            |
+| Cross-platform integration  | 💡 Idea    | Medium   | Validate normalized output across platforms                       |
 | Common shim naming refactor | 💡 Idea    | Medium   | Harmonize C++ shim names and C# wrappers (see docs/More_Plans.md) |
-| **Observability (General)** |            |          |                                                      |
-| Metrics export              | 💡 Idea    | Low      | Stdout JSON lines or Prometheus endpoint             |
-| Structured logging          | ❌ Pending | Medium   | Pipeline for long-running tasks                      |
-| OpenTelemetry integration   | 💡 Idea    | Low      | Distributed tracing for complex workflows            |
+| **Observability (General)** |            |          |                                                                   |
+| Metrics export              | 💡 Idea    | Low      | Stdout JSON lines or Prometheus endpoint                          |
+| Structured logging          | ❌ Pending | Medium   | Pipeline for long-running tasks                                   |
+| OpenTelemetry integration   | 💡 Idea    | Low      | Distributed tracing for complex workflows                         |
 
 ---
 
@@ -399,7 +399,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
     - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
     - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
 
-*Note:* This appendix consolidates additional ideas kept separately in `docs/More_Plans.md` and is intended to make the roadmap complete in one place.
+_Note:_ This appendix consolidates additional ideas kept separately in `docs/More_Plans.md` and is intended to make the roadmap complete in one place.
 
 ---
 
