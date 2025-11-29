@@ -329,11 +329,11 @@ jobs:
             Write-Host "OsCallsWindowsShim/build-win-x64 not present"
           }
 
-      - name: Build OsCallsWindowsShim project (Windows) # Diagnostic
-        shell: pwsh
-        run: |
-          Write-Host "=== Building OsCallsWindowsShim project for diagnostics ==="
-          dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} -r win-x64 -v minimal
+      - name: Build OsCallsCommonShim project (Windows)
+        run: dotnet build OsCallsCommonShim/OsCallsCommonShim.csproj --configuration ${{ matrix.configuration }} --no-restore
+        
+      - name: Build OsCallsWindowsShim project (Windows)
+        run: dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
       - name: Build DeDuBa project (Windows)
         run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
