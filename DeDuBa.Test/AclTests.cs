@@ -1,6 +1,7 @@
 #if LINUX
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using OsCallsLinux;
 
 namespace DeDuBa.Test;
@@ -10,6 +11,7 @@ namespace DeDuBa.Test;
 /// </summary>
 [Collection("TestEnvironment")]
 [ResetUtilitiesLog]
+[SupportedOSPlatform("linux")]
 public class AclTests : IDisposable
 {
     private readonly string _testDirPath;
@@ -20,27 +22,33 @@ public class AclTests : IDisposable
         // Create a temporary test file
         _testFilePath = Path.Combine(Path.GetTempPath(), $"acl_test_{Guid.NewGuid()}.txt");
         File.WriteAllText(_testFilePath, "Test content for ACL testing");
-        File.SetUnixFileMode(
-            _testFilePath,
-            UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.GroupRead
-                | UnixFileMode.OtherRead
-        );
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                _testFilePath,
+                UnixFileMode.UserRead
+                    | UnixFileMode.UserWrite
+                    | UnixFileMode.GroupRead
+                    | UnixFileMode.OtherRead
+            );
+        }
 
         // Create a temporary test directory
         _testDirPath = Path.Combine(Path.GetTempPath(), $"acl_test_dir_{Guid.NewGuid()}");
         Directory.CreateDirectory(_testDirPath);
-        File.SetUnixFileMode(
-            _testDirPath,
-            UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.UserExecute
-                | UnixFileMode.GroupRead
-                | UnixFileMode.GroupExecute
-                | UnixFileMode.OtherRead
-                | UnixFileMode.OtherExecute
-        );
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                _testDirPath,
+                UnixFileMode.UserRead
+                    | UnixFileMode.UserWrite
+                    | UnixFileMode.UserExecute
+                    | UnixFileMode.GroupRead
+                    | UnixFileMode.GroupExecute
+                    | UnixFileMode.OtherRead
+                    | UnixFileMode.OtherExecute
+            );
+        }
 
         // Set test ACLs using setfacl
         SetAcl(_testFilePath, "u:daemon:rwx", false);
@@ -124,13 +132,16 @@ public class AclTests : IDisposable
         // Arrange - create a file with no extended ACL entries
         var cleanFilePath = Path.Combine(Path.GetTempPath(), $"acl_clean_{Guid.NewGuid()}.txt");
         File.WriteAllText(cleanFilePath, "Clean file");
-        File.SetUnixFileMode(
-            cleanFilePath,
-            UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.GroupRead
-                | UnixFileMode.OtherRead
-        );
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                cleanFilePath,
+                UnixFileMode.UserRead
+                    | UnixFileMode.UserWrite
+                    | UnixFileMode.GroupRead
+                    | UnixFileMode.OtherRead
+            );
+        }
 
         try
         {

@@ -196,4 +196,6 @@ namespace DeDuBa.Test
                 File.Delete(tmp);
             }
         }
+    }
+}
 #endif
