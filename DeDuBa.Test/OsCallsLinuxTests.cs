@@ -1,3 +1,5 @@
+// Only compile this test on Linux
+#if LINUX
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -194,5 +196,4 @@ namespace DeDuBa.Test
                 File.Delete(tmp);
             }
         }
-    }
-}
+#endif
