@@ -38,10 +38,14 @@
           a Win32 project that in turn compiles with a mismatched architecture and causes
           the 'No Target Architecture' error in Windows SDK headers. -->
     <CMakeGenerator Condition="'$(OS)' == 'Windows_NT'">Visual Studio 17 2022</CMakeGenerator>
-    <CMakeGeneratorExtraArgs Condition="'$(OS)' == 'Windows_NT'">-A x64</CMakeGeneratorExtraArgs>
-    <CMakeGeneratorExtraArgs Condition="'$(OS)' != 'Windows_NT'"
-      >-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs
-    >
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <CMakeGeneratorExtraArgs>-A x64</CMakeGeneratorExtraArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <CMakeGeneratorExtraArgs>-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
+  </PropertyGroup>
+  <PropertyGroup>
     <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''"
       >-G "$(CMakeGenerator)"</CMakeGeneratorFlag
     >
