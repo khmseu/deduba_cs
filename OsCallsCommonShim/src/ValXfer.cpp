@@ -14,7 +14,7 @@ extern "C" {
  * @param value Pointer to ValueT structure with initialized Handle.
  * @return true if more values remain, false if iteration is complete.
  */
-bool GetNextValue(ValueT *value) {
+DLL_EXPORT bool GetNextValue(ValueT *value) {
   auto ret = value->Handle.handler(value);
   value->Handle.index++;
   return ret;
@@ -31,7 +31,7 @@ bool GetNextValue(ValueT *value) {
  * @param data1 First user data pointer (passed to handler via Handle.data1).
  * @param data2 Second user data pointer (passed to handler via Handle.data2).
  */
-void CreateHandle(ValueT *value, HandlerT *handler, void *data1, void *data2) {
+DLL_EXPORT void CreateHandle(ValueT *value, HandlerT *handler, void *data1, void *data2) {
   value->Handle.handler = handler;
   value->Handle.data1 = data1;
   value->Handle.data2 = data2;
