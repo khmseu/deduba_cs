@@ -10,7 +10,13 @@ target_include_directories(OsCallsCommonShim PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
+# Compiler-specific warning / codegen flags
+if(MSVC)
+    # Use warning level 4; GCC/Clang flags like -Wextra trigger D8021 on cl.exe
+    target_compile_options(OsCallsCommonShim PRIVATE /W4)
+else()
+    target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
+endif()
 
 # Ensure consistent feature-test macros for Linux builds (also fallback in Platform.h)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
