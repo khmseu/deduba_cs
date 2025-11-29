@@ -331,7 +331,7 @@ jobs:
 
       - name: Build OsCallsCommonShim project (Windows)
         run: dotnet build OsCallsCommonShim/OsCallsCommonShim.csproj --configuration ${{ matrix.configuration }} --no-restore
-        
+
       - name: Build OsCallsWindowsShim project (Windows)
         run: dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
