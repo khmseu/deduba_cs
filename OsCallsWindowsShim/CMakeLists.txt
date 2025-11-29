@@ -29,12 +29,25 @@ target_include_directories(OsCallsWindowsShim PRIVATE
 # Windows-specific settings
 if(WIN32)
     # Windows compile-time defines moved into Platform.h for centralization
-    
+
     # Link against Windows libraries
     target_link_libraries(OsCallsWindowsShim PRIVATE
         advapi32  # For security APIs
         shlwapi   # For path APIs
     )
+
+    # Ensure target architecture macros exist for Windows SDK headers.
+    # CI shows winnt.h failing with "No Target Architecture" under MSVC.
+    # MSVC typically sets _M_X64/_M_AMD64/_WIN64 automatically for 64-bit,
+    # but we defensively add equivalents when building 64-bit to satisfy SDK.
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        target_compile_definitions(OsCallsWindowsShim PRIVATE
+            _AMD64_=1
+            _AMD64
+            _WIN64
+            WIN64
+        )
+    endif()
 endif()
 
 # Set output directory
