@@ -65,15 +65,15 @@
     Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'"
   >
     <Copy
-      SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll"
+      SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/$(Configuration)/OsCallsCommonShim.dll"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true"
     />
     <Copy
-      SourceFiles="../OsCallsWindowsShim/build-win-x64/bin/libOsCallsWindowsShim.dll"
+      SourceFiles="../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true"
-      Condition="Exists('../OsCallsWindowsShim/build-win-x64/bin/libOsCallsWindowsShim.dll')"
+      Condition="Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll')"
     />
   </Target>
 </Project>
