@@ -19,12 +19,16 @@
     <None Include="README.md" />
   </ItemGroup>
   <!-- Cross-compile native DLL via CMake only for Windows RID builds (win-x64) -->
-  <PropertyGroup>
-    <!-- Use MSBuildProjectDirectory instead of MSBuildThisFileDirectory to avoid trailing backslash
-    issues on
-         Windows PowerShell command line invocations. NativeBuildDir is based off the project directory. -->
+  <!-- Configure toolchain only for non-Windows (cross builds); on Windows use VS generator natively -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <!-- Use MSBuildProjectDirectory instead of MSBuildThisFileDirectory to avoid trailing backslash issues -->
     <NativeBuildDir>$(MSBuildProjectDirectory)/build-win-x64</NativeBuildDir>
     <CMakeToolchainFile>$(MSBuildProjectDirectory)/cmake/toolchains/mingw-w64-x86_64.cmake</CMakeToolchainFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <NativeBuildDir>$(MSBuildProjectDirectory)/build-win-x64</NativeBuildDir>
+    <!-- Ensure no cross toolchain file is passed on Windows -->
+    <CMakeToolchainFile></CMakeToolchainFile>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Platform-aware CMake generator and args.
@@ -81,16 +85,13 @@
     Condition="('$(RuntimeIdentifier)' == 'win-x64') Or ('$(OS)' == 'Windows_NT')"
     BeforeTargets="Build"
   >
-    <Message
-      Text="Configuring CMake (toolchain: $(CMakeToolchainFile)) into $(NativeBuildDir)"
-      Importance="High"
-    />
+    <Message Text="Configuring CMake into $(NativeBuildDir)" Importance="High" />
     <MakeDir Directories="$(NativeBuildDir)" />
     <!-- Run CMake from the project directory to avoid trailing backslash/quote issues when
          invoked under PowerShell. Use $(CMakeGeneratorFlag) if a generator is configured,
          otherwise rely on CMake defaults on the host. -->
     <Message Text="CMake generator flag: $(CMakeGeneratorFlag)" Importance="Low" />
-    <Message Text="CMake extra args: $(CMakeGeneratorExtraArgs)" Importance="Low" />
+    <Message Text="CMake extra args: $(CMakeGeneratorExtraArgs)" Importance="High" />
     <Exec
       WorkingDirectory="$(MSBuildProjectDirectory)"
       Command="cmake $(CMakeGeneratorFlag) -S . -B &quot;$(NativeBuildDir)&quot; $(CMakeGeneratorExtraArgs)"
