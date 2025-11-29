@@ -342,7 +342,7 @@ public static unsafe partial class ValXfer
     /// <summary>
     ///     Native iteration handle used by the shim to keep state across calls to <see cref="GetNextValue" />.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct HandleT
     {
         private readonly void* handler;
@@ -360,7 +360,7 @@ public static unsafe partial class ValXfer
     /// <summary>
     ///     Native timespec representation (seconds + nanoseconds) passed through from POSIX APIs.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public readonly struct TimeSpecT
     {
         /// <summary>Seconds since epoch.</summary>
@@ -375,7 +375,7 @@ public static unsafe partial class ValXfer
     ///     Depending on <see cref="Type" />, either <see cref="Number" />, <see cref="String" />, <see cref="Complex" />
     ///     or <see cref="TimeSpec" /> is populated.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public readonly struct ValueT
     {
         /// <summary>Iteration handle and state.</summary>

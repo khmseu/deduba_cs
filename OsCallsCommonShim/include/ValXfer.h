@@ -14,6 +14,11 @@
 #include <cstdint>
 #include <ctime>
 
+// Ensure 8-byte struct alignment across Windows and Linux
+#ifdef _MSC_VER
+#pragma pack(push, 8)
+#endif
+
 // Define the namespace
 namespace OsCalls {
 struct ValueT;
@@ -104,5 +109,10 @@ DLL_EXPORT void CreateHandle(ValueT *value, HandlerT *handler, void *data1, void
 
 /** @} */
 } // namespace OsCalls
+
+// Restore default packing
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 #endif // VALXFER_H
