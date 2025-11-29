@@ -40,7 +40,9 @@
     <CMakeGenerator Condition="'$(OS)' == 'Windows_NT'">Visual Studio 17 2022</CMakeGenerator>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <CMakeGeneratorExtraArgs>-A x64</CMakeGeneratorExtraArgs>
+    <!-- Force x64 platform selection across CMake + VS generators to avoid
+         missing target architecture macros in Windows SDK headers -->
+    <CMakeGeneratorExtraArgs>-A x64 -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_VS_PLATFORM_NAME=x64</CMakeGeneratorExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <CMakeGeneratorExtraArgs>-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
