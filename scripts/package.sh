@@ -42,10 +42,10 @@ KEEP_VERSIONS=3
 
 # Parse --keep=N option from arguments
 for arg in "$@"; do
-	if [[ $arg == --keep=* ]]; then
+	if [[ ${arg} == --keep=* ]]; then
 		KEEP_VERSIONS="${arg#*=}"
-		if ! [[ $KEEP_VERSIONS =~ ^[0-9]+$ ]] || [ "$KEEP_VERSIONS" -lt 1 ]; then
-			die "--keep value must be a positive integer, got: $KEEP_VERSIONS"
+		if ! [[ ${KEEP_VERSIONS} =~ ^[0-9]+$ ]] || [[ ${KEEP_VERSIONS} -lt 1 ]]; then
+			die "--keep value must be a positive integer, got: ${KEEP_VERSIONS}"
 		fi
 	fi
 done
@@ -59,32 +59,32 @@ clean_old_artifacts() {
 	local rid="$1"
 	local keep="${2:-3}"
 
-	log "Cleaning old artifacts for $rid (keeping last $keep versions)..."
+	log "Cleaning old artifacts for ${rid} (keeping last ${keep} versions)..."
 
 	# Find all versioned directories for this RID, sorted by modification time (newest first)
 	local dirs
 	dirs=$(find "${DIST_DIR}" -maxdepth 1 -type d -name "DeDuBa-*-${rid}" | sort -r)
 
-	if [ -z "$dirs" ]; then
-		log "No versioned directories found for $rid"
+	if [[ -z ${dirs} ]]; then
+		log "No versioned directories found for ${rid}"
 		return 0
 	fi
 
 	local count=0
 	while IFS= read -r dir; do
 		count=$((count + 1))
-		if [ $count -gt "$keep" ]; then
+		if [[ ${count} -gt ${keep} ]]; then
 			local base_name
-			base_name=$(basename "$dir")
-			log "Removing old artifact: $base_name"
-			rm -rf "$dir"
+			base_name=$(basename "${dir}")
+			log "Removing old artifact: ${base_name}"
+			rm -rf "${dir}"
 			# Also remove associated archives
 			rm -f "${DIST_DIR}/${base_name}.tar.gz" "${DIST_DIR}/${base_name}.tar.gz.sha512"
 			rm -f "${DIST_DIR}/${base_name}.zip" "${DIST_DIR}/${base_name}.zip.sha512"
 		fi
-	done <<<"$dirs"
+	done <<<"${dirs}"
 
-	log "Cleanup complete for $rid"
+	log "Cleanup complete for ${rid}"
 }
 
 check_cmd() {
@@ -190,9 +190,9 @@ all)
 	publish_windows
 	;;
 clean)
-	log "Starting cleanup of old artifacts (keeping last $KEEP_VERSIONS versions)..."
-	clean_old_artifacts "linux-x64" "$KEEP_VERSIONS"
-	clean_old_artifacts "win-x64" "$KEEP_VERSIONS"
+	log "Starting cleanup of old artifacts (keeping last ${KEEP_VERSIONS} versions)..."
+	clean_old_artifacts "linux-x64" "${KEEP_VERSIONS}"
+	clean_old_artifacts "win-x64" "${KEEP_VERSIONS}"
 	log "Cleanup complete"
 	exit 0
 	;;
