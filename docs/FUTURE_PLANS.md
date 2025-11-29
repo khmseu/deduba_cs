@@ -15,7 +15,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - ✅ Native shim build integrated (CMake for both Linux and Windows)
 - ✅ Tests run on both platforms with proper `LD_LIBRARY_PATH` configuration
 - ✅ Native Windows runner validates on actual Windows environment
-- ⚠️ TODO: Cache `~/.nuget/packages` and native build intermediates to speed up runs
+- ✅ NuGet packages and native build intermediates cached to speed up runs
 
 ### 2. Artifact Upload ✅ COMPLETED
 
@@ -27,12 +27,12 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - ✅ Release job triggers on `v*` tags; promotes artifacts to GitHub Release with auto-generated changelog
 - ⚠️ TODO: Optionally include symbol files (`*.pdb`) and XML docs for developer builds
 
-### 3. Checksums & Integrity ❌ PENDING
+### 3. Checksums & Integrity ✅ COMPLETED
 
-**Status:** Not yet implemented
+**Status:** Implemented in `scripts/package.sh`
 
-- ❌ Generate SHA-512 checksum files alongside archives: `DeDuBa-<version>-<rid>.tar.gz.sha512`
-- ❌ Provide verification snippet in README (`shasum -a 512 -c`)
+- ✅ Generate SHA-512 checksum files alongside archives: `DeDuBa-<version>-<rid>.tar.gz.sha512`
+- ✅ Provide verification snippet in README (`sha512sum -c`)
 - 💡 Future: Signed checksums (GPG) if distribution extends beyond internal use
 
 ### 4. Packaging Scripts ✅ COMPLETED
@@ -299,9 +299,9 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - **Week 3:** Implement Windows, replicate for Windows-sensitive code paths
 - **Week 4:** Finish migration and tests, add CI cross-platform coverage
 
-## 3.10 Common Shim Names (refactor) 💡 Idea
+## 3.10 Common Shim Names (refactor) ✅ COMPLETED
 
-**Status:** Not started
+**Status:** Completed for both Linux and Windows
 
 - For an OS function named `SomeFunction`:
   - Encapsulate it with a C++ method `OSNAME_SomeFunction`
@@ -310,16 +310,24 @@ This document captures completed work, near-term, and mid-term enhancements for 
 - The `IHighLevelOsApi` and the high-level OS API should use those C# wrappers to normalize platform calls and results across OSs
   - Benefits: single naming pattern, easier to generate bindings, clearer separation between native and managed layers
   - Risk / effort: Requires refactoring existing native shim function names; must be done in small increments to avoid merge conflicts
-    **Recent progress:**
-  - ✅ Implemented Linux shim-triad exports with OS-prefixed names: `linux_lstat`, `linux_readlink`, `linux_canonicalize_file_name`.
-  - ✅ Added compatibility wrappers for existing `lstat`, `readlink`, `canonicalize_file_name`.
-  - ✅ Added runtime delegate binding to prefer `linux_*` exports with a fallback to legacy P/Invoke.
-  - ✅ Added Linux unit tests and CI symbol verification.
-  - ✅ Expanded OS-prefixed shim exports: added `linux_llistxattr`, `linux_lgetxattr`, `linux_getpwuid`, `linux_getgrgid`, `linux_acl_get_file_access`, `linux_acl_get_file_default`.
-  - ✅ Added compatibility wrappers for the above functions and updated managed runtime bindings and tests accordingly.
-  - ✅ Added Linux-prefixed C# wrappers (e.g., `LinuxLStat`, `LinuxReadLink`, `LinuxGetFileAccess`, etc.) that delegate to existing platform shim methods.
 
-  Suggested next step: implement the equivalent `windows_` exports and runtime binding for Windows shims, preserve wrappers, and extend tests/CI accordingly.
+**Completed progress:**
+
+- ✅ Implemented Linux shim-triad exports with OS-prefixed names: `linux_lstat`, `linux_readlink`, `linux_canonicalize_file_name`.
+- ✅ Added compatibility wrappers for existing `lstat`, `readlink`, `canonicalize_file_name`.
+- ✅ Added runtime delegate binding to prefer `linux_*` exports with a fallback to legacy P/Invoke.
+- ✅ Added Linux unit tests and CI symbol verification.
+- ✅ Expanded OS-prefixed shim exports: added `linux_llistxattr`, `linux_lgetxattr`, `linux_getpwuid`, `linux_getgrgid`, `linux_acl_get_file_access`, `linux_acl_get_file_default`.
+- ✅ Added compatibility wrappers for the above functions and updated managed runtime bindings and tests accordingly.
+- ✅ Added Linux-prefixed C# wrappers (e.g., `LinuxLStat`, `LinuxReadLink`, `LinuxGetFileAccess`, etc.) that delegate to existing platform shim methods.
+- ✅ **Implemented Windows shim refactor (commits 6862b43, a486a11, 7cc75c4):**
+  - Created 6 `windows_*` C++ exports: `windows_GetFileInformationByHandle`, `windows_DeviceIoControl_GetReparsePoint`, `windows_GetFinalPathNameByHandleW`, `windows_GetNamedSecurityInfoW`, `windows_FindFirstStreamW`, `windows_ReadFile_Stream`
+  - Renamed handler functions to match Windows API names
+  - Preserved legacy `win_*` wrappers for backward compatibility
+  - Added C# `Windows*` wrapper methods in OsCallsWindows (FileSystem.cs, Security.cs, Streams.cs)
+  - Build verified successful
+
+  **Next step:** Design and implement `IHighLevelOsApi` interface to use these wrappers for cross-platform normalization.
 
 ---
 
@@ -333,8 +341,8 @@ This document captures completed work, near-term, and mid-term enhancements for 
 | Release automation          | ✅ Done    | High     | Auto-release on `v*` tags with changelog                          |
 | Packaging scripts           | ✅ Done    | High     | `scripts/package.sh` with MinVer versioning                       |
 | Windows validation          | ✅ Done    | High     | Native Windows runner + smoke test                                |
-| Checksums                   | ❌ Pending | High     | SHA-512 checksums not yet generated                               |
-| CI caching                  | ⚠️ Partial | Medium   | TODO: Cache NuGet packages and native intermediates               |
+| Checksums                   | ✅ Done    | High     | SHA-512 checksums generated by package.sh                         |
+| CI caching                  | ✅ Done    | Medium   | NuGet packages and native builds cached                           |
 | Wine smoke test             | ❌ Pending | Medium   | Optional: test cross-compiled Windows binary on Wine              |
 | Cleanup script              | ❌ Pending | Low      | `package.sh clean` mode to prune old artifacts                    |
 | Container image             | 💡 Idea    | Medium   | Future: Docker/OCI image for deployment                           |
@@ -357,7 +365,7 @@ This document captures completed work, near-term, and mid-term enhancements for 
 | Unit tests with mocks       | 💡 Idea    | High     | Mock interface for backup logic tests                             |
 | Migration to new API        | 💡 Idea    | High     | Replace direct P/Invoke in `Deduba.cs`                            |
 | Cross-platform integration  | 💡 Idea    | Medium   | Validate normalized output across platforms                       |
-| Common shim naming refactor | 💡 Idea    | Medium   | Harmonize C++ shim names and C# wrappers (see docs/More_Plans.md) |
+| Common shim naming refactor | ✅ Done    | Medium   | Linux and Windows shims refactored with OS-prefixed names         |
 | **Observability (General)** |            |          |                                                                   |
 | Metrics export              | 💡 Idea    | Low      | Stdout JSON lines or Prometheus endpoint                          |
 | Structured logging          | ❌ Pending | Medium   | Pipeline for long-running tasks                                   |
@@ -368,17 +376,17 @@ This document captures completed work, near-term, and mid-term enhancements for 
 ## Immediate Next Steps (Priority Order)
 
 1. **High Priority:**
-   - ❌ Add SHA-512 checksum generation to `scripts/package.sh`
+   - ✅ ~~Add SHA-512 checksum generation to `scripts/package.sh`~~ COMPLETED
    - ❌ Implement index persistence for `ArchiveStore` (avoid full re-index)
    - ❌ Design and prototype `IHighLevelOsApi` interface
 
 2. **Medium Priority:**
-   - ❌ Add CI caching for NuGet packages and native build intermediates
+   - ✅ ~~Add CI caching for NuGet packages and native build intermediates~~ COMPLETED
    - ❌ Implement `ArchiveStore` async variants (`SaveStreamAsync`, `BuildIndexAsync`)
    - ❌ Add restore CLI tooling and integrity verification
 
 3. **Low Priority:**
-   - ❌ Implement `package.sh clean` mode for artifact pruning
+   - 🔄 **IN PROGRESS:** Implement `package.sh clean` mode for artifact pruning
    - ❌ Add Wine-based smoke test for cross-compiled Windows binary
    - ❌ Design container image for deployment
 

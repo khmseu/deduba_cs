@@ -20,7 +20,14 @@ fi
 # Produces self-contained single-file builds plus required native shims.
 #
 # Usage:
-#   scripts/package.sh [linux-x64|win-x64|all] [Debug|Release]
+#   scripts/package.sh [linux-x64|win-x64|all|clean] [Debug|Release] [--keep=N]
+#
+# Commands:
+#   linux-x64, win-x64, all - Build and package for specified platform(s)
+#   clean                   - Remove old versioned artifacts (keeps last 3 by default)
+#
+# Options:
+#   --keep=N               - When cleaning, keep last N versions (default: 3)
 #
 # Outputs (version from MinVer):
 #   dist/DeDuBa-<version>-<rid>/ ... files ...
@@ -31,10 +38,54 @@ ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 DIST_DIR="${ROOT_DIR}/dist"
 CONFIG="${2:-Release}"
 TARGET="${1:-all}"
+KEEP_VERSIONS=3
+
+# Parse --keep=N option from arguments
+for arg in "$@"; do
+	if [[ $arg == --keep=* ]]; then
+		KEEP_VERSIONS="${arg#*=}"
+		if ! [[ $KEEP_VERSIONS =~ ^[0-9]+$ ]] || [ "$KEEP_VERSIONS" -lt 1 ]; then
+			die "--keep value must be a positive integer, got: $KEEP_VERSIONS"
+		fi
+	fi
+done
 
 mkdir -p "${DIST_DIR}"
 
 log() { echo "[package] $*"; }
+
+# Clean old versioned artifacts, keeping the last N versions
+clean_old_artifacts() {
+	local rid="$1"
+	local keep="${2:-3}"
+
+	log "Cleaning old artifacts for $rid (keeping last $keep versions)..."
+
+	# Find all versioned directories for this RID, sorted by modification time (newest first)
+	local dirs
+	dirs=$(find "${DIST_DIR}" -maxdepth 1 -type d -name "DeDuBa-*-${rid}" | sort -r)
+
+	if [ -z "$dirs" ]; then
+		log "No versioned directories found for $rid"
+		return 0
+	fi
+
+	local count=0
+	while IFS= read -r dir; do
+		count=$((count + 1))
+		if [ $count -gt "$keep" ]; then
+			local base_name
+			base_name=$(basename "$dir")
+			log "Removing old artifact: $base_name"
+			rm -rf "$dir"
+			# Also remove associated archives
+			rm -f "${DIST_DIR}/${base_name}.tar.gz" "${DIST_DIR}/${base_name}.tar.gz.sha512"
+			rm -f "${DIST_DIR}/${base_name}.zip" "${DIST_DIR}/${base_name}.zip.sha512"
+		fi
+	done <<<"$dirs"
+
+	log "Cleanup complete for $rid"
+}
 
 check_cmd() {
 	if ! command -v "$1" >/dev/null 2>&1; then
@@ -138,8 +189,22 @@ all)
 	publish_linux
 	publish_windows
 	;;
+clean)
+	log "Starting cleanup of old artifacts (keeping last $KEEP_VERSIONS versions)..."
+	clean_old_artifacts "linux-x64" "$KEEP_VERSIONS"
+	clean_old_artifacts "win-x64" "$KEEP_VERSIONS"
+	log "Cleanup complete"
+	exit 0
+	;;
 *)
-	echo "Usage: $0 [linux-x64|win-x64|all] [Debug|Release]"
+	echo "Usage: $0 [linux-x64|win-x64|all|clean] [Debug|Release] [--keep=N]"
+	echo ""
+	echo "Commands:"
+	echo "  linux-x64, win-x64, all  - Build and package for specified platform(s)"
+	echo "  clean                    - Remove old versioned artifacts (keeps last 3 by default)"
+	echo ""
+	echo "Options:"
+	echo "  --keep=N                 - When cleaning, keep last N versions (default: 3)"
 	exit 2
 	;;
 esac

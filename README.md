@@ -31,6 +31,26 @@ cd dist/DeDuBa-linux-x64
 
 On Windows, just run `DeDuBa.exe` in-place.
 
+### Verifying Downloads
+
+The packaging script generates SHA-512 checksum files for integrity verification:
+
+```bash
+# Verify a single archive
+sha512sum -c dist/DeDuBa-<version>-linux-x64.tar.gz.sha512
+
+# Verify all archives in dist/
+sha512sum -c dist/*.sha512
+```
+
+Successful verification will output:
+
+```
+DeDuBa-<version>-linux-x64.tar.gz: OK
+```
+
+If checksums don't match, the download may be corrupted or tampered with. Re-download the archive from a trusted source.
+
 ## Changelog
 
 For curated release notes, see `docs/CHANGELOG.md`.
