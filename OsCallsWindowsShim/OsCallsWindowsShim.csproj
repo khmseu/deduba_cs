@@ -56,6 +56,13 @@
       >-G "$(CMakeGenerator)"</CMakeGeneratorFlag
     >
   </PropertyGroup>
+  <!-- MSBuild platform args for cmake build on Windows to ensure x64 -->
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <CMakeBuildPlatformArgs>-- /p:Platform=x64</CMakeBuildPlatformArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <CMakeBuildPlatformArgs></CMakeBuildPlatformArgs>
+  </PropertyGroup>
   <ItemGroup>
     <!-- Native runtime libraries; copy them into managed output to make them locatable by the
     P/Invoke loader.
@@ -108,11 +115,7 @@
       Importance="High"
     />
     <!-- Build with optional tool flags: use -j for ninja, /m for MSBuild generator (when explicitly set).
-         On Windows, pass /p:Platform=x64 to MSBuild via -- to ensure MSVC defines _M_X64. -->
-    <PropertyGroup>
-      <CMakeBuildPlatformArgs Condition="'$(OS)' == 'Windows_NT'">-- /p:Platform=x64</CMakeBuildPlatformArgs>
-      <CMakeBuildPlatformArgs Condition="'$(OS)' != 'Windows_NT'"></CMakeBuildPlatformArgs>
-    </PropertyGroup>
+         On Windows, pass /p:Platform=x64 to MSBuild via double-dash to ensure MSVC defines _M_X64. -->
     <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot; --config $(Configuration) $(CMakeBuildFlags) $(CMakeBuildPlatformArgs)" />
   </Target>
   <Target Name="CopySharedLibrary" AfterTargets="Build">
