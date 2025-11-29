@@ -84,7 +84,11 @@ public static unsafe partial class ValXfer
         IsBoolean,
     }
 
+#if LINUX
     [LibraryImport("libOsCallsCommonShim.so")]
+#else
+    [LibraryImport("OsCallsCommonShim")]
+#endif
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetNextValue(ValueT* value);

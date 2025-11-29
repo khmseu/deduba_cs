@@ -18,7 +18,8 @@
   <!-- Copy the shared library to output directory -->
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
-      <SharedLib Include="bin/$(Configuration)/net8.0/libOsCallsCommonShim.so" />
+      <SharedLib Include="bin/$(Configuration)/net8.0/libOsCallsCommonShim.so" Condition="'$(OS)'!='Windows_NT'" />
+      <SharedLib Include="bin/$(Configuration)/net8.0/OsCallsCommonShim.dll" Condition="'$(OS)'=='Windows_NT'" />
     </ItemGroup>
     <Copy
       SourceFiles="@(SharedLib)"
