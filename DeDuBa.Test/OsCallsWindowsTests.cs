@@ -266,17 +266,14 @@ public class OsCallsWindowsTests : IDisposable
         // Arrange
         var nonExistentPath = Path.Combine(_testDirPath, "does_not_exist.txt");
 
-        // Act
-        var result = FileSystem.LStat(nonExistentPath);
+        // Act & Assert
+        var ex = Assert.Throws<Exception>(() => FileSystem.LStat(nonExistentPath));
 
-        // Assert
-        Assert.NotNull(result);
-        var resultObj = result.AsObject();
-
-        // Should have an error number (ERROR_FILE_NOT_FOUND = 2)
-        Assert.True(resultObj.ContainsKey("errno"));
-        var errNo = resultObj["errno"]?.GetValue<int>();
-        Assert.True(errNo > 0);
+        // Should have Win32Exception as inner exception with ERROR_FILE_NOT_FOUND (2)
+        Assert.NotNull(ex.InnerException);
+        Assert.IsType<Win32Exception>(ex.InnerException);
+        var win32Ex = (Win32Exception)ex.InnerException;
+        Assert.Equal(2, win32Ex.NativeErrorCode); // ERROR_FILE_NOT_FOUND
     }
 
     [Fact]

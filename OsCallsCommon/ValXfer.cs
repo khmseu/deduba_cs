@@ -108,24 +108,6 @@ public static unsafe partial class ValXfer
         ShowValue(value, "", op);
         var maybeError = (int)value->Number;
         var wasOk = value->Type;
-        
-        // For error returns, don't call GetNextValue - just process the errno
-        if (wasOk == TypeT.IsError || wasOk == TypeT.IsNumber)
-        {
-            // Check if this is actually an error response (errno field)
-            var namePtr = value->Name;
-            if (namePtr != IntPtr.Zero)
-            {
-                var fieldName = Marshal.PtrToStringUTF8(namePtr);
-                if (fieldName == "errno")
-                {
-                    var win32Exception = new Win32Exception(maybeError);
-                    Utilities.Error(file, op, win32Exception);
-                    throw new Exception($"{op} failed with error {win32Exception.Message}", win32Exception);
-                }
-            }
-        }
-        
         var more = GetNextValue(value);
         if (wasOk == TypeT.IsError)
         {
@@ -136,7 +118,6 @@ public static unsafe partial class ValXfer
             // callers and tests consistently receive a System.Exception containing the native error.
             throw new Exception($"{op} failed with error {win32Exception.Message}", win32Exception);
         }
-
         var name =
             Marshal.PtrToStringUTF8(value->Name)
             ?? throw new ArgumentNullException(nameof(value), $"{op} Feld {nameof(ValueT.Name)}");
