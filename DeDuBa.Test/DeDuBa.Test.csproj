@@ -65,7 +65,7 @@
     Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'"
   >
     <Copy
-      SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/$(Configuration)/OsCallsCommonShim.dll"
+      SourceFiles="../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true"
     />
