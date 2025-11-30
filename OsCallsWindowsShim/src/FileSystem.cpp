@@ -289,7 +289,8 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
     }
   // Error case - fall through to cleanup
   default:
-    if (info) delete info;  // Null-safe cleanup
+    if (info)
+      delete info; // Null-safe cleanup
     return false;
   case 1:
     set_val(Number, "st_ino", info->fileIndex.QuadPart);
@@ -389,8 +390,8 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
 }
 
 extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *path) {
-  auto info = new WinFileInfo{};
-  auto v = new ValueT();
+  auto               info = new WinFileInfo{};
+  auto               v = new ValueT();
   static const char *errno_name = "errno";
 
   // Open file/directory without following reparse points
@@ -401,9 +402,9 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     // Return error as errno field for consistency with LStat expectations
     delete info;
     v->Type = TypeT::IsNumber;
-    v->Name = errno_name;  // Use static literal
+    v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr;   // Ensure pointer is null
+    v->String = nullptr; // Ensure pointer is null
     v->Complex = nullptr;
     return v;
   }
