@@ -121,7 +121,8 @@ using namespace OsCalls;
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_GetNamedSecurityInfoW(ValueT *value) {
-  auto sddl = reinterpret_cast<wchar_t *>(value->Handle.data1);
+  auto               sddl = reinterpret_cast<wchar_t *>(value->Handle.data1);
+  static const char *sddl_name = "sddl"; // Stable static pointer
   switch (value->Handle.index) {
   case 0:
     if (value->Type == TypeT::IsOk) {
@@ -131,7 +132,7 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, sddl, -1, utf8, size, nullptr, nullptr);
         value->String = utf8;
-        value->Name = "sddl";
+        value->Name = sddl_name; // Use stable static literal
         value->Type = TypeT::IsString;
         return true;
       }
@@ -141,7 +142,7 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
     if (sddl) {
       LocalFree(sddl); // SDDL strings are allocated by LocalAlloc
     }
-    delete value;
+    // REMOVED: delete value; - managed code owns ValueT lifetime
     return false;
   }
 }

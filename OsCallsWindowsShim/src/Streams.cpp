@@ -138,13 +138,13 @@ static bool handle_FindFirstStreamW(ValueT *value) {
     if (value->Type != TypeT::IsOk) {
       // Error case
       delete streams;
-      delete value;
+      // REMOVED: delete value; - managed code owns ValueT lifetime
       return false;
     }
     // Start iteration - return first stream if available
     if (streams->names.empty()) {
       delete streams;
-      delete value;
+      // REMOVED: delete value; - managed code owns ValueT lifetime
       return false;
     }
     streams->currentIndex = 0;
@@ -155,7 +155,7 @@ static bool handle_FindFirstStreamW(ValueT *value) {
   if (idx >= streams->names.size()) {
     // End of iteration
     delete streams;
-    delete value;
+    // REMOVED: delete value; - managed code owns ValueT lifetime
     return false;
   }
 
@@ -187,20 +187,20 @@ static bool handle_FindFirstStreamW(ValueT *value) {
     switch (v->Handle.index) {
     case 0:
       v->Type = TypeT::IsString;
-      v->Name = "name";
+      v->Name = "name"; // String literal has static storage duration
       v->String = sod->name;
       v->Handle.index++;
       return true;
     case 1:
       v->Type = TypeT::IsNumber;
-      v->Name = "size";
+      v->Name = "size"; // String literal has static storage duration
       v->Number = sod->size;
       v->Handle.index++;
       return true;
     default:
       delete[] sod->name;
       delete sod;
-      delete v;
+      // REMOVED: delete v; - managed code owns ValueT lifetime
       return false;
     }
   };
@@ -277,7 +277,8 @@ struct StreamData {
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_ReadFile_Stream(ValueT *value) {
-  auto streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
+  auto               streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
+  static const char *content_name = "content"; // Stable static pointer
   switch (value->Handle.index) {
   case 0:
     if (value->Type == TypeT::IsOk) {
@@ -288,14 +289,14 @@ static bool handle_ReadFile_Stream(ValueT *value) {
       memcpy(str, streamData->data.data(), dataSize);
       str[dataSize] = '\0';
       value->String = str;
-      value->Name = "content";
+      value->Name = content_name; // Use stable static literal
       value->Type = TypeT::IsString;
       return true;
     }
   // Error case - fall through
   default:
     delete streamData;
-    delete value;
+    // REMOVED: delete value; - managed code owns ValueT lifetime
     return false;
   }
 }
