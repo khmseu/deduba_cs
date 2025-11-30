@@ -382,7 +382,6 @@ public static unsafe partial class ValXfer
         public readonly HandleT Handle;
 
         /// <summary>Field/key name or "[]" for array items.</summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly IntPtr Name;
 
         /// <summary>Discriminator indicating which field is valid.</summary>
@@ -395,7 +394,6 @@ public static unsafe partial class ValXfer
         public readonly Int64 Number;
 
         /// <summary>String value pointer when Type == IsString.</summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly IntPtr String;
 
         /// <summary>Nested structure pointer when Type == IsComplex.</summary>
