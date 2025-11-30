@@ -4,10 +4,20 @@ project(OsCallsCommonShim LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Include module for generating export headers
+include(GenerateExportHeader)
+
 add_library(OsCallsCommonShim SHARED src/ValXfer.cpp)
+
+# Generate export header with proper __declspec(dllexport) macros
+generate_export_header(OsCallsCommonShim
+    BASE_NAME OSCALLS_COMMON_SHIM
+    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/OsCallsCommonShim_export.h
+)
 
 target_include_directories(OsCallsCommonShim PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
 # Ensure all symbols are exported for MSVC (helps with P/Invoke)

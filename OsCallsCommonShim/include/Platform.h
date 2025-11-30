@@ -5,28 +5,23 @@
  * Platform.h
  * Cross-platform DLL_EXPORT macro used by the native shim projects.
  * This header should be included first in each .cpp file, before other
- * includes. It defines DLL_EXPORT appropriately for Windows via
- * __declspec(dllexport) and for other platforms as a no-op or GCC visibility
- * attribute.
+ * includes. It uses CMake's generate_export_header to properly handle
+ * DLL exports on Windows and visibility on other platforms.
  *
  * When generating Doxygen docs (or when compiling for documentation), define
  * DOXYGEN or set PREDEFINED in Doxygen to avoid Doxygen confusing attributes.
  */
+
+// Use the CMake-generated export header
+#include "OsCallsCommonShim_export.h"
 
 #if defined(DOXYGEN)
 /* When Doxygen is running, neutralize attributes so that Doxygen does not get
  * confused. */
 #define DLL_EXPORT
 #else
-#if defined(_WIN32) || defined(_WIN64) || defined(__MINGW32__) || defined(__MINGW64__)
-#define DLL_EXPORT __declspec(dllexport)
-#else
-#if defined(__GNUC__) || defined(__clang__)
-#define DLL_EXPORT __attribute__((visibility("default")))
-#else
-#define DLL_EXPORT
-#endif
-#endif
+// Define the DLL export macro using CMake's generated symbol
+#define DLL_EXPORT OSCALLS_COMMON_SHIM_EXPORT
 #endif
 
 /*
