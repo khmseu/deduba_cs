@@ -290,7 +290,6 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
   // Error case - fall through to cleanup
   default:
     delete info;
-    delete value;
     return false;
   case 1:
     set_val(Number, "st_ino", info->fileIndex.QuadPart);
@@ -486,7 +485,6 @@ static bool handle_DeviceIoControl_GetReparsePoint(ValueT *value) {
   // Error or conversion failed - fall through
   default:
     delete[] target;
-    delete value;
     return false;
   }
 }
@@ -571,7 +569,8 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
-  auto cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
+  auto               cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
+  static const char *static_name = "path";
   switch (value->Handle.index) {
   case 0:
     if (value->Type == TypeT::IsOk) {
@@ -581,7 +580,7 @@ static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
         value->String = utf8;
-        value->Name = "path";
+        value->Name = static_name; // Use stable static literal
         value->Type = TypeT::IsString;
         return true;
       }
@@ -589,7 +588,6 @@ static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
   // Error or conversion failed - fall through
   default:
     delete[] cfn;
-    delete value;
     return false;
   }
 }
