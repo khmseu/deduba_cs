@@ -1,0 +1,8 @@
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/CMakeFiles/edit_cache.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/CMakeFiles/rebuild_cache.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsCommonShim/CMakeFiles/OsCallsCommonShim.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsCommonShim/CMakeFiles/edit_cache.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsCommonShim/CMakeFiles/rebuild_cache.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsLinuxShim/CMakeFiles/OsCallsLinuxShim.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsLinuxShim/CMakeFiles/edit_cache.dir
+/home/runner/work/deduba_cs/deduba_cs/_codeql_build_dir/OsCallsLinuxShim/CMakeFiles/rebuild_cache.dir
