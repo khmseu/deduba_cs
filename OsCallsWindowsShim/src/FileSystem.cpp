@@ -603,9 +603,8 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    canonical = new wchar_t[1];
-    canonical[0] = L'\0';
-    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
+    v->Type = TypeT::IsNumber;
+    v->Name = "errno";
     v->Number = err;
     return v;
   }
@@ -616,9 +615,8 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   if (bufferSize == 0) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    canonical = new wchar_t[1];
-    canonical[0] = L'\0';
-    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
+    v->Type = TypeT::IsNumber;
+    v->Name = "errno";
     v->Number = err;
     return v;
   }
@@ -631,9 +629,8 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   if (result == 0 || result >= bufferSize) {
     DWORD err = GetLastError();
     delete[] canonical;
-    canonical = new wchar_t[1];
-    canonical[0] = L'\0';
-    CreateHandle(v, handle_GetFinalPathNameByHandleW, canonical, nullptr);
+    v->Type = TypeT::IsNumber;
+    v->Name = "errno";
     v->Number = err;
     return v;
   }
