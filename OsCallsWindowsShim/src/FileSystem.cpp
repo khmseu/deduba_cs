@@ -416,7 +416,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     // Return error as errno field for consistency with LStat expectations
     delete info;
     CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsNumber;
+    v->Type = TypeT::IsError;
     v->Name = errno_name; // Use static literal
     v->Number = err;
     return v;
@@ -430,7 +430,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     CreateHandle(v, handle_error, nullptr, nullptr);
     CreateHandle(v, handle_error, nullptr, nullptr);
     delete info;
-    v->Type = TypeT::IsNumber;
+    v->Type = TypeT::IsError;
     v->Name = errno_name; // Use static literal
     v->Number = err;
     return v;
@@ -618,10 +618,11 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
 
   // Open the file/directory
   HANDLE hFile = win_open_path(path, 0);
+  CreateHandle(v, handle_error, nullptr, nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    v->Type = TypeT::IsNumber;
+    v->Type = TypeT::IsError;
     v->Name = errno_name; // Use static literal
     v->Number = err;
     return v;
@@ -634,7 +635,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     CreateHandle(v, handle_error, nullptr, nullptr);
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    v->Type = TypeT::IsNumber;
+    v->Type = TypeT::IsError;
     v->Name = errno_name; // Use static literal
     v->Number = err;
     return v;
@@ -649,7 +650,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     DWORD err = GetLastError();
     delete[] canonical;
     CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsNumber;
+    v->Type = TypeT::IsError;
     v->Name = errno_name; // Use static literal
     v->Number = err;
     return v;
