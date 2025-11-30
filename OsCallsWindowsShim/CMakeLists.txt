@@ -4,18 +4,20 @@ project(OsCallsWindowsShim VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Source files
+# Source files (Windows shim specific only)
 file(GLOB SOURCES "src/*.cpp")
 
-# Add ValXfer.cpp from OsCallsCommonShim
-list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/src/ValXfer.cpp")
+# IMPORTANT: Do NOT append ValXfer.cpp here.
+# ValXfer.cpp belongs exclusively to OsCallsCommonShim and is built once
+# into that shared library. The platform shims (Linux/Windows) must link
+# against OsCallsCommonShim instead of compiling ValXfer.cpp again to avoid
+# duplicate objects and missing exports.
 
 # Link against common shim (built separately or by parent CMake)
 if(NOT TARGET OsCallsCommonShim)
     add_subdirectory(../OsCallsCommonShim ${CMAKE_CURRENT_BINARY_DIR}/_common_build)
 endif()
 
-# Create shared library (DLL on Windows)
 add_library(OsCallsWindowsShim SHARED ${SOURCES})
 
 # Use a distinct runtime name for the native DLL so it does not conflict with
@@ -32,14 +34,15 @@ target_include_directories(OsCallsWindowsShim PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/_common_build/include  # For generated OsCallsCommonShim_export.h
 )
 
+target_link_libraries(OsCallsWindowsShim PRIVATE
+    OsCallsCommonShim  # Provides ValXfer.cpp exports
+)
+
 # Windows-specific settings
 if(WIN32)
-    # Windows compile-time defines moved into Platform.h for centralization
-
-    # Link against Windows libraries
     target_link_libraries(OsCallsWindowsShim PRIVATE
-        advapi32  # For security APIs
-        shlwapi   # For path APIs
+        advapi32
+        shlwapi
     )
 
     # Ensure target architecture macros exist for Windows SDK headers.

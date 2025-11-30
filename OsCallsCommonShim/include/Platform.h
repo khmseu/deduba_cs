@@ -16,12 +16,27 @@
 #include "OsCallsCommonShim_export.h"
 
 #if defined(DOXYGEN)
-/* When Doxygen is running, neutralize attributes so that Doxygen does not get
- * confused. */
 #define DLL_EXPORT
 #else
-// Define the DLL export macro using CMake's generated symbol
+/*
+ * If we are building OsCallsCommonShim target, OSCALLS_COMMON_SHIM_EXPORT
+ * expands to dllexport (Windows) or default visibility (ELF). When building
+ * other shim targets (OsCallsWindowsShim / OsCallsLinuxShim), we still need
+ * to export their own extern "C" functions. Those targets will NOT have
+ * OsCallsCommonShim_EXPORTS defined, making OSCALLS_COMMON_SHIM_EXPORT
+ * expand to dllimport on Windows. To avoid erroneous dllimport on function
+ * definitions in those other libs, fall back to explicit export when not
+ * building the common shim.
+ */
+#if defined(OsCallsCommonShim_EXPORTS)
 #define DLL_EXPORT OSCALLS_COMMON_SHIM_EXPORT
+#else
+#if defined(_WIN32) || defined(_WIN64)
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT __attribute__((visibility("default")))
+#endif
+#endif
 #endif
 
 /*
