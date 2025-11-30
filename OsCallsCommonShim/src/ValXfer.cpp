@@ -31,8 +31,8 @@ DLL_EXPORT bool GetNextValue(OsCalls::ValueT *value) {
  * @param data1 First user data pointer (passed to handler via Handle.data1).
  * @param data2 Second user data pointer (passed to handler via Handle.data2).
  */
-DLL_EXPORT void CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1,
-                              void *data2) {
+DLL_EXPORT void
+CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, void *data2) {
   value->Handle.handler = handler;
   value->Handle.data1 = data1;
   value->Handle.data2 = data2;
