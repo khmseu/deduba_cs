@@ -398,7 +398,10 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
+    // Return error as errno field for consistency with LStat expectations
+    delete info;
+    v->Type = TypeT::IsNumber;
+    v->Name = "errno";
     v->Number = err;
     return v;
   }
@@ -408,7 +411,9 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
   if (!GetFileInformationByHandle(hFile, &fileInfo)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
+    delete info;
+    v->Type = TypeT::IsNumber;
+    v->Name = "errno";
     v->Number = err;
     return v;
   }

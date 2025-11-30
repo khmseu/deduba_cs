@@ -179,7 +179,7 @@ static bool handle_FindFirstStreamW(ValueT *value) {
   streamObj[1].Number = streams->sizes[idx].QuadPart;
 
   value->Type = TypeT::IsComplex;
-  value->Name = nullptr; // Array element
+  value->Name = "stream"; // Named element instead of nullptr to avoid ArgumentNullException
   value->Complex = streamObj;
 
   streams->currentIndex++;
