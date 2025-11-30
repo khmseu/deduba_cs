@@ -404,8 +404,6 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr; // Ensure pointer is null
-    v->Complex = nullptr;
     return v;
   }
 
@@ -418,8 +416,6 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr; // Ensure pointer is null
-    v->Complex = nullptr;
     return v;
   }
 
@@ -611,8 +607,6 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr; // Ensure pointer is null
-    v->Complex = nullptr;
     return v;
   }
 
@@ -625,8 +619,6 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr; // Ensure pointer is null
-    v->Complex = nullptr;
     return v;
   }
 
@@ -641,8 +633,6 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
-    v->String = nullptr; // Ensure pointer is null
-    v->Complex = nullptr;
     return v;
   }
 
