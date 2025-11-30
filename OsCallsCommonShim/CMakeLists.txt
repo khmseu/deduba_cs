@@ -10,14 +10,26 @@ target_include_directories(OsCallsCommonShim PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# Ensure all symbols are exported for MSVC (helps with P/Invoke)
+set_target_properties(OsCallsCommonShim PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 # Compiler-specific warning / codegen flags
 if(MSVC)
     # Use warning level 4; GCC/Clang flags like -Wextra trigger D8021 on cl.exe
     target_compile_options(OsCallsCommonShim PRIVATE /W4)
     # Ensure exact export names via module definition file
     target_sources(OsCallsCommonShim PRIVATE src/exports.def)
+    # Post-build: dump exports for debugging
+    add_custom_command(TARGET OsCallsCommonShim POST_BUILD
+        COMMAND dumpbin /EXPORTS $<TARGET_FILE:OsCallsCommonShim> > $<TARGET_FILE_DIR:OsCallsCommonShim>/exports.txt
+        VERBATIM)
 else()
     target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
+    # For MinGW cross-compile, pass .def file to linker
+    if(WIN32)
+        target_link_options(OsCallsCommonShim PRIVATE "-Wl,--output-def,${CMAKE_CURRENT_SOURCE_DIR}/src/exports.def")
+        set_target_properties(OsCallsCommonShim PROPERTIES LINK_FLAGS "${CMAKE_CURRENT_SOURCE_DIR}/src/exports.def")
+    endif()
 endif()
 
 # Ensure consistent feature-test macros for Linux builds (also fallback in Platform.h)
