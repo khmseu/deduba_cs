@@ -160,26 +160,56 @@ static bool handle_FindFirstStreamW(ValueT *value) {
   }
 
   // Return stream info as a complex value (object with name and size)
-  auto streamObj = new ValueT[2]; // Array with 2 elements
-
-  // Stream name
-  int  nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0,
-                                      nullptr, nullptr);
-  auto nameUtf8 = new char[nameSize];
-  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nameUtf8, nameSize, nullptr,
+  // Create a single ValueT for the stream object with its own iterator
+  auto streamObj = new ValueT();
+  memset(streamObj, 0, sizeof(ValueT));
+  
+  // Allocate data to hold name and size
+  struct StreamObjectData {
+    char *name;
+    int64_t size;
+    int fieldIndex;
+  };
+  auto data = new StreamObjectData();
+  
+  // Convert stream name to UTF-8
+  int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0,
+                                     nullptr, nullptr);
+  data->name = new char[nameSize];
+  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, data->name, nameSize, nullptr,
                       nullptr);
-
-  streamObj[0].Type = TypeT::IsString;
-  streamObj[0].Name = "name";
-  streamObj[0].String = nameUtf8;
-
-  // Stream size
-  streamObj[1].Type = TypeT::IsNumber;
-  streamObj[1].Name = "size";
-  streamObj[1].Number = streams->sizes[idx].QuadPart;
-
+  data->size = streams->sizes[idx].QuadPart;
+  data->fieldIndex = 0;
+  
+  // Create iterator for the stream object fields
+  auto handler = [](ValueT *v) -> bool {
+    auto sod = reinterpret_cast<StreamObjectData *>(v->Handle.data1);
+    switch (v->Handle.index) {
+      case 0:
+        v->Type = TypeT::IsString;
+        v->Name = "name";
+        v->String = sod->name;
+        v->Handle.index++;
+        return true;
+      case 1:
+        v->Type = TypeT::IsNumber;
+        v->Name = "size";
+        v->Number = sod->size;
+        v->Handle.index++;
+        return true;
+      default:
+        delete[] sod->name;
+        delete sod;
+        delete v;
+        return false;
+    }
+  };
+  
+  CreateHandle(streamObj, handler, data, nullptr);
+  streamObj->Type = TypeT::IsOk;
+  
   value->Type = TypeT::IsComplex;
-  value->Name = "stream"; // Named element instead of nullptr to avoid ArgumentNullException
+  value->Name = "[]"; // Array element
   value->Complex = streamObj;
 
   streams->currentIndex++;
