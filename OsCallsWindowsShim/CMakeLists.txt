@@ -59,10 +59,16 @@ if(WIN32)
     endif()
 endif()
 
-# Set output directory
+# Output directory layout - use generator expression for multi-config (VS)
+if(CMAKE_CONFIGURATION_TYPES)
+    set(out_dir ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
+else()
+    set(out_dir ${CMAKE_BINARY_DIR}/bin)
+endif()
+
 set_target_properties(OsCallsWindowsShim PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${out_dir}
+    LIBRARY_OUTPUT_DIRECTORY ${out_dir}
 )
 
 # Install rules

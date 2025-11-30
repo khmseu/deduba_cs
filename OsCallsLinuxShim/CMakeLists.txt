@@ -30,12 +30,19 @@ find_library(ACL_LIB acl REQUIRED)
 target_link_libraries(OsCallsLinuxShim PRIVATE OsCallsCommonShim ${ACL_LIB})
 target_link_options(OsCallsLinuxShim PRIVATE "-Wl,-rpath,'$ORIGIN'")
 
-# Match existing output layout per build type (Debug/Release)
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+# Output directory layout for both single-config and multi-config generators
+if(CMAKE_CONFIGURATION_TYPES)
+    # Multi-config generator (Visual Studio, Xcode)
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/$<CONFIG>/net8.0)
+else()
+    # Single-config generator (Unix Makefiles, Ninja)
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Debug)
+    endif()
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
+    file(MAKE_DIRECTORY ${out_dir})
 endif()
-set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
-file(MAKE_DIRECTORY ${out_dir})
+
 set(CMAKE_BUILD_RPATH "$ORIGIN")
 set_target_properties(OsCallsLinuxShim PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${out_dir}

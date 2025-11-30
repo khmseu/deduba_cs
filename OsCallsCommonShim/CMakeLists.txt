@@ -47,13 +47,21 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(OsCallsCommonShim PRIVATE _GNU_SOURCE _DEFAULT_SOURCE _ATFILE_SOURCE="1" _FILE_OFFSET_BITS=64)
 endif()
 
-# Match existing output layout per build type (Debug/Release)
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+# Output directory layout for both single-config (make/ninja) and multi-config (VS) generators
+# Single-config: Use CMAKE_BUILD_TYPE directly
+# Multi-config: Use generator expression $<CONFIG> which VS expands to Debug/Release at build time
+if(CMAKE_CONFIGURATION_TYPES)
+    # Multi-config generator (Visual Studio, Xcode)
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/$<CONFIG>/net8.0)
+else()
+    # Single-config generator (Unix Makefiles, Ninja)
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Debug)
+    endif()
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
+    file(MAKE_DIRECTORY ${out_dir})
 endif()
-string(TOLOWER "${CMAKE_BUILD_TYPE}" _lower_bt)
-set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
-file(MAKE_DIRECTORY ${out_dir})
+
 set_target_properties(OsCallsCommonShim PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${out_dir}
     LIBRARY_OUTPUT_DIRECTORY ${out_dir}
