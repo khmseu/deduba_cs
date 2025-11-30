@@ -416,8 +416,10 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     CloseHandle(hFile);
     delete info;
     v->Type = TypeT::IsNumber;
-    v->Name = "errno";
+    v->Name = errno_name; // Use static literal
     v->Number = err;
+    v->String = nullptr; // Ensure pointer is null
+    v->Complex = nullptr;
     return v;
   }
 
@@ -597,8 +599,9 @@ static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
 }
 
 extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *path) {
-  wchar_t *canonical = nullptr;
-  auto     v = new ValueT();
+  wchar_t           *canonical = nullptr;
+  auto               v = new ValueT();
+  static const char *errno_name = "errno";
 
   // Open the file/directory
   HANDLE hFile = win_open_path(path, 0);
@@ -606,8 +609,10 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
     v->Type = TypeT::IsNumber;
-    v->Name = "errno";
+    v->Name = errno_name; // Use static literal
     v->Number = err;
+    v->String = nullptr; // Ensure pointer is null
+    v->Complex = nullptr;
     return v;
   }
 
@@ -618,8 +623,10 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     DWORD err = GetLastError();
     CloseHandle(hFile);
     v->Type = TypeT::IsNumber;
-    v->Name = "errno";
+    v->Name = errno_name; // Use static literal
     v->Number = err;
+    v->String = nullptr; // Ensure pointer is null
+    v->Complex = nullptr;
     return v;
   }
 
@@ -632,8 +639,10 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     DWORD err = GetLastError();
     delete[] canonical;
     v->Type = TypeT::IsNumber;
-    v->Name = "errno";
+    v->Name = errno_name; // Use static literal
     v->Number = err;
+    v->String = nullptr; // Ensure pointer is null
+    v->Complex = nullptr;
     return v;
   }
 
