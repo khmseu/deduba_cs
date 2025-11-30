@@ -14,6 +14,8 @@ target_include_directories(OsCallsCommonShim PUBLIC
 if(MSVC)
     # Use warning level 4; GCC/Clang flags like -Wextra trigger D8021 on cl.exe
     target_compile_options(OsCallsCommonShim PRIVATE /W4)
+    # Ensure exact export names via module definition file
+    target_sources(OsCallsCommonShim PRIVATE src/exports.def)
 else()
     target_compile_options(OsCallsCommonShim PRIVATE -Wall -Wextra -fPIC)
 endif()
