@@ -137,6 +137,20 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 namespace OsCallsWindows {
 using namespace OsCalls;
+/**
+ * @brief No-op handler for error returns.
+ *
+ * Error ValueT structures don't need iteration, but GetNextValue is called
+ * unconditionally by ToNode. This handler returns false immediately to skip
+ * iteration.
+ *
+ * @param value Pointer to error ValueT (unused).
+ * @return false to indicate no values to iterate.
+ */
+static bool handle_error(ValueT *value) {
+  (void)value; // Unused parameter
+  return false;
+}
 
 // Helper structure to hold file information
 struct WinFileInfo {
@@ -401,6 +415,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     DWORD err = GetLastError();
     // Return error as errno field for consistency with LStat expectations
     delete info;
+    CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
@@ -412,6 +427,8 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
   if (!GetFileInformationByHandle(hFile, &fileInfo)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    CreateHandle(v, handle_error, nullptr, nullptr);
     delete info;
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
@@ -614,6 +631,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   DWORD bufferSize =
       GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   if (bufferSize == 0) {
+    CreateHandle(v, handle_error, nullptr, nullptr);
     DWORD err = GetLastError();
     CloseHandle(hFile);
     v->Type = TypeT::IsNumber;
@@ -630,6 +648,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   if (result == 0 || result >= bufferSize) {
     DWORD err = GetLastError();
     delete[] canonical;
+    CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsNumber;
     v->Name = errno_name; // Use static literal
     v->Number = err;
