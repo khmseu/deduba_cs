@@ -35,7 +35,7 @@
   <!-- Ensure library copied to managed output (Debug/Release) -->
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
-      <SharedLib Include="bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so" />
+      <SharedLib Include="bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so" />
     </ItemGroup>
     <Copy
       SourceFiles="@(SharedLib)"

@@ -19,11 +19,11 @@
   <Target Name="CopySharedLibrary" AfterTargets="Build">
     <ItemGroup>
       <SharedLib
-        Include="bin/$(Configuration)/net8.0/libOsCallsCommonShim.so"
+        Include="bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so"
         Condition="'$(OS)'!='Windows_NT'"
       />
       <SharedLib
-        Include="bin/$(Configuration)/net8.0/OsCallsCommonShim.dll"
+        Include="bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll"
         Condition="'$(OS)'=='Windows_NT'"
       />
     </ItemGroup>

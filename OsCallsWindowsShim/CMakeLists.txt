@@ -60,10 +60,11 @@ if(WIN32)
 endif()
 
 # Output directory layout - use generator expression for multi-config (VS)
+# Use 'native' subdirectory to avoid PDB conflict with managed .NET assemblies
 if(CMAKE_CONFIGURATION_TYPES)
-    set(out_dir ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
+    set(out_dir ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/native)
 else()
-    set(out_dir ${CMAKE_BINARY_DIR}/bin)
+    set(out_dir ${CMAKE_BINARY_DIR}/bin/native)
 endif()
 
 set_target_properties(OsCallsWindowsShim PROPERTIES

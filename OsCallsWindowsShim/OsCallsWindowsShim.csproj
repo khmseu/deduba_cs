@@ -123,6 +123,13 @@
       <!-- Include multiple possible names and paths that the CMake build may produce. The Copy task
       ignores missing
            files if we guard using the Condition attribute on the copy operation. -->
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/native/OsCallsWindowsShimNative.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/native/libOsCallsWindowsShim.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/native/OsCallsWindowsShim.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/native/libOsCallsWindowsShim.dll" />
+      <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShim.dll" />
+      <!-- Legacy paths for backwards compatibility -->
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/OsCallsWindowsShimNative.dll" />
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/libOsCallsWindowsShim.dll" />
       <SharedLib Include="$(MSBuildThisFileDirectory)build-win-x64/bin/OsCallsWindowsShim.dll" />

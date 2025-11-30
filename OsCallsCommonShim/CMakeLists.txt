@@ -50,15 +50,16 @@ endif()
 # Output directory layout for both single-config (make/ninja) and multi-config (VS) generators
 # Single-config: Use CMAKE_BUILD_TYPE directly
 # Multi-config: Use generator expression $<CONFIG> which VS expands to Debug/Release at build time
+# Use 'native' subdirectory to avoid PDB conflict with managed .NET assemblies
 if(CMAKE_CONFIGURATION_TYPES)
     # Multi-config generator (Visual Studio, Xcode)
-    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/$<CONFIG>/net8.0)
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/$<CONFIG>/net8.0/native)
 else()
     # Single-config generator (Unix Makefiles, Ninja)
     if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE Debug)
     endif()
-    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0)
+    set(out_dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net8.0/native)
     file(MAKE_DIRECTORY ${out_dir})
 endif()
 
