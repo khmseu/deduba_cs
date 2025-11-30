@@ -1,1 +1,0 @@
-/home/runner/work/deduba_cs/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -fPIC -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/OsCallsCommonShim.dir/link.d -shared -Wl,-soname,libOsCallsCommonShim.so -o /home/runner/work/deduba_cs/deduba_cs/OsCallsCommonShim/bin/Release/net8.0/native/libOsCallsCommonShim.so CMakeFiles/OsCallsCommonShim.dir/src/ValXfer.cpp.o
