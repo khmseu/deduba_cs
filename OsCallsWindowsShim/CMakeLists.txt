@@ -10,6 +10,11 @@ file(GLOB SOURCES "src/*.cpp")
 # Add ValXfer.cpp from OsCallsCommonShim
 list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/src/ValXfer.cpp")
 
+# Link against common shim (built separately or by parent CMake)
+if(NOT TARGET OsCallsCommonShim)
+    add_subdirectory(../OsCallsCommonShim ${CMAKE_CURRENT_BINARY_DIR}/_common_build)
+endif()
+
 # Create shared library (DLL on Windows)
 add_library(OsCallsWindowsShim SHARED ${SOURCES})
 
@@ -24,6 +29,7 @@ set_target_properties(OsCallsWindowsShim PROPERTIES
 target_include_directories(OsCallsWindowsShim PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/include
+    ${CMAKE_CURRENT_BINARY_DIR}/_common_build/include  # For generated OsCallsCommonShim_export.h
 )
 
 # Windows-specific settings

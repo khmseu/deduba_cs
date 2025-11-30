@@ -16,6 +16,7 @@ add_library(OsCallsLinuxShim SHARED ${SRC_FILES})
 target_include_directories(OsCallsLinuxShim PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../OsCallsCommonShim/include
+    ${CMAKE_CURRENT_BINARY_DIR}/_common_build/include  # For generated OsCallsCommonShim_export.h
 )
 
 target_compile_options(OsCallsLinuxShim PRIVATE -Wall -Wextra -fPIC -ggdb)
