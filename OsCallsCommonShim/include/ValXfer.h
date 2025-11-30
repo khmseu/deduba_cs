@@ -100,13 +100,17 @@ struct ValueT {
  * Functions exported with C linkage for consumption via P/Invoke.
  * @{
  */
+} // namespace OsCalls
+
 extern "C" {
 /** Advance the cursor and populate the current ValueT fields. */
-DLL_EXPORT bool GetNextValue(ValueT *value);
+DLL_EXPORT bool GetNextValue(OsCalls::ValueT *value);
 /** Initialize a cursor with a handler and user data pointers. */
-DLL_EXPORT void CreateHandle(ValueT *value, HandlerT *handler, void *data1, void *data2);
+DLL_EXPORT void CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1,
+                              void *data2);
 }
 
+namespace OsCalls {
 /** @} */
 } // namespace OsCalls
 
