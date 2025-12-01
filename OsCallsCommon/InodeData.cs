@@ -10,7 +10,7 @@ namespace OsCallsCommon;
 public sealed class InodeData
 {
     [JsonPropertyName("fi")]
-    public required System.Text.Json.JsonElement? FileId { get; init; }
+    public System.Text.Json.JsonElement? FileId { get; set; }
 
     [JsonPropertyName("md")]
     public long Mode { get; init; }

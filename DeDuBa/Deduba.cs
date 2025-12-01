@@ -572,13 +572,10 @@ public class DedubaClass
                         if (flags.Contains("dir"))
                             try
                             {
-                                var entries = Directory.GetFileSystemEntries(entry); // Assuming no . ..
                                 // Enqueue children into work queue and update total
-                                var childEntries = entries
-                                    .Where(x => !x.StartsWith(".."))
-                                    .Select(x => Path.Combine(entry, x))
+                                var childEntries = _osApi
+                                    .ListDirectory(entry)
                                     .Where(x => !IsPathWithinArchive(x))
-                                    .OrderBy(x => x, StringComparer.Ordinal)
                                     .ToList();
 
                                 _statusQueueTotal += childEntries.Count;
@@ -586,215 +583,41 @@ public class DedubaClass
                                 foreach (var childEntry in childEntries)
                                     workQueue.Enqueue(childEntry);
                             }
+                            catch (OsException ex)
+                            {
+                                Utilities.Error(entry, "ListDirectory", ex);
+                            }
                             catch (Exception ex)
                             {
                                 Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
                             }
 
                         _packsum = 0;
-                        // lstat(entry);
-
-                        var groupId = statBuf?["st_gid"]?.GetValue<long>() ?? 0;
-                        var userId = statBuf?["st_uid"]?.GetValue<long>() ?? 0;
-                        var inodeData = new InodeData
-                        {
-                            FileId = Sdunpack(fsfid) as JsonElement?,
-                            Mode = statBuf?["st_mode"]?.GetValue<long>() ?? 0,
-                            Flags = flags,
-                            NLink = statBuf?["st_nlink"]?.GetValue<long>() ?? 0,
-                            Uid = Convert.ToInt64(userId),
-#if !WINDOWS
-                            UserName =
-                                UserGroupDatabase
-                                    .GetPwUid(Convert.ToInt64(userId))["pw_name"]
-                                    ?.ToString()
-                                ?? Convert.ToInt64(userId).ToString(),
-#else
-                            UserName = Convert.ToInt64(userId).ToString(),
-#endif
-                            Gid = Convert.ToInt64(groupId),
-#if !WINDOWS
-                            GroupName =
-                                UserGroupDatabase
-                                    .GetGrGid(Convert.ToInt64(groupId))["gr_name"]
-                                    ?.ToString()
-                                ?? Convert.ToInt64(groupId).ToString(),
-#else
-                            GroupName = Convert.ToInt64(groupId).ToString(),
-#endif
-                            RDev = statBuf?["st_rdev"]?.GetValue<long>() ?? 0,
-                            Size = fileSize,
-                            MTime = statBuf?["st_mtim"]?.GetValue<double>() ?? 0,
-                            CTime = statBuf?["st_ctim"]?.GetValue<double>() ?? 0,
-                        };
-
-                        // Read ACLs and xattrs before file type specialization
-                        string[] aclHashes = [];
-                        Dictionary<string, IEnumerable<string>> xattrHashes = [];
-
-                        // Read ACL data
-#if !WINDOWS
-                        try
-                        {
-                            var aclAccessResult = Acl.GetFileAccess(entry);
-                            if (
-                                aclAccessResult is JsonObject aclAccessObj
-                                && aclAccessObj.ContainsKey("acl_text")
-                            )
-                            {
-                                var aclText = aclAccessObj["acl_text"]?.ToString() ?? "";
-                                if (!string.IsNullOrEmpty(aclText))
-                                {
-                                    var aclBytes = Encoding.UTF8.GetBytes(aclText);
-                                    var aclMem = new MemoryStream(aclBytes);
-                                    aclHashes =
-                                    [
-                                        .. Save_file(aclMem, aclBytes.Length, $"{entry} $acl"),
-                                    ];
-                                }
-                            }
-
-                            // For directories, also read default ACL
-                            if (flags.Contains("dir"))
-                            {
-                                var aclDefaultResult = Acl.GetFileDefault(entry);
-                                if (
-                                    aclDefaultResult is JsonObject aclDefaultObj
-                                    && aclDefaultObj.ContainsKey("acl_text")
-                                )
-                                {
-                                    var aclDefaultText =
-                                        aclDefaultObj["acl_text"]?.ToString() ?? "";
-                                    if (!string.IsNullOrEmpty(aclDefaultText))
-                                    {
-                                        var aclDefaultBytes = Encoding.UTF8.GetBytes(
-                                            aclDefaultText
-                                        );
-                                        var aclDefaultMem = new MemoryStream(aclDefaultBytes);
-                                        var defaultHashes = Save_file(
-                                            aclDefaultMem,
-                                            aclDefaultBytes.Length,
-                                            $"{entry} $acl_default"
-                                        );
-                                        // Combine both access and default ACL hashes
-                                        aclHashes = [.. aclHashes, .. defaultHashes];
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // ACL reading may fail for files without ACLs or unsupported filesystems
-                            // This is not fatal, just log and continue
-                            if (Utilities.Testing)
-                                Utilities.ConWrite($"ACL read failed for {entry}: {ex.Message}");
-                        }
-#endif
-
-                        // Read extended attributes
-#if !WINDOWS
-                        try
-                        {
-                            var xattrListResult = Xattr.ListXattr(entry);
-                            if (xattrListResult is JsonArray xattrArray)
-                                foreach (var xattrNameNode in xattrArray)
-                                {
-                                    var xattrName = xattrNameNode?.ToString();
-                                    if (string.IsNullOrEmpty(xattrName))
-                                        continue;
-
-                                    try
-                                    {
-                                        var xattrValueResult = Xattr.GetXattr(entry, xattrName);
-                                        if (
-                                            xattrValueResult is JsonObject xattrValueObj
-                                            && xattrValueObj.ContainsKey("value")
-                                        )
-                                        {
-                                            var xattrValue =
-                                                xattrValueObj["value"]?.ToString() ?? "";
-                                            var xattrBytes = Encoding.UTF8.GetBytes(xattrValue);
-                                            var xattrMem = new MemoryStream(xattrBytes);
-                                            var xattrHashList = Save_file(
-                                                xattrMem,
-                                                xattrBytes.Length,
-                                                $"{entry} $xattr:{xattrName}"
-                                            );
-                                            xattrHashes[xattrName] = xattrHashList;
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        // Individual xattr reading may fail
-                                        if (Utilities.Testing)
-                                            Utilities.ConWrite(
-                                                $"Xattr read failed for {entry}:{xattrName}: {ex.Message}"
-                                            );
-                                    }
-                                }
-                        }
-                        catch (Exception ex)
-                        {
-                            // Xattr reading may fail for files without xattrs or unsupported filesystems
-                            // This is not fatal, just log and continue
-                            if (Utilities.Testing)
-                                Utilities.ConWrite($"Xattr list failed for {entry}: {ex.Message}");
-                        }
-#endif
-
-                        inodeData.Acl = aclHashes;
-                        inodeData.Xattr = xattrHashes;
-
-                        string[] hashes = [];
                         _ds = 0;
-                        MemoryStream mem;
-                        if (flags.Contains("reg"))
-                        {
-                            var size = fileSize;
-                            if (size != 0)
-                                try
-                                {
-                                    var fileStream = File.OpenRead(entry);
-                                    hashes = [.. Save_file(fileStream, size, entry)];
-                                }
-                                catch (Exception ex)
-                                {
-                                    Utilities.Error(entry, nameof(File.OpenRead), ex);
-                                    continue;
-                                }
-                        }
-                        else if (flags.Contains("lnk"))
-                        {
-                            string? dataIslink;
-                            try
-                            {
-                                // ReadLink returns a JsonObject with a "path" field set to the symlink target.
-                                var linkNode = FileSystem.ReadLink(entry);
-                                dataIslink = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
-                            }
-                            catch (Exception ex)
-                            {
-                                Utilities.Error(entry, nameof(FileSystem.ReadLink), ex);
-                                continue;
-                            }
 
-                            var size = dataIslink.Length;
-                            MemoryStream? mem1 = null;
-                            try
-                            {
-                                var dataBytes = Encoding.UTF8.GetBytes(dataIslink);
-                                mem1 = new MemoryStream(dataBytes);
-                            }
-                            catch (Exception ex)
-                            {
-                                Utilities.Error(entry, nameof(MemoryStream), ex);
-                            }
-
-                            // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                            hashes = [.. Save_file(mem1!, size, $"{entry} $data readlink")];
-                            _ds = dataIslink.Length;
+                        // Use IHighLevelOsApi to collect all metadata
+                        InodeData inodeData;
+                        try
+                        {
+                            inodeData = _osApi.CreateInodeDataFromPath(entry, _archiveStore!);
                         }
-                        else if (flags.Contains("dir"))
+                        catch (OsException ex)
+                        {
+                            Utilities.Error(entry, "CreateInodeDataFromPath", ex);
+                            continue;
+                        }
+                        catch (Exception ex)
+                        {
+                            Utilities.Error(entry, "CreateInodeDataFromPath", ex);
+                            continue;
+                        }
+
+                        // Override FileId with fsfid format (for compatibility with existing archive format)
+                        inodeData.FileId = Sdunpack(fsfid) as JsonElement?;
+
+                        // For directories, we need to handle Dirtmp content separately
+                        // because it's built up as children are processed
+                        if (flags.Contains("dir"))
                         {
                             var dataIsdir = Sdpack(
                                 Dirtmp.TryGetValue(entry, out var value) ? value : [],
@@ -802,10 +625,11 @@ public class DedubaClass
                             );
                             Dirtmp.Remove(entry);
                             var size = dataIsdir.Length;
+                            MemoryStream dirMem;
                             try
                             {
                                 var dataBytes = Encoding.UTF8.GetBytes(dataIsdir);
-                                mem = new MemoryStream(dataBytes);
+                                dirMem = new MemoryStream(dataBytes);
                             }
                             catch (Exception ex)
                             {
@@ -813,14 +637,21 @@ public class DedubaClass
                                 continue;
                             }
 
-                            // open my $mem, '<:unix mmap raw', \$data or die "\$data: $!";
-                            hashes = [.. Save_file(mem, size, $"{entry} $data $dirtmp")];
+                            // Replace the empty hashes with directory content hashes
+                            var dirHashes = Save_file(dirMem, size, $"{entry} $data $dirtmp");
+                            inodeData.Hashes = [.. dirHashes];
                             _ds = dataIsdir.Length;
                         }
+                        else if (flags.Contains("lnk"))
+                        {
+                            // Track symlink target size for reporting
+                            var hashArray = inodeData.Hashes.ToArray();
+                            _ds = hashArray.Length > 0 ? (int)inodeData.Size : 0;
+                        }
 
-                        inodeData.Hashes = hashes;
+                        // Serialize InodeData and save to archive
                         var data = Sdpack(inodeData, "inode");
-
+                        MemoryStream mem;
                         try
                         {
                             var dataBytes = Encoding.UTF8.GetBytes(data);
@@ -833,7 +664,7 @@ public class DedubaClass
                         }
 
                         // open my $mem, '<:unix mmap raw scalar', \$data or die "\$data: $!";
-                        hashes = [.. Save_file(mem, data.Length, $"{entry} $data @inode")];
+                        var hashes = Save_file(mem, data.Length, $"{entry} $data @inode");
                         var ino = Sdpack(hashes, "fileid");
                         Fs2Ino[fsfid] = ino;
                         TimeSpan? needed = DateTime.Now.Subtract(start);
@@ -841,7 +672,7 @@ public class DedubaClass
                             needed.Value.TotalSeconds > 0
                                 ? (double?)_ds / needed.Value.TotalSeconds
                                 : null;
-                        report = $"[{fileSize:d} -> {_packsum:d}: {needed:c}s]";
+                        report = $"[{inodeData.Size:d} -> {_packsum:d}: {needed:c}s]";
                     }
 
                     if (!Dirtmp.ContainsKey(dir))
