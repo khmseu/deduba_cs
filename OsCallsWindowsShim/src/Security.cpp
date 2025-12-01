@@ -111,6 +111,21 @@ namespace OsCallsWindows {
 using namespace OsCalls;
 
 /**
+ * @brief No-op handler for error ValueT structures.
+ *
+ * Error returns need initialized Handle to prevent AccessViolation when
+ * GetNextValue dereferences the handler function pointer. This handler
+ * always returns false (no more values) since errors have only errno field.
+ *
+ * @param value Unused - error ValueT has no iteration.
+ * @return false Always (no values to iterate).
+ */
+static bool handle_error(ValueT *value) {
+  (void)value; // Suppress unused parameter warning
+  return false;
+}
+
+/**
  * @brief Handler for win_get_sd results - yields SDDL string.
  *
  * Converts wide-character SDDL string to UTF-8 and yields as string value.
@@ -149,8 +164,9 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
 
 extern "C" DLL_EXPORT ValueT *
 windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
-  wchar_t *sddl = nullptr;
-  auto     v = new ValueT();
+  wchar_t           *sddl = nullptr;
+  auto               v = new ValueT();
+  static const char *errno_name = "errno"; // Stable static pointer
 
   // Determine which security information to retrieve
   SECURITY_INFORMATION secInfo =
@@ -178,7 +194,9 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
     }
 
     if (result != ERROR_SUCCESS) {
-      CreateHandle(v, handle_GetNamedSecurityInfoW, nullptr, nullptr);
+      CreateHandle(v, handle_error, nullptr, nullptr);
+      v->Type = TypeT::IsError;
+      v->Name = errno_name;
       v->Number = result;
       return v;
     }
@@ -190,7 +208,9 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
                                                             &sddlString, nullptr)) {
     DWORD err = GetLastError();
     LocalFree(pSD);
-    CreateHandle(v, handle_GetNamedSecurityInfoW, nullptr, nullptr);
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = err;
     return v;
   }

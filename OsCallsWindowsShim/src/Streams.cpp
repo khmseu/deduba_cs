@@ -113,6 +113,21 @@ namespace OsCallsWindows {
 using namespace OsCalls;
 
 /**
+ * @brief No-op handler for error ValueT structures.
+ *
+ * Error returns need initialized Handle to prevent AccessViolation when
+ * GetNextValue dereferences the handler function pointer. This handler
+ * always returns false (no more values) since errors have only errno field.
+ *
+ * @param value Unused - error ValueT has no iteration.
+ * @return false Always (no values to iterate).
+ */
+static bool handle_error(ValueT *value) {
+  (void)value; // Suppress unused parameter warning
+  return false;
+}
+
+/**
  * @brief Structure to hold stream information
  */
 struct StreamInfo {
@@ -217,15 +232,19 @@ static bool handle_FindFirstStreamW(ValueT *value) {
 }
 
 extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
-  auto streams = new StreamInfo{};
-  auto v = new ValueT();
+  auto               streams = new StreamInfo{};
+  auto               v = new ValueT();
+  static const char *errno_name = "errno"; // Stable static pointer
 
   WIN32_FIND_STREAM_DATA findStreamData;
   HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
 
   if (hFind == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
+    delete streams;
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = err;
     return v;
   }
@@ -245,7 +264,10 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
 
   // ERROR_HANDLE_EOF is expected at the end of enumeration
   if (lastErr != ERROR_HANDLE_EOF && streams->names.empty()) {
-    CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
+    delete streams;
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = lastErr;
     return v;
   }
@@ -303,8 +325,9 @@ static bool handle_ReadFile_Stream(ValueT *value) {
 
 extern "C" DLL_EXPORT ValueT *
 windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
-  auto streamData = new StreamData{};
-  auto v = new ValueT();
+  auto               streamData = new StreamData{};
+  auto               v = new ValueT();
+  static const char *errno_name = "errno"; // Stable static pointer
 
   // Construct full stream path: path:streamname:\c DATA
   std::wstring fullPath = path;
@@ -320,7 +343,10 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
+    delete streamData;
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = err;
     return v;
   }
@@ -330,7 +356,10 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   if (!GetFileSizeEx(hFile, &fileSize)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
+    delete streamData;
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = err;
     return v;
   }
@@ -345,7 +374,10 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
-    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
+    delete streamData;
+    CreateHandle(v, handle_error, nullptr, nullptr);
+    v->Type = TypeT::IsError;
+    v->Name = errno_name;
     v->Number = err;
     return v;
   }
