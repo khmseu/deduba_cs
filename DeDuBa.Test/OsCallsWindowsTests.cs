@@ -195,35 +195,57 @@ public class OsCallsWindowsTests : IDisposable
         // Arrange - Create a file with alternate data stream
         var testFileWithAds = Path.Combine(_testDirPath, "file_with_ads.txt");
         File.WriteAllText(testFileWithAds, "Main content");
+        Console.WriteLine($"Created test file: {testFileWithAds}");
+        Console.WriteLine($"File exists: {File.Exists(testFileWithAds)}");
+        Console.WriteLine($"File size: {new FileInfo(testFileWithAds).Length} bytes");
 
         // Add an alternate data stream using cmd
         var streamPath = $"{testFileWithAds}:TestStream";
         try
         {
             File.WriteAllText(streamPath, "Stream content");
+            Console.WriteLine($"Created ADS: {streamPath}");
+            // Verify ADS was created by reading it back
+            var adsContent = File.ReadAllText(streamPath);
+            Console.WriteLine($"ADS content verified: {adsContent}");
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"Failed to create ADS: {ex.Message}");
             // Skip test if ADS not supported (e.g., not NTFS)
             return;
         }
 
         // Act
+        Console.WriteLine($"Calling ListStreams for: {testFileWithAds}");
         var result = Streams.ListStreams(testFileWithAds);
+        Console.WriteLine($"ListStreams returned: {result?.ToJsonString()}");
 
         // Assert
         Assert.NotNull(result);
+        Console.WriteLine($"Result type: {result.GetType().Name}");
 
         // Result should be an array of stream objects
         if (result is JsonArray streamArray)
         {
-            Assert.True(streamArray.Count > 0);
+            Console.WriteLine($"StreamArray count: {streamArray.Count}");
+            for (int i = 0; i < streamArray.Count; i++)
+            {
+                Console.WriteLine($"Stream[{i}]: {streamArray[i]?.ToJsonString()}");
+            }
+
+            Assert.True(streamArray.Count > 0, $"Expected streams but got {streamArray.Count}");
 
             // At least one stream should be present
             var firstStream = streamArray[0]?.AsObject();
             Assert.NotNull(firstStream);
             Assert.True(firstStream.ContainsKey("name"));
             Assert.True(firstStream.ContainsKey("size"));
+        }
+        else
+        {
+            Console.WriteLine($"Result is not JsonArray: {result.ToJsonString()}");
+            Assert.Fail("Expected JsonArray result");
         }
     }
 

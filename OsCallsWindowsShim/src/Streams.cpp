@@ -239,8 +239,12 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   WIN32_FIND_STREAM_DATA findStreamData;
   HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
 
+  DEBUG_LOG(L"FindFirstStreamW called for path: %s", path);
+  DEBUG_LOG(L"FindFirstStreamW returned handle: %p", hFind);
+
   if (hFind == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
+    DEBUG_LOG(L"FindFirstStreamW failed with error: %lu", err);
     delete streams;
     CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsError;
@@ -250,20 +254,31 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   }
 
   // Enumerate all streams
+  size_t streamCount = 0;
   do {
     std::wstring streamName = findStreamData.cStreamName;
+    DEBUG_LOG(L"Found stream: %s, size: %lld", streamName.c_str(),
+              findStreamData.StreamSize.QuadPart);
 
-    // Skip the default ::\c DATA stream (or optionally include it with a flag)
+    // Skip the default ::$DATA stream (or optionally include it with a flag)
     // For now, include all streams
     streams->names.push_back(streamName);
     streams->sizes.push_back(findStreamData.StreamSize);
+    streamCount++;
   } while (FindNextStreamW(hFind, &findStreamData));
+
+  DEBUG_LOG(L"Total streams enumerated: %zu", streamCount);
 
   DWORD lastErr = GetLastError();
   FindClose(hFind);
 
+  DEBUG_LOG(L"GetLastError after enumeration: %lu (ERROR_HANDLE_EOF=%lu)", lastErr,
+            ERROR_HANDLE_EOF);
+  DEBUG_LOG(L"streams->names.size(): %zu", streams->names.size());
+
   // ERROR_HANDLE_EOF is expected at the end of enumeration
   if (lastErr != ERROR_HANDLE_EOF && streams->names.empty()) {
+    DEBUG_LOG(L"Returning error: unexpected lastErr with empty streams");
     delete streams;
     CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsError;
@@ -272,6 +287,7 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
     return v;
   }
 
+  DEBUG_LOG(L"Returning success with %zu streams", streams->names.size());
   CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
   v->Type = TypeT::IsOk;
   return v;
