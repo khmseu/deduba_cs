@@ -375,10 +375,10 @@ This document captures completed work, near-term, and mid-term enhancements for 
 
 ## Immediate Next Steps (Priority Order)
 
-1. **High Priority:**
+1. **High Priority (Top Focus):**
+   - ❌ Design and prototype `IHighLevelOsApi` interface — HIGHEST PRIORITY
    - ✅ ~~Add SHA-512 checksum generation to `scripts/package.sh`~~ COMPLETED
    - ❌ Implement index persistence for `ArchiveStore` (avoid full re-index)
-   - ❌ Design and prototype `IHighLevelOsApi` interface
 
 2. **Medium Priority:**
    - ✅ ~~Add CI caching for NuGet packages and native build intermediates~~ COMPLETED

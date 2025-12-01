@@ -45,7 +45,7 @@ sha512sum -c dist/*.sha512
 
 Successful verification will output:
 
-```
+```text
 DeDuBa-<version>-linux-x64.tar.gz: OK
 ```
 
