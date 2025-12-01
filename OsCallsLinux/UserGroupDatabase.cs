@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
@@ -13,28 +12,20 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class UserGroupDatabase
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate IntPtr ShimPwUidDelegate(long uid);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate IntPtr ShimGrGidDelegate(long gid);
-    private static ShimPwUidDelegate? _linux_getpwuid;
-    private static ShimGrGidDelegate? _linux_getgrgid;
-    [LibraryImport("libOsCallsLinuxShim.so")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    private static partial ValueT* getpwuid(long uid);
-
-    [LibraryImport("libOsCallsLinuxShim.so")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    private static partial ValueT* getgrgid(long gid);
+    private static readonly ShimPwUidDelegate? _linux_getpwuid;
+    private static readonly ShimGrGidDelegate? _linux_getgrgid;
 
     static UserGroupDatabase()
     {
         try
         {
             var baseDir = AppContext.BaseDirectory;
-            var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
-            var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0", "libOsCallsLinuxShim.so");
-            var full = File.Exists(candidateDebug) ? candidateDebug : (File.Exists(candidateRelease) ? candidateRelease : null);
+            var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0",
+                "libOsCallsLinuxShim.so");
+            var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0",
+                "libOsCallsLinuxShim.so");
+            var full = File.Exists(candidateDebug) ? candidateDebug :
+                File.Exists(candidateRelease) ? candidateRelease : null;
             if (!string.IsNullOrWhiteSpace(full))
             {
                 var handle = NativeLibrary.Load(full);
@@ -44,8 +35,18 @@ public static unsafe partial class UserGroupDatabase
                     _linux_getgrgid = Marshal.GetDelegateForFunctionPointer<ShimGrGidDelegate>(ptr);
             }
         }
-        catch { }
+        catch
+        {
+        }
     }
+
+    [LibraryImport("libOsCallsLinuxShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* getpwuid(long uid);
+
+    [LibraryImport("libOsCallsLinuxShim.so")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static partial ValueT* getgrgid(long gid);
 
     /// <summary>
     ///     Retrieves passwd database entry for a user id.
@@ -67,6 +68,7 @@ public static unsafe partial class UserGroupDatabase
             var ptr = _linux_getpwuid(uid);
             return ToNode((ValueT*)ptr, $"user {uid}", "linux_getpwuid");
         }
+
         return ToNode(getpwuid(uid), $"user {uid}", nameof(getpwuid));
     }
 
@@ -90,6 +92,13 @@ public static unsafe partial class UserGroupDatabase
             var ptr = _linux_getgrgid(gid);
             return ToNode((ValueT*)ptr, $"group {gid}", "linux_getgrgid");
         }
+
         return ToNode(getgrgid(gid), $"group {gid}", nameof(getgrgid));
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ShimPwUidDelegate(long uid);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ShimGrGidDelegate(long gid);
 }

@@ -31,7 +31,9 @@ public class ArchiveStoreTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     [Fact]

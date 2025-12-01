@@ -3,8 +3,8 @@ using OsCallsCommon;
 namespace OsCallsWindows;
 
 /// <summary>
-/// Windows implementation stub of IHighLevelOsApi.
-/// TODO: Implement using Windows-specific APIs (security descriptors, alternate data streams).
+///     Windows implementation stub of IHighLevelOsApi.
+///     TODO: Implement using Windows-specific APIs (security descriptors, alternate data streams).
 /// </summary>
 public class WindowsHighLevelOsApi : IHighLevelOsApi
 {
@@ -15,7 +15,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
     public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
     {
-        throw new NotImplementedException("Windows implementation not yet completed. Use Linux implementation as reference.");
+        throw new NotImplementedException(
+            "Windows implementation not yet completed. Use Linux implementation as reference.");
     }
 
     public string[] ListDirectory(string path)

@@ -1,4 +1,5 @@
 // Only compile this test on Linux
+
 #if LINUX
 using System;
 using System.IO;
@@ -20,17 +21,21 @@ namespace DeDuBa.Test
         private static string FindLibPath()
         {
             var baseDir = AppContext.BaseDirectory;
-            var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
-            var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0", "libOsCallsLinuxShim.so");
+            var candidateDebug =
+ Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
+            var candidateRelease =
+ Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0", "libOsCallsLinuxShim.so");
             if (File.Exists(candidateDebug)) return candidateDebug;
             if (File.Exists(candidateRelease)) return candidateRelease;
             // fallback: search the repo
             var dir = new DirectoryInfo(baseDir);
             for (var i = 0; i < 8 && dir is not null; i++)
             {
-                var candidate = Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
+                var candidate =
+ Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
                 if (File.Exists(candidate)) return candidate;
-                candidate = Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Release", "net8.0", "libOsCallsLinuxShim.so");
+                candidate =
+ Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Release", "net8.0", "libOsCallsLinuxShim.so");
                 if (File.Exists(candidate)) return candidate;
                 dir = dir.Parent;
             }
@@ -105,13 +110,15 @@ namespace DeDuBa.Test
             {
                 Assert.True(NativeLibrary.TryGetExport(handle, "linux_getpwuid", out var linux_fptr), "linux_getpwuid export expected");
                 Assert.True(NativeLibrary.TryGetExport(handle, "getpwuid", out var raw_fptr), "getpwuid export expected");
-                var linux_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(linux_fptr, typeof(ShimUidDelegate));
+                var linux_del =
+ (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(linux_fptr, typeof(ShimUidDelegate));
                 var raw_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(raw_fptr, typeof(ShimUidDelegate));
                 var uid = (long)System.Environment.UserName.GetHashCode();
                 // Use current user ID from system
                 var cuid = (long)System.Diagnostics.Process.GetCurrentProcess().Id; // fallback in case
                 // Better: get UID from environment
-                try { uid = (long)System.Convert.ToInt32(System.Environment.GetEnvironmentVariable("UID") ?? System.Environment.UserName); } catch { }
+                try { uid =
+ (long)System.Convert.ToInt32(System.Environment.GetEnvironmentVariable("UID") ?? System.Environment.UserName); } catch { }
                 // Use getpwuid for root (uid 0) as known safe
                 var v1 = linux_del(0);
                 var v2 = raw_del(0);
@@ -146,7 +153,9 @@ namespace DeDuBa.Test
                     System.IO.File.Create(link).Close();
                     File.Delete(link);
                     // Create symlink to tmp
-                    var si = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ln", $"-s {tmp} {link}") { UseShellExecute = false });
+                    var si =
+ System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ln", $"-s {tmp} {link}") { UseShellExecute =
+ false });
                     si?.WaitForExit();
                 }
                 catch { }

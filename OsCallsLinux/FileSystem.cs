@@ -14,6 +14,12 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class FileSystem
 {
+    private const string NativeName = "libOsCallsLinuxShim.so";
+
+    private static readonly ShimFnDelegate? _linux_lstat_fn;
+    private static readonly ShimFnDelegate? _linux_readlink_fn;
+    private static readonly ShimFnDelegate? _linux_cfn_fn;
+
     static FileSystem()
     {
         try
@@ -51,15 +57,6 @@ public static unsafe partial class FileSystem
         }
     }
 
-    private const string NativeName = "libOsCallsLinuxShim.so";
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private unsafe delegate IntPtr ShimFnDelegate([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
-
-    private static ShimFnDelegate? _linux_lstat_fn;
-    private static ShimFnDelegate? _linux_readlink_fn;
-    private static ShimFnDelegate? _linux_cfn_fn;
-
     private static IntPtr Resolver(
         string libraryName,
         Assembly assembly,
@@ -79,6 +76,7 @@ public static unsafe partial class FileSystem
         {
             // ignore
         }
+
         var full = FindNativeLibraryPath(NativeName);
         if (full is null)
             return IntPtr.Zero;
@@ -90,16 +88,15 @@ public static unsafe partial class FileSystem
             // Check for libOsCallsCommonShim.so in same directory first (test scenario)
             var colocated = Path.Combine(libDir!.FullName, "libOsCallsCommonShim.so");
             if (File.Exists(colocated))
-            {
                 try
                 {
                     NativeLibrary.Load(colocated);
                     return NativeLibrary.Load(full);
                 }
                 catch
-                { /* fallback to walking up */
+                {
+                    /* fallback to walking up */
                 }
-            }
 
             // Otherwise, walk up to solution root and find it in build output
             var projectRoot = libDir?.Parent?.Parent?.Parent?.Parent; // ascend to solution root
@@ -122,27 +119,23 @@ public static unsafe partial class FileSystem
                     "libOsCallsCommonShim.so"
                 );
                 foreach (var dep in new[] { commonShimDebug, commonShimRelease })
-                {
                     if (File.Exists(dep))
-                    {
                         try
                         {
                             NativeLibrary.Load(dep);
                             break;
                         }
                         catch
-                        { /* ignore */
+                        {
+                            /* ignore */
                         }
-                    }
-                }
+
                 // If still not resolved by dynamic loader, append common shim directory to LD_LIBRARY_PATH and retry.
                 var commonDir = File.Exists(commonShimDebug)
                     ? Path.GetDirectoryName(commonShimDebug)!
-                    : (
-                        File.Exists(commonShimRelease)
-                            ? Path.GetDirectoryName(commonShimRelease)!
-                            : null
-                    );
+                    : File.Exists(commonShimRelease)
+                        ? Path.GetDirectoryName(commonShimRelease)!
+                        : null;
                 if (commonDir is not null)
                 {
                     var ld = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? string.Empty;
@@ -155,6 +148,7 @@ public static unsafe partial class FileSystem
                     }
                 }
             }
+
             return NativeLibrary.Load(full);
         }
         catch
@@ -197,6 +191,7 @@ public static unsafe partial class FileSystem
                 return candidateRelease;
             dir = dir.Parent;
         }
+
         return null;
     }
 
@@ -217,11 +212,14 @@ public static unsafe partial class FileSystem
     /// </summary>
     /// <param name="path">Filesystem path to inspect.</param>
     /// <returns>A JsonObject containing stat fields (st_dev, st_ino, st_mode, ...).</returns>
-    public static JsonNode LStat(string path) => LinuxLStat(path);
+    public static JsonNode LStat(string path)
+    {
+        return LinuxLStat(path);
+    }
 
     /// <summary>
     ///     Platform-prefixed wrapper for calling the LStat functionality: preferred naming for OS-specific wrappers.
-    ///     This mirrors <see cref="LStat(string)"/> and is intended for direct use by OS-prefixed API code.
+    ///     This mirrors <see cref="LStat(string)" /> and is intended for direct use by OS-prefixed API code.
     /// </summary>
     public static JsonNode LinuxLStat(string path)
     {
@@ -230,6 +228,7 @@ public static unsafe partial class FileSystem
             var ptr = _linux_lstat_fn(path);
             return ToNode((ValueT*)ptr, path, "linux_lstat");
         }
+
         return ToNode(lstat(path), path, nameof(lstat));
     }
 
@@ -238,7 +237,10 @@ public static unsafe partial class FileSystem
     /// </summary>
     /// <param name="path">Path of the symlink to read.</param>
     /// <returns>A JsonNode with a <c>path</c> field set to the symlink target string.</returns>
-    public static JsonNode ReadLink(string path) => LinuxReadLink(path);
+    public static JsonNode ReadLink(string path)
+    {
+        return LinuxReadLink(path);
+    }
 
     /// <summary>
     ///     Platform-prefixed wrapper for ReadLink.
@@ -250,6 +252,7 @@ public static unsafe partial class FileSystem
             var ptr = _linux_readlink_fn(path);
             return ToNode((ValueT*)ptr, path, "linux_readlink");
         }
+
         return ToNode(readlink(path), path, nameof(readlink));
     }
 
@@ -258,7 +261,10 @@ public static unsafe partial class FileSystem
     /// </summary>
     /// <param name="path">Original input path.</param>
     /// <returns>A JsonNode with a <c>path</c> field set to the canonical path.</returns>
-    public static JsonNode Canonicalizefilename(string path) => LinuxCanonicalizeFileName(path);
+    public static JsonNode Canonicalizefilename(string path)
+    {
+        return LinuxCanonicalizeFileName(path);
+    }
 
     /// <summary>
     ///     Platform-prefixed wrapper for canonicalize_file_name.
@@ -270,8 +276,12 @@ public static unsafe partial class FileSystem
             var ptr = _linux_cfn_fn(path);
             return ToNode((ValueT*)ptr, path, "linux_canonicalize_file_name");
         }
+
         return ToNode(canonicalize_file_name(path), path, nameof(canonicalize_file_name));
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ShimFnDelegate([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
 
     // Inlined former convenience predicates (IsDir/IsReg/IsLnk) directly at call sites for minor perf/readability tweaks.
 }

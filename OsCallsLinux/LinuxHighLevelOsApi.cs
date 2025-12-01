@@ -1,12 +1,13 @@
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
 
 namespace OsCallsLinux;
 
 /// <summary>
-/// Linux implementation of IHighLevelOsApi using POSIX system calls.
-/// Wraps existing FileSystem, Acl, Xattr, and UserGroupDatabase static methods.
+///     Linux implementation of IHighLevelOsApi using POSIX system calls.
+///     Wraps existing FileSystem, Acl, Xattr, and UserGroupDatabase static methods.
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
@@ -33,12 +34,10 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         // Extract file type flags from S_IS* boolean fields
         var flags = new HashSet<string>();
         if (statBuf is JsonObject statObj)
-        {
             foreach (var kvp in statObj)
             {
                 var key = kvp.Key;
                 if (key.StartsWith("S_IS") || key.StartsWith("S_TYPEIS"))
-                {
                     if (kvp.Value?.GetValue<bool>() ?? false)
                     {
                         var flagName = key.StartsWith("S_TYPEIS")
@@ -46,9 +45,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             : key[4..].ToLowerInvariant();
                         flags.Add(flagName);
                     }
-                }
             }
-        }
 
         // Extract basic metadata
         var groupId = statBuf["st_gid"]?.GetValue<long>() ?? 0;
@@ -57,16 +54,17 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
 
         // Resolve user/group names
         var userName = UserGroupDatabase.GetPwUid(userId)["pw_name"]?.ToString()
-            ?? userId.ToString();
+                       ?? userId.ToString();
         var groupName = UserGroupDatabase.GetGrGid(groupId)["gr_name"]?.ToString()
-            ?? groupId.ToString();
+                        ?? groupId.ToString();
 
         // Create base InodeData
         var inodeData = new InodeData
         {
-            FileId = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(
-                System.Text.Json.JsonSerializer.Serialize(
-                    new List<object?> { statBuf["st_dev"]?.GetValue<long>() ?? 0, statBuf["st_ino"]?.GetValue<long>() ?? 0 }
+            FileId = JsonSerializer.Deserialize<JsonElement>(
+                JsonSerializer.Serialize(
+                    new List<object?>
+                        { statBuf["st_dev"]?.GetValue<long>() ?? 0, statBuf["st_ino"]?.GetValue<long>() ?? 0 }
                 )
             ),
             Mode = statBuf["st_mode"]?.GetValue<long>() ?? 0,
@@ -79,7 +77,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
+            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0
         };
 
         // Read ACLs
@@ -131,7 +129,6 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         {
             var xattrListResult = Xattr.ListXattr(path);
             if (xattrListResult is JsonArray xattrArray)
-            {
                 foreach (var xattrNameNode in xattrArray)
                 {
                     var xattrName = xattrNameNode?.ToString();
@@ -160,7 +157,6 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         // Individual xattr reading may fail - continue
                     }
                 }
-            }
         }
         catch (Exception)
         {
@@ -176,7 +172,6 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         {
             // Regular file - read and hash content
             if (fileSize != 0)
-            {
                 try
                 {
                     using var fileStream = File.OpenRead(path);
@@ -186,7 +181,6 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 {
                     throw new OsException($"Failed to read file content {path}", ErrorKind.IOError, ex);
                 }
-            }
         }
         else if (flags.Contains("lnk"))
         {
@@ -197,7 +191,8 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 var linkTarget = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
                 var linkBytes = Encoding.UTF8.GetBytes(linkTarget);
                 var linkMem = new MemoryStream(linkBytes);
-                hashes = archiveStore.SaveStream(linkMem, linkBytes.Length, $"{path} $data readlink", _ => { }).ToArray();
+                hashes = archiveStore.SaveStream(linkMem, linkBytes.Length, $"{path} $data readlink", _ => { })
+                    .ToArray();
             }
             catch (Exception ex)
             {

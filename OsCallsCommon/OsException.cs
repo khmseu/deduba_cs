@@ -1,8 +1,8 @@
 namespace OsCallsCommon;
 
 /// <summary>
-/// Exception hierarchy for OS API errors with normalized error kinds.
-/// Maps platform-specific errors (errno/HRESULT) to common categories.
+///     Exception hierarchy for OS API errors with normalized error kinds.
+///     Maps platform-specific errors (errno/HRESULT) to common categories.
 /// </summary>
 public class OsException : Exception
 {
@@ -13,14 +13,14 @@ public class OsException : Exception
     }
 
     /// <summary>
-    /// Normalized error category for cross-platform error handling.
+    ///     Normalized error category for cross-platform error handling.
     /// </summary>
     public ErrorKind Kind { get; }
 }
 
 /// <summary>
-/// Normalized error categories across platforms.
-/// Maps platform-specific errors to common categories for unified error handling.
+///     Normalized error categories across platforms.
+///     Maps platform-specific errors to common categories for unified error handling.
 /// </summary>
 public enum ErrorKind
 {

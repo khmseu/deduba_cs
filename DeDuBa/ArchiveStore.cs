@@ -233,7 +233,9 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch { }
+                catch
+                {
+                }
 
                 return hash;
             }
@@ -242,7 +244,9 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch { }
+            catch
+            {
+            }
 
             if (_config.Verbose)
                 _log?.Invoke(hash);
@@ -363,7 +367,8 @@ public sealed class ArchiveStore : IArchiveStore
 
     /// <summary>
     ///     Joins a storage prefix with a child segment, ensuring no leading slash.
-    ///     Guarantees the result stays relative for safe <see cref="M:System.IO.Path.Combine(System.String,System.String)" /> operations.
+    ///     Guarantees the result stays relative for safe <see cref="M:System.IO.Path.Combine(System.String,System.String)" />
+    ///     operations.
     /// </summary>
     /// <param name="prefix">Parent prefix path (e.g., "aa/bb" or empty string).</param>
     /// <param name="segment">Child segment to append (e.g., "cc").</param>

@@ -1,18 +1,14 @@
-using System.ComponentModel;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using ICSharpCode.SharpZipLib.BZip2;
-using OsCallsCommon;
-using UtilitiesLibrary;
 #if WINDOWS
 using OsCallsWindows;
 #else
 using OsCallsLinux;
 #endif
+using System.ComponentModel;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using OsCallsCommon;
+using UtilitiesLibrary;
 
 namespace DeDuBa;
 
@@ -128,7 +124,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
                 };
         }
         catch (Exception ex)
@@ -172,12 +168,11 @@ public class DedubaClass
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                            .Select(path => path != null ? Path.GetFullPath(path) : "")
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
                     if (!string.IsNullOrEmpty(_archive))
-                    {
                         foreach (var root in argv)
                         {
                             if (string.IsNullOrEmpty(root))
@@ -194,7 +189,6 @@ public class DedubaClass
                                 throw new InvalidOperationException(msg);
                             }
                         }
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -345,7 +339,8 @@ public class DedubaClass
     /// </summary>
     /// <param name="path">Absolute path to the directory to create.</param>
     /// <remarks>
-    ///     Uses <see cref="M:System.IO.Directory.CreateDirectory(System.String)" /> which is idempotent (succeeds if directory already exists).
+    ///     Uses <see cref="M:System.IO.Directory.CreateDirectory(System.String)" /> which is idempotent (succeeds if directory
+    ///     already exists).
     /// </remarks>
     private static void CreateDirectoryWithLogging(string path)
     {
@@ -359,8 +354,8 @@ public class DedubaClass
     }
 
     /// <summary>
-    /// Determines if a given path is equal to or a descendant of the current archive root.
-    /// Returns false if the archive is not configured or the path cannot be resolved.
+    ///     Determines if a given path is equal to or a descendant of the current archive root.
+    ///     Returns false if the archive is not configured or the path cannot be resolved.
     /// </summary>
     private static bool IsPathWithinArchive(string path)
     {

@@ -1,12 +1,11 @@
 using System.Reflection;
 using UtilitiesLibrary;
-using Xunit;
 using Xunit.Sdk;
 
 namespace DeDuBa.Test;
 
 /// <summary>
-/// Ensures Utilities.Log is closed and set to null before and after each test; also enforces testing mode.
+///     Ensures Utilities.Log is closed and set to null before and after each test; also enforces testing mode.
 /// </summary>
 public sealed class ResetUtilitiesLogAttribute : BeforeAfterTestAttribute
 {
@@ -17,7 +16,10 @@ public sealed class ResetUtilitiesLogAttribute : BeforeAfterTestAttribute
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
+
         Utilities.Log = null;
     }
 
@@ -27,7 +29,10 @@ public sealed class ResetUtilitiesLogAttribute : BeforeAfterTestAttribute
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
+
         Utilities.Log = null;
     }
 }

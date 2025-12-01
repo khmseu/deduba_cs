@@ -20,7 +20,9 @@ public class DedubaIntegrationTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     [Fact]

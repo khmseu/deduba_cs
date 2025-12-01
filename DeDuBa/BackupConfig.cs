@@ -15,7 +15,10 @@ public sealed class BackupConfig
     /// <param name="chunkSize">Size in bytes for content-addressed chunks (default: 1GB).</param>
     /// <param name="testing">Whether to run in testing mode (affects archive location).</param>
     /// <param name="verbose">Whether to enable verbose diagnostic output.</param>
-    /// <param name="prefixSplitThreshold">Maximum entries per prefix directory before triggering reorganization (default: 255).</param>
+    /// <param name="prefixSplitThreshold">
+    ///     Maximum entries per prefix directory before triggering reorganization (default:
+    ///     255).
+    /// </param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="archiveRoot" /> is null.</exception>
     public BackupConfig(
         string archiveRoot,

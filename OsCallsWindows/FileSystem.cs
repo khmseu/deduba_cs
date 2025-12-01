@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -138,7 +135,7 @@ public static unsafe partial class FileSystem
 
     private static IntPtr Resolver(
         string libraryName,
-        System.Reflection.Assembly assembly,
+        Assembly assembly,
         DllImportSearchPath? searchPath
     )
     {
@@ -174,6 +171,7 @@ public static unsafe partial class FileSystem
             if (Utilities.IsNativeDebugEnabled())
                 Utilities.ConWrite($"Resolver error: {e.Message}");
         }
+
         return IntPtr.Zero;
     }
 
@@ -226,6 +224,7 @@ public static unsafe partial class FileSystem
                 return candidateBuildDir;
             dir = dir.Parent;
         }
+
         return null;
     }
 

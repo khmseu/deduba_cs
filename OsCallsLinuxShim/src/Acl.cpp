@@ -66,6 +66,7 @@ ValueT *linux_acl_get_file_access(const char *path) {
 
   return v;
 }
+
 ValueT *acl_get_file_access(const char *path) {
   return linux_acl_get_file_access(path);
 };
@@ -102,6 +103,7 @@ ValueT *linux_acl_get_file_default(const char *path) {
 
   return v;
 }
+
 ValueT *acl_get_file_default(const char *path) {
   return linux_acl_get_file_default(path);
 };

@@ -1,11 +1,10 @@
 using UtilitiesLibrary;
-using Xunit;
 
 namespace DeDuBa.Test;
 
 /// <summary>
-/// Test environment fixture that ensures Utilities.Log is closed and Utilities.Testing is set.
-/// Applied as a collection fixture across tests to avoid leaking test state between tests.
+///     Test environment fixture that ensures Utilities.Log is closed and Utilities.Testing is set.
+///     Applied as a collection fixture across tests to avoid leaking test state between tests.
 /// </summary>
 public class TestEnvironment : IDisposable
 {
@@ -16,7 +15,10 @@ public class TestEnvironment : IDisposable
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
+
         Utilities.Log = null;
     }
 
@@ -26,7 +28,10 @@ public class TestEnvironment : IDisposable
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
+
         Utilities.Log = null;
     }
 }

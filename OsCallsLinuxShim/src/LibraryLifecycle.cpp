@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 static void __attribute__((constructor)) on_load(void) {
   // Only log if DEDUBA_DEBUG_NATIVE is set in the environment
   const char *env = getenv("DEDUBA_DEBUG_NATIVE");
