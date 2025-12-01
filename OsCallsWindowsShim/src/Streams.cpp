@@ -204,13 +204,11 @@ static bool handle_FindFirstStreamW(ValueT *value) {
       v->Type = TypeT::IsString;
       v->Name = "name"; // String literal has static storage duration
       v->String = sod->name;
-      v->Handle.index++;
       return true;
     case 1:
       v->Type = TypeT::IsNumber;
       v->Name = "size"; // String literal has static storage duration
       v->Number = sod->size;
-      v->Handle.index++;
       return true;
     default:
       delete[] sod->name;
