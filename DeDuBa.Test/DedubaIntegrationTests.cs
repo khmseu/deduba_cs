@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using UtilitiesLibrary;
 
 namespace DeDuBa.Test;
@@ -91,7 +92,8 @@ public class DedubaIntegrationTests : IDisposable
         Assert.True(Directory.Exists(config.ArchiveRoot));
         var logs = Directory.GetFiles(config.ArchiveRoot, "log_*", SearchOption.TopDirectoryOnly);
         Assert.True(logs.Length > 0);
-        var log = File.ReadAllText(logs.OrderBy(x => x).Last());
+        var chosenLog = logs.OrderBy(x => x).Last();
+        var log = File.ReadAllText(chosenLog);
 
         // Print the list of files in the created archive root for diagnostics
         Console.WriteLine("[DEBUG] ArchiveRoot contents:");
@@ -110,6 +112,23 @@ public class DedubaIntegrationTests : IDisposable
         var chosenLog = logs.OrderBy(x => x).Last();
         Console.WriteLine($"[DEBUG] Using log file: {chosenLog}");
         Console.WriteLine("[DEBUG] Log contents:\n" + log);
+        // Persist the log to the test temp area for off-line inspection
+        var logCopy = Path.Combine(_tmpDir, "debug-log.txt");
+        File.WriteAllText(logCopy, log);
+        Console.WriteLine($"[DEBUG] Saved full log to: {logCopy}");
+
+        // Parse the log for any path-like entries and print them - useful when paths are encoded/hashed
+        var lines = Regex.Split(log, "\r?\n");
+        Console.WriteLine("[DEBUG] Parsed log path entries:");
+        var pathRegex = new Regex(@"\] (?<path>/[^\s\[]+)", RegexOptions.Compiled);
+        foreach (var line in lines)
+        {
+            var m = pathRegex.Match(line);
+            if (m.Success)
+            {
+                Console.WriteLine("[DEBUG]  -> " + m.Groups["path"].Value);
+            }
+        }
 
         // Additional diagnostics for flaky test: check basename and relative matches in the log
         var outsideBasename = Path.GetFileName(outsideFile);
