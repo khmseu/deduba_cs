@@ -109,7 +109,6 @@ public class DedubaIntegrationTests : IDisposable
         }
 
         // Also output the log file being asserted against and its contents - this is critical
-        var chosenLog = logs.OrderBy(x => x).Last();
         Console.WriteLine($"[DEBUG] Using log file: {chosenLog}");
         Console.WriteLine("[DEBUG] Log contents:\n" + log);
         // Persist the log to the test temp area for off-line inspection
