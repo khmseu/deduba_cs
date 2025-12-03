@@ -111,6 +111,13 @@ public class DedubaIntegrationTests : IDisposable
         Console.WriteLine($"[DEBUG] Using log file: {chosenLog}");
         Console.WriteLine("[DEBUG] Log contents:\n" + log);
 
+        // Additional diagnostics for flaky test: check basename and relative matches in the log
+        var outsideBasename = Path.GetFileName(outsideFile);
+        var outsideRel = Path.GetRelativePath(parent, outsideFile);
+        Console.WriteLine($"[DEBUG] Checking alternate forms: basename={outsideBasename}, rel={outsideRel}");
+        Console.WriteLine($"[DEBUG] Contains basename: {log.Contains(outsideBasename)}");
+        Console.WriteLine($"[DEBUG] Contains rel (parent): {log.Contains(outsideRel)}");
+
         // Log should mention the outside file but should not mention the archive-inside file path
         Assert.Contains(outsideFile, log);
         Assert.DoesNotContain(insideFile, log);
