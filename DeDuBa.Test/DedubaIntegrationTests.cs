@@ -77,6 +77,13 @@ public class DedubaIntegrationTests : IDisposable
 
         Environment.SetEnvironmentVariable("DEDU_ARCHIVE_ROOT", archiveRoot);
 
+        // Debugging: print runtime environment info to help diagnose intermittent failures
+        Console.WriteLine($"[DEBUG] Parent={parent}");
+        Console.WriteLine($"[DEBUG] ArchiveRoot={archiveRoot}");
+        Console.WriteLine($"[DEBUG] OutsideFile (canonical)={outsideFile}");
+        Console.WriteLine($"[DEBUG] InsideFile (canonical)={insideFile}");
+        Console.WriteLine($"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}");
+
         DedubaClass.Backup(new[] { parent });
 
         var config = BackupConfig.FromUtilities();
@@ -85,6 +92,24 @@ public class DedubaIntegrationTests : IDisposable
         var logs = Directory.GetFiles(config.ArchiveRoot, "log_*", SearchOption.TopDirectoryOnly);
         Assert.True(logs.Length > 0);
         var log = File.ReadAllText(logs.OrderBy(x => x).Last());
+
+        // Print the list of files in the created archive root for diagnostics
+        Console.WriteLine("[DEBUG] ArchiveRoot contents:");
+        foreach (var f in Directory.EnumerateFiles(config.ArchiveRoot, "*", SearchOption.AllDirectories))
+        {
+            Console.WriteLine("[DEBUG]  " + f);
+        }
+
+        Console.WriteLine("[DEBUG] Parent directory contents:");
+        foreach (var f in Directory.EnumerateFiles(parent, "*", SearchOption.AllDirectories))
+        {
+            Console.WriteLine("[DEBUG]  " + f);
+        }
+
+        // Also output the log file being asserted against and its contents - this is critical
+        var chosenLog = logs.OrderBy(x => x).Last();
+        Console.WriteLine($"[DEBUG] Using log file: {chosenLog}");
+        Console.WriteLine("[DEBUG] Log contents:\n" + log);
 
         // Log should mention the outside file but should not mention the archive-inside file path
         Assert.Contains(outsideFile, log);
