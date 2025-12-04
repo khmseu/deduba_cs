@@ -83,7 +83,8 @@ public class DedubaIntegrationTests : IDisposable
         Console.WriteLine($"[DEBUG] ArchiveRoot={archiveRoot}");
         Console.WriteLine($"[DEBUG] OutsideFile (canonical)={outsideFile}");
         Console.WriteLine($"[DEBUG] InsideFile (canonical)={insideFile}");
-        Console.WriteLine($"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}");
+        Console.WriteLine(
+            $"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}");
 
         DedubaClass.Backup(new[] { parent });
 
@@ -98,15 +99,11 @@ public class DedubaIntegrationTests : IDisposable
         // Print the list of files in the created archive root for diagnostics
         Console.WriteLine("[DEBUG] ArchiveRoot contents:");
         foreach (var f in Directory.EnumerateFiles(config.ArchiveRoot, "*", SearchOption.AllDirectories))
-        {
             Console.WriteLine("[DEBUG]  " + f);
-        }
 
         Console.WriteLine("[DEBUG] Parent directory contents:");
         foreach (var f in Directory.EnumerateFiles(parent, "*", SearchOption.AllDirectories))
-        {
             Console.WriteLine("[DEBUG]  " + f);
-        }
 
         // Also output the log file being asserted against and its contents - this is critical
         Console.WriteLine($"[DEBUG] Using log file: {chosenLog}");
@@ -123,10 +120,7 @@ public class DedubaIntegrationTests : IDisposable
         foreach (var line in lines)
         {
             var m = pathRegex.Match(line);
-            if (m.Success)
-            {
-                Console.WriteLine("[DEBUG]  -> " + m.Groups["path"].Value);
-            }
+            if (m.Success) Console.WriteLine("[DEBUG]  -> " + m.Groups["path"].Value);
         }
 
         // Additional diagnostics for flaky test: check basename and relative matches in the log
