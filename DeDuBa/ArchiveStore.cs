@@ -169,7 +169,7 @@ public sealed class ArchiveStore : IArchiveStore
                         }
                         catch (Exception ex)
                         {
-                            Utilities.Error($"{from} -> {to}", nameof(File.Move), ex);
+                            Utilities.Error($"[GTPFH] {from} -> {to}", nameof(File.Move), ex);
                             continue;
                         }
 

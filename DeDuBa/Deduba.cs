@@ -1,14 +1,14 @@
-#if WINDOWS
-using OsCallsWindows;
-#else
-using OsCallsLinux;
-#endif
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
 using UtilitiesLibrary;
+#if WINDOWS
+using OsCallsWindows;
+#else
+using OsCallsLinux;
+#endif
 
 namespace DeDuBa;
 
@@ -124,7 +124,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
                 };
         }
         catch (Exception ex)
@@ -168,7 +168,7 @@ public class DedubaClass
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : "")
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -559,7 +559,7 @@ public class DedubaClass
                     var fileSize = statBuf?["st_size"]?.GetValue<long>() ?? 0;
                     if (old)
                     {
-                        report = $"[{fileSize:d} -> duplicate]";
+                        report = $"[OLD: {fileSize:d} -> duplicate]";
                     }
                     else
                     {
@@ -677,6 +677,40 @@ public class DedubaClass
                     Utilities.Log?.Write(
                         $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
                     );
+                    // Extra debug/logging: include canonicalized path, relative path from `dir`, filename, and a short flags indicator
+                    try
+                    {
+                        var canonical = string.Empty;
+                        try
+                        {
+                            canonical = Path.GetFullPath(entry);
+                        }
+                        catch
+                        {
+                            canonical = entry;
+                        }
+
+                        var relativeToDir = string.Empty;
+                        try
+                        {
+                            relativeToDir = Path.GetRelativePath(dir, entry);
+                        }
+                        catch
+                        {
+                            relativeToDir = entry;
+                        }
+
+                        var baseName = Path.GetFileName(entry);
+                        var flagShort = string.Join(',', flags);
+                        Utilities.Log?.Write(
+                            $"[DBG] entry={entry} canonical={canonical} rel={relativeToDir} name={baseName} flags={flagShort}\n"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // Do not let debug logging break backup; write error to utilities
+                        Utilities.Error(entry, "debug-log", ex);
+                    }
                     // File or directory completed -> update counters and status line
                     var isDir = flags.Contains("dir");
                     if (isDir)
