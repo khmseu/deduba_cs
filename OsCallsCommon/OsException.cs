@@ -6,6 +6,14 @@ namespace OsCallsCommon;
 /// </summary>
 public class OsException : Exception
 {
+    /// <summary>
+    ///     Create a new <see cref="OsException"/> with a human readable
+    ///     message, a normalized <see cref="ErrorKind"/>, and an optional
+    ///     inner exception.
+    /// </summary>
+    /// <param name="message">A descriptive error message.</param>
+    /// <param name="kind">Normalized error category.</param>
+    /// <param name="innerException">Optional inner exception that caused this error.</param>
     public OsException(string message, ErrorKind kind, Exception? innerException = null)
         : base(message, innerException)
     {

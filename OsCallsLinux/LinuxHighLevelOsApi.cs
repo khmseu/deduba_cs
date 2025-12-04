@@ -11,11 +11,28 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
+    /// <summary>Whether the current platform/filesystem exposes POSIX ACLs.</summary>
     public bool HasAclSupport => true;
+
+    /// <summary>Whether the current platform/filesystem exposes extended attributes.</summary>
     public bool HasXattrSupport => true;
+
+    /// <summary>Whether the platform supports security descriptor (Windows-style) objects.</summary>
     public bool HasSecurityDescriptorSupport => false;
+
+    /// <summary>Whether alternate data streams are supported for this platform.</summary>
     public bool HasAlternateStreamSupport => false;
 
+    /// <summary>
+    ///     Collects full inode metadata for <paramref name="path"/>, including
+    ///     stat, ACLs, xattrs and content hashes where applicable. Uses
+    ///     <paramref name="archiveStore"/> to persist any associated auxiliary
+    ///     streams (ACL text, xattr values, file content) and returns an
+    ///     <see cref="InodeData"/> describing the file.
+    /// </summary>
+    /// <param name="path">Filesystem path to read metadata from.</param>
+    /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
+    /// <returns>Populated <see cref="InodeData"/> instance.</returns>
     public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
     {
         // Get file stat (lstat - does not follow symlinks)
@@ -210,6 +227,13 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         return inodeData;
     }
 
+    /// <summary>
+    ///     List the directory entries for <paramref name="path"/> ordered by
+    ///     ordinal string comparison. Wraps <see cref="Directory.GetFileSystemEntries(string)"/>
+    ///     and maps system exceptions to <see cref="OsException"/>.
+    /// </summary>
+    /// <param name="path">Directory to list.</param>
+    /// <returns>Ordered array of filesystem entries (files and directories).</returns>
     public string[] ListDirectory(string path)
     {
         try
