@@ -54,5 +54,5 @@ public enum ErrorKind
     NotASymlink,
 
     /// <summary>Unknown or unmapped error</summary>
-    Unknown
+    Unknown,
 }

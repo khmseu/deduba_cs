@@ -32,7 +32,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
     {
         throw new NotImplementedException(
-            "Windows implementation not yet completed. Use Linux implementation as reference.");
+            "Windows implementation not yet completed. Use Linux implementation as reference."
+        );
     }
 
     /// <summary>
@@ -46,13 +47,18 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     {
         try
         {
-            return Directory.GetFileSystemEntries(path)
+            return Directory
+                .GetFileSystemEntries(path)
                 .OrderBy(e => e, StringComparer.Ordinal)
                 .ToArray();
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new OsException($"Permission denied listing directory {path}", ErrorKind.PermissionDenied, ex);
+            throw new OsException(
+                $"Permission denied listing directory {path}",
+                ErrorKind.PermissionDenied,
+                ex
+            );
         }
         catch (DirectoryNotFoundException ex)
         {
