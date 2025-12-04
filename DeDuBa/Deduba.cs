@@ -149,6 +149,19 @@ public class DedubaClass
             // STDERR->autoflush(1);
             Utilities.Log.AutoFlush = true;
 
+            // Ensure per-run static state is reset so multiple tests or calls in the
+            // same process do not leak inode/directory state into subsequent runs.
+            Dirtmp.Clear();
+            Fs2Ino.Clear();
+            Devices.Clear();
+            Bstats.Clear();
+            _statusFilesDone = 0;
+            _statusDirsDone = 0;
+            _statusQueueTotal = 0;
+            _statusBytesDone = 0;
+            _packsum = 0;
+            _ds = 0;
+
             //#############################################################################
             // Main program
             //#############################################################################
@@ -535,6 +548,15 @@ public class DedubaClass
                         new List<object?> { stDev, statBuf?["st_ino"]?.GetValue<long>() ?? 0 },
                         "fsfid"
                     );
+                    // Debug: record whether we've already seen this fsfid in this run
+                    try
+                    {
+                        Utilities.Log?.Write(
+                            $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
+                        );
+                    }
+                    catch { }
+
                     var old = Fs2Ino.ContainsKey(fsfid);
                     // Always compute the file-type flags from statBuf so subsequent code
                     // can consult them without directly accessing statBuf S_IS* fields.
@@ -674,8 +696,20 @@ public class DedubaClass
                         Dirtmp[dir] = [];
                     if (Fs2Ino.TryGetValue(fsfid, out var fs2InoValue))
                         Dirtmp[dir].Add(new object?[] { name, fs2InoValue });
+
+                    // Compute a canonical form for the entry to make logs unambiguous
+                    var canonicalForLog = entry;
+                    try
+                    {
+                        canonicalForLog = Path.GetFullPath(entry);
+                    }
+                    catch
+                    {
+                        canonicalForLog = entry;
+                    }
+
                     Utilities.Log?.Write(
-                        $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} {report}\n"
+                        $"{BitConverter.ToString(Encoding.UTF8.GetBytes(Fs2Ino[fsfid] ?? string.Empty)).Replace("-", "")} {entry} canonical={canonicalForLog} {report}\n"
                     );
                     // Extra debug/logging: include canonicalized path, relative path from `dir`, filename, and a short flags indicator
                     try
