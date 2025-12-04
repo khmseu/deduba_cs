@@ -12,7 +12,7 @@
     "editor.defaultFormatter": "xaver.clang-format"
   },
   "[csharp]": {
-    "editor.defaultFormatter": "ms-dotnettools.csharp"
+    "editor.defaultFormatter": "csharpier.csharpier-vscode"
   },
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
