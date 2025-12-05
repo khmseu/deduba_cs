@@ -12,6 +12,8 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class UserGroupDatabase
 {
+    private const string NativeLibraryName = "libOsCallsLinuxShim.so";
+
     private static readonly ShimPwUidDelegate? _linux_getpwuid;
     private static readonly ShimGrGidDelegate? _linux_getgrgid;
 
@@ -20,12 +22,26 @@ public static unsafe partial class UserGroupDatabase
         try
         {
             var baseDir = AppContext.BaseDirectory;
-            var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0",
-                "libOsCallsLinuxShim.so");
-            var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0",
-                "libOsCallsLinuxShim.so");
-            var full = File.Exists(candidateDebug) ? candidateDebug :
-                File.Exists(candidateRelease) ? candidateRelease : null;
+            var candidateDebug = Path.Combine(
+                baseDir,
+                "OsCallsLinuxShim",
+                "bin",
+                "Debug",
+                "net8.0",
+                NativeLibraryName
+            );
+            var candidateRelease = Path.Combine(
+                baseDir,
+                "OsCallsLinuxShim",
+                "bin",
+                "Release",
+                "net8.0",
+                NativeLibraryName
+            );
+            var full =
+                File.Exists(candidateDebug) ? candidateDebug
+                : File.Exists(candidateRelease) ? candidateRelease
+                : null;
             if (!string.IsNullOrWhiteSpace(full))
             {
                 var handle = NativeLibrary.Load(full);
@@ -35,16 +51,14 @@ public static unsafe partial class UserGroupDatabase
                     _linux_getgrgid = Marshal.GetDelegateForFunctionPointer<ShimGrGidDelegate>(ptr);
             }
         }
-        catch
-        {
-        }
+        catch { }
     }
 
-    [LibraryImport("libOsCallsLinuxShim.so")]
+    [LibraryImport(NativeLibraryName)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* getpwuid(long uid);
 
-    [LibraryImport("libOsCallsLinuxShim.so")]
+    [LibraryImport(NativeLibraryName)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* getgrgid(long gid);
 

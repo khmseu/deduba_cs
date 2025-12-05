@@ -11,6 +11,8 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class Security
 {
+    private const string NativeLibraryName = "OsCallsWindowsShimNative.dll";
+
     /// <summary>
     ///     Reads the security descriptor from the specified filesystem path.
     ///     Returns the descriptor in SDDL format (includes Owner, Group, DACL, and optionally SACL).
@@ -39,14 +41,14 @@ public static unsafe partial class Security
         );
     }
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* windows_GetNamedSecurityInfoW(
         string path,
         [MarshalAs(UnmanagedType.Bool)] bool includeSacl
     );
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_get_sd(
         string path,

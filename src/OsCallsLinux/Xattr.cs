@@ -11,6 +11,8 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class Xattr
 {
+    private const string NativeLibraryName = "libOsCallsLinuxShim.so";
+
     private static readonly ShimListXattrDelegate? _linux_llistxattr;
     private static readonly ShimGetXattrDelegate? _linux_lgetxattr;
 
@@ -23,9 +25,12 @@ public static unsafe partial class Xattr
             {
                 var handle = NativeLibrary.Load(full);
                 if (NativeLibrary.TryGetExport(handle, "linux_llistxattr", out var p))
-                    _linux_llistxattr = Marshal.GetDelegateForFunctionPointer<ShimListXattrDelegate>(p);
+                    _linux_llistxattr =
+                        Marshal.GetDelegateForFunctionPointer<ShimListXattrDelegate>(p);
                 if (NativeLibrary.TryGetExport(handle, "linux_lgetxattr", out p))
-                    _linux_lgetxattr = Marshal.GetDelegateForFunctionPointer<ShimGetXattrDelegate>(p);
+                    _linux_lgetxattr = Marshal.GetDelegateForFunctionPointer<ShimGetXattrDelegate>(
+                        p
+                    );
             }
         }
         catch
@@ -83,29 +88,45 @@ public static unsafe partial class Xattr
         return ValXfer.ToNode(lgetxattr(path, name), path, nameof(lgetxattr));
     }
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* llistxattr(string path);
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* lgetxattr(string path, string name);
 
     private static string? FindNative()
     {
         var baseDir = AppContext.BaseDirectory;
-        var candidateDebug =
-            Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
-        var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0",
-            "libOsCallsLinuxShim.so");
-        if (File.Exists(candidateDebug)) return candidateDebug;
-        if (File.Exists(candidateRelease)) return candidateRelease;
+        var candidateDebug = Path.Combine(
+            baseDir,
+            "OsCallsLinuxShim",
+            "bin",
+            "Debug",
+            "net8.0",
+            NativeLibraryName
+        );
+        var candidateRelease = Path.Combine(
+            baseDir,
+            "OsCallsLinuxShim",
+            "bin",
+            "Release",
+            "net8.0",
+            NativeLibraryName
+        );
+        if (File.Exists(candidateDebug))
+            return candidateDebug;
+        if (File.Exists(candidateRelease))
+            return candidateRelease;
         return null;
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate IntPtr ShimListXattrDelegate([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
 
-    private delegate IntPtr ShimGetXattrDelegate([MarshalAs(UnmanagedType.LPUTF8Str)] string path,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+    private delegate IntPtr ShimGetXattrDelegate(
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string path,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string name
+    );
 }

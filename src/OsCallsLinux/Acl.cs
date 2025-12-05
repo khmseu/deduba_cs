@@ -11,6 +11,8 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class Acl
 {
+    private const string NativeLibraryName = "libOsCallsLinuxShim.so";
+
     private static readonly ShimAclDelegate? _linux_acl_get_file_access;
     private static readonly ShimAclDelegate? _linux_acl_get_file_default;
 
@@ -23,14 +25,14 @@ public static unsafe partial class Acl
             {
                 var handle = NativeLibrary.Load(full);
                 if (NativeLibrary.TryGetExport(handle, "linux_acl_get_file_access", out var p))
-                    _linux_acl_get_file_access = Marshal.GetDelegateForFunctionPointer<ShimAclDelegate>(p);
+                    _linux_acl_get_file_access =
+                        Marshal.GetDelegateForFunctionPointer<ShimAclDelegate>(p);
                 if (NativeLibrary.TryGetExport(handle, "linux_acl_get_file_default", out p))
-                    _linux_acl_get_file_default = Marshal.GetDelegateForFunctionPointer<ShimAclDelegate>(p);
+                    _linux_acl_get_file_default =
+                        Marshal.GetDelegateForFunctionPointer<ShimAclDelegate>(p);
             }
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     /// <summary>
@@ -83,23 +85,37 @@ public static unsafe partial class Acl
         return ValXfer.ToNode(acl_get_file_default(path), path, nameof(acl_get_file_default));
     }
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_access(string path);
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValXfer.ValueT* acl_get_file_default(string path);
 
     private static string? FindNative()
     {
         var baseDir = AppContext.BaseDirectory;
-        var candidateDebug =
-            Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", "libOsCallsLinuxShim.so");
-        var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0",
-            "libOsCallsLinuxShim.so");
-        if (File.Exists(candidateDebug)) return candidateDebug;
-        if (File.Exists(candidateRelease)) return candidateRelease;
+        var candidateDebug = Path.Combine(
+            baseDir,
+            "OsCallsLinuxShim",
+            "bin",
+            "Debug",
+            "net8.0",
+            NativeLibraryName
+        );
+        var candidateRelease = Path.Combine(
+            baseDir,
+            "OsCallsLinuxShim",
+            "bin",
+            "Release",
+            "net8.0",
+            NativeLibraryName
+        );
+        if (File.Exists(candidateDebug))
+            return candidateDebug;
+        if (File.Exists(candidateRelease))
+            return candidateRelease;
         return null;
     }
 

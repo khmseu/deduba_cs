@@ -11,6 +11,8 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class Streams
 {
+    private const string NativeLibraryName = "OsCallsWindowsShimNative.dll";
+
     /// <summary>
     ///     Lists all alternate data streams for the specified path.
     /// </summary>
@@ -63,19 +65,19 @@ public static unsafe partial class Streams
         );
     }
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* windows_FindFirstStreamW(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* windows_ReadFile_Stream(string path, string streamName);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_list_streams(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValXfer.ValueT* win_read_stream(string path, string streamName);
 }

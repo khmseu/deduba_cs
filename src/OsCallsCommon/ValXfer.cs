@@ -87,11 +87,14 @@ public static unsafe partial class ValXfer
     }
 
 #if DEDUBA_LINUX
-    [LibraryImport("libOsCallsCommonShim.so")]
+    private const string NativeLibraryName = "libOsCallsCommonShim.so";
+
 #endif
 #if DEDUBA_WINDOWS
-    [LibraryImport("OsCallsCommonShim")]
+    private const string NativeLibraryName = "OsCallsCommonShim";
 #endif
+
+    [LibraryImport(NativeLibraryName)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetNextValue(ValueT* value);

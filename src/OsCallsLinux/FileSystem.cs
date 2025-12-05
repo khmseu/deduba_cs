@@ -14,7 +14,7 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class FileSystem
 {
-    private const string NativeName = "libOsCallsLinuxShim.so";
+    private const string NativeLibraryName = "libOsCallsLinuxShim.so";
 
     private static readonly ShimFnDelegate? _linux_lstat_fn;
     private static readonly ShimFnDelegate? _linux_readlink_fn;
@@ -27,21 +27,25 @@ public static unsafe partial class FileSystem
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
             if (Utilities.IsNativeDebugEnabled())
                 Utilities.ConWrite(
-                    $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeName}'"
+                    $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeLibraryName}'"
                 );
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
-            _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
+            _ = Resolver(NativeLibraryName, typeof(FileSystem).Assembly, null);
             // Best-effort: try to bind linux_* exports if present and create delegates.
             try
             {
-                var full = FindNativeLibraryPath(NativeName);
+                var full = FindNativeLibraryPath(NativeLibraryName);
                 if (!string.IsNullOrWhiteSpace(full))
                 {
                     var handle = NativeLibrary.Load(full);
                     if (NativeLibrary.TryGetExport(handle, "linux_lstat", out var ptr))
-                        _linux_lstat_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
+                        _linux_lstat_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(
+                            ptr
+                        );
                     if (NativeLibrary.TryGetExport(handle, "linux_readlink", out ptr))
-                        _linux_readlink_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
+                        _linux_readlink_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(
+                            ptr
+                        );
                     if (NativeLibrary.TryGetExport(handle, "linux_canonicalize_file_name", out ptr))
                         _linux_cfn_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
                 }
@@ -63,7 +67,7 @@ public static unsafe partial class FileSystem
         DllImportSearchPath? searchPath
     )
     {
-        if (libraryName != NativeName)
+        if (libraryName != NativeLibraryName)
             return IntPtr.Zero;
         try
         {
@@ -77,7 +81,7 @@ public static unsafe partial class FileSystem
             // ignore
         }
 
-        var full = FindNativeLibraryPath(NativeName);
+        var full = FindNativeLibraryPath(NativeLibraryName);
         if (full is null)
             return IntPtr.Zero;
         try
@@ -131,11 +135,10 @@ public static unsafe partial class FileSystem
                         }
 
                 // If still not resolved by dynamic loader, append common shim directory to LD_LIBRARY_PATH and retry.
-                var commonDir = File.Exists(commonShimDebug)
-                    ? Path.GetDirectoryName(commonShimDebug)!
-                    : File.Exists(commonShimRelease)
-                        ? Path.GetDirectoryName(commonShimRelease)!
-                        : null;
+                var commonDir =
+                    File.Exists(commonShimDebug) ? Path.GetDirectoryName(commonShimDebug)!
+                    : File.Exists(commonShimRelease) ? Path.GetDirectoryName(commonShimRelease)!
+                    : null;
                 if (commonDir is not null)
                 {
                     var ld = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? string.Empty;
@@ -195,15 +198,15 @@ public static unsafe partial class FileSystem
         return null;
     }
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* lstat(string path);
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* readlink(string path);
 
-    [LibraryImport("libOsCallsLinuxShim.so", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static partial ValueT* canonicalize_file_name(string path);
 

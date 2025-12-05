@@ -14,7 +14,7 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class FileSystem
 {
-    private const string NativeName = "OsCallsWindowsShimNative.dll";
+    private const string NativeLibraryName = "OsCallsWindowsShimNative.dll";
 
     static FileSystem()
     {
@@ -23,10 +23,10 @@ public static unsafe partial class FileSystem
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
             if (Utilities.IsNativeDebugEnabled())
                 Utilities.ConWrite(
-                    $"OsCallsWindows.FileSystem resolver registered: searching for '{NativeName}'"
+                    $"OsCallsWindows.FileSystem resolver registered: searching for '{NativeLibraryName}'"
                 );
             // Preload to improve deterministic behavior in CI where PATH changes later.
-            _ = Resolver(NativeName, typeof(FileSystem).Assembly, null);
+            _ = Resolver(NativeLibraryName, typeof(FileSystem).Assembly, null);
         }
         catch
         {
@@ -34,27 +34,27 @@ public static unsafe partial class FileSystem
         }
     }
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* windows_GetFileInformationByHandle(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* windows_DeviceIoControl_GetReparsePoint(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* windows_GetFinalPathNameByHandleW(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_lstat(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_readlink(string path);
 
-    [LibraryImport("OsCallsWindowsShimNative.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static partial ValueT* win_canonicalize_file_name(string path);
 
@@ -139,7 +139,7 @@ public static unsafe partial class FileSystem
         DllImportSearchPath? searchPath
     )
     {
-        if (!string.Equals(libraryName, NativeName, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(libraryName, NativeLibraryName, StringComparison.OrdinalIgnoreCase))
             return IntPtr.Zero;
         try
         {
@@ -147,7 +147,7 @@ public static unsafe partial class FileSystem
                 Utilities.ConWrite(
                     $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
                 );
-            var full = FindNativeLibraryPath(NativeName);
+            var full = FindNativeLibraryPath(NativeLibraryName);
             if (full is not null)
             {
                 if (Utilities.IsNativeDebugEnabled())
