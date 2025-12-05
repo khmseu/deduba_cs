@@ -1,4 +1,4 @@
-#if WINDOWS
+#if DEDUBA_WINDOWS
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json.Nodes;

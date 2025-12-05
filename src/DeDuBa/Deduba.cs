@@ -4,10 +4,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
 using UtilitiesLibrary;
-#if WINDOWS
-using OsCallsWindows;
-#else
+#if DEDUBA_LINUX
 using OsCallsLinux;
+#endif
+#if DEDUBA_WINDOWS
+using OsCallsWindows;
 #endif
 
 namespace DeDuBa;
@@ -255,10 +256,11 @@ public class DedubaClass
                 _archiveStore.BuildIndex();
 
                 // Initialize high-level OS API
-#if WINDOWS
-                _osApi = new WindowsHighLevelOsApi();
-#else
+#if DEDUBA_LINUX
                 _osApi = new LinuxHighLevelOsApi();
+#endif
+#if DEDUBA_WINDOWS
+                _osApi = new WindowsHighLevelOsApi();
 #endif
 
                 if (Utilities.VerboseOutput)

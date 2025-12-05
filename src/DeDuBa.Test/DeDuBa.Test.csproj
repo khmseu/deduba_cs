@@ -7,13 +7,13 @@
     <IsTestProject>true</IsTestProject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <!-- Define LINUX constant for Linux platforms -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
-    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  <!-- Define DEDUBA_LINUX constant for Linux platforms (default/no RID treated as Linux) -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
+    <DefineConstants>$(DefineConstants);DEDUBA_LINUX</DefineConstants>
   </PropertyGroup>
-  <!-- Define WINDOWS constant for Windows platforms -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  <!-- Define DEDUBA_WINDOWS constant for Windows platforms -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86' OR '$(OS)' == 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);DEDUBA_WINDOWS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />

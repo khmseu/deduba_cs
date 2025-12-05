@@ -106,11 +106,11 @@ This plan unifies Linux and Windows OS interactions behind a testable, mockable 
 
 3. **Implement `WindowsHighLevelOsApi` in OsCallsWindows** — Wrap existing [`FileSystem.cs`](cci:1://file:///bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindows/FileSystem.cs:0:0-0:0), [`Security.cs`](cci:1://file:///bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindows/Security.cs:0:0-0:0), and [`Streams.cs`](cci:1://file:///bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindows/Streams.cs:0:0-0:0) static methods. Implement `IHasSecurity` and `IHasAlternateStreams` for Windows-specific features. Return empty ACL/xattr results for compatibility.
 
-4. **Add factory in OsCallsCommon** — Create `HighLevelOsApiFactory.GetForCurrentPlatform()` that returns `LinuxHighLevelOsApi` or `WindowsHighLevelOsApi` based on `RuntimeInformation.IsOSPlatform()`. Add optional compile-time selection via `#if WINDOWS` for performance if runtime checks are too expensive.
+4. **Add factory in OsCallsCommon** — Create `HighLevelOsApiFactory.GetForCurrentPlatform()` that returns `LinuxHighLevelOsApi` or `WindowsHighLevelOsApi` based on `RuntimeInformation.IsOSPlatform()`. Add optional compile-time selection via `#if DEDUBA_WINDOWS` for performance if runtime checks are too expensive.
 
 5. **Create unit tests with mocking** — Add `DeDuBa.Test/HighLevelOsApiTests.cs` with mock implementations of `IHighLevelOsApi` to test backup logic independently of OS. Verify existing [`OsCallsLinuxTests.cs`](cci:1://file:///bigdata/KAI/projects/Backup/deduba_cs/DeDuBa.Test/OsCallsLinuxTests.cs:0:0-0:0) and [`OsCallsWindowsTests.cs`](cci:1://file:///bigdata/KAI/projects/Backup/deduba_cs/DeDuBa.Test/OsCallsWindowsTests.cs:0:0-0:0) still pass with new implementations.
 
-6. **Migrate `Deduba.cs` incrementally** — Inject `IHighLevelOsApi` via constructor (default to factory if null). Replace direct `FileSystem.LStat` calls (lines 214, 498) with `_osApi.GetFileStat()`. Replace ACL/xattr calls (lines 630-699) with conditional checks for `IHasAcls`/`IHasXattrs`. Keep `#if WINDOWS` directives temporarily for compatibility, remove after full migration.
+6. **Migrate `Deduba.cs` incrementally** — Inject `IHighLevelOsApi` via constructor (default to factory if null). Replace direct `FileSystem.LStat` calls (lines 214, 498) with `_osApi.GetFileStat()`. Replace ACL/xattr calls (lines 630-699) with conditional checks for `IHasAcls`/`IHasXattrs`. Keep `#if DEDUBA_WINDOWS` directives temporarily for compatibility, remove after full migration.
 
 ### Further Considerations
 
@@ -406,7 +406,7 @@ public static class HighLevelOsApiFactory
     /// <returns>Platform-specific implementation (LinuxHighLevelOsApi or WindowsHighLevelOsApi)</returns>
     public static IHighLevelOsApi GetForCurrentPlatform()
     {
-#if WINDOWS
+#if DEDUBA_WINDOWS
         return new OsCallsWindows.WindowsHighLevelOsApi();
 #else
         return new OsCallsLinux.LinuxHighLevelOsApi();

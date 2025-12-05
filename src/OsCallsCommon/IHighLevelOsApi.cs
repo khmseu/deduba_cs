@@ -9,34 +9,6 @@ namespace OsCallsCommon;
 /// </summary>
 public interface IHighLevelOsApi
 {
-    // ========================================================================
-    // Platform Capability Detection
-    // ========================================================================
-
-    /// <summary>
-    ///     Check if this platform supports POSIX ACLs (Linux/macOS).
-    ///     Used to determine whether ACL metadata should be collected.
-    /// </summary>
-    bool HasAclSupport { get; }
-
-    /// <summary>
-    ///     Check if this platform supports extended attributes (Linux/macOS).
-    ///     Used to determine whether xattr metadata should be collected.
-    /// </summary>
-    bool HasXattrSupport { get; }
-
-    /// <summary>
-    ///     Check if this platform supports Windows security descriptors.
-    ///     Used to determine whether security descriptor metadata should be collected.
-    /// </summary>
-    bool HasSecurityDescriptorSupport { get; }
-
-    /// <summary>
-    ///     Check if this platform supports Alternate Data Streams (Windows NTFS).
-    ///     Used to determine whether ADS metadata should be collected.
-    /// </summary>
-    bool HasAlternateStreamSupport { get; }
-
     /// <summary>
     ///     Create complete InodeData from pathname with all metadata, ACLs, xattrs, and content hashes.
     ///     This is the main entry point that encapsulates:
