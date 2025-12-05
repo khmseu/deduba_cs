@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5-alpha] - UNRELEASED
+
+### Added
+
+- (placeholder) Prepare changelog for next development cycle targeting 0.1.5-alpha.
+
+### Changed
+
+- (placeholder) Post-release housekeeping: bump target version and notes.
+
+### Fixed
+
+- (placeholder) Minor post-release fixes and documentation updates.
+
+
 ## [0.1.4-alpha] - 2025-12-05
 
 ### Added
