@@ -33,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded XML documentation for public APIs (`InodeData`, `OsException`, `IHighLevelOsApi`) and improved Doxygen/C++ shim docs.
 - Added changelog links in README and updated `FUTURE_PLANS.md` with progress snapshots.
 
-
 ## [0.1.3-alpha.1] - 2025-11-17
 
 ### Fixed
