@@ -136,7 +136,7 @@ incremented base version:
 
   This documents the next target version for humans and automated docs.
 
-- Option B: If you need the *base* semver to advance immediately (so builds
+- Option B: If you need the _base_ semver to advance immediately (so builds
   show `0.1.5-alpha` rather than `0.1.4-alpha.<height>`), create the next
   pre-release tag right after publishing the release:
 
@@ -146,6 +146,7 @@ incremented base version:
   ```
 
 Notes
+
 - If you do nothing, MinVer will continue to show the released tag plus a
   commit height suffix (e.g., `0.1.4-alpha.1`), which is valid but keeps the
   base semver identical to the last tag.
