@@ -30,11 +30,11 @@ echo "Running C# Xattr Tests"
 echo "======================================"
 echo
 
-# Derive project directory from script location
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Derive workspace root from script location (script is in scripts/ subdirectory)
+WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 
-export LD_LIBRARY_PATH="${SCRIPT_DIR}/src/OsCallsCommonShim/bin/Debug/net8.0:${SCRIPT_DIR}/src/OsCallsLinuxShim/bin/Debug/net8.0:${LD_LIBRARY_PATH}"
-cd "${SCRIPT_DIR}"
+export LD_LIBRARY_PATH="${WORKSPACE_ROOT}/src/OsCallsCommonShim/bin/Debug/net8.0:${WORKSPACE_ROOT}/src/OsCallsLinuxShim/bin/Debug/net8.0:${LD_LIBRARY_PATH}"
+cd "${WORKSPACE_ROOT}"
 dotnet test --filter "FullyQualifiedName~XattrTests" --logger "console;verbosity=normal"
 
 echo

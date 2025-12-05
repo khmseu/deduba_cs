@@ -4,7 +4,7 @@ set -euo pipefail
 # Generate both C++ (Doxygen) and C# (DocFX) documentation.
 # Requirements: doxygen, docfx, dotnet SDK.
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 DOCS_DIR="${ROOT_DIR}/docs"
 
 echo "==> Checking tools"
