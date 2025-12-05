@@ -25,7 +25,7 @@ export DOTNET_ROOT="${HOME}/.dotnet"
 export PATH="${DOTNET_ROOT}:${DOTNET_ROOT}/tools:${PATH}"
 
 echo "==> Building C# projects to produce XML docs"
-(cd "${ROOT_DIR}" && dotnet build "${ROOT_DIR}/DeDuBa/DeDuBa.csproj")
+(cd "${ROOT_DIR}" && dotnet build "${ROOT_DIR}/src/DeDuBa/DeDuBa.csproj")
 
 echo "==> Generating C++ docs (Doxygen)"
 (cd "${DOCS_DIR}" && rm -rf doxygen && doxygen Doxyfile)

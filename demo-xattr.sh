@@ -33,7 +33,7 @@ echo
 # Derive project directory from script location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export LD_LIBRARY_PATH="${SCRIPT_DIR}/OsCallsCommonShim/bin/Debug/net8.0:${SCRIPT_DIR}/OsCallsLinuxShim/bin/Debug/net8.0:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${SCRIPT_DIR}/src/OsCallsCommonShim/bin/Debug/net8.0:${SCRIPT_DIR}/src/OsCallsLinuxShim/bin/Debug/net8.0:${LD_LIBRARY_PATH}"
 cd "${SCRIPT_DIR}"
 dotnet test --filter "FullyQualifiedName~XattrTests" --logger "console;verbosity=normal"
 

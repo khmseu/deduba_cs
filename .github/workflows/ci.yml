@@ -86,8 +86,8 @@ jobs:
       - name: Cache native build (OsCallsWindowsShim)
         uses: actions/cache@v4
         with:
-          path: OsCallsWindowsShim/build-win-x64
-          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsWindowsShim/**') }}
+          path: src/OsCallsWindowsShim/build-win-x64
+          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('src/OsCallsWindowsShim/**') }}
           restore-keys: |
             ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-
       - name: Cache NuGet packages
@@ -100,27 +100,27 @@ jobs:
       - name: Cache native build (OsCallsCommonShim)
         uses: actions/cache@v4
         with:
-          path: OsCallsCommonShim/build/${{ matrix.configuration }}
-          key: ${{ runner.os }}-cmake-oscallscshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsCommonShim/**') }}
+          path: src/OsCallsCommonShim/build/${{ matrix.configuration }}
+          key: ${{ runner.os }}-cmake-oscallscshim-${{ matrix.configuration }}-${{ hashFiles('src/OsCallsCommonShim/**') }}
           restore-keys: |
             ${{ runner.os }}-cmake-oscallscshim-${{ matrix.configuration }}-
       - name: Cache native build (OsCallsLinuxShim)
         uses: actions/cache@v4
         with:
-          path: OsCallsLinuxShim/build/${{ matrix.configuration }}
-          key: ${{ runner.os }}-cmake-oscallslshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsLinuxShim/**') }}
+          path: src/OsCallsLinuxShim/build/${{ matrix.configuration }}
+          key: ${{ runner.os }}-cmake-oscallslshim-${{ matrix.configuration }}-${{ hashFiles('src/OsCallsLinuxShim/**') }}
           restore-keys: |
             ${{ runner.os }}-cmake-oscallslshim-${{ matrix.configuration }}-
 
       - name: Build DeDuBa project (Linux)
-        run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
+        run: dotnet build src/DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
       - name: Build OsCallsLinuxShim project (Linux)
-        run: dotnet build OsCallsLinuxShim/OsCallsLinuxShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
+        run: dotnet build src/OsCallsLinuxShim/OsCallsLinuxShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r linux-x64
       - name: Verify linux_* shim exports exist (Linux)
         if: matrix.configuration == 'Release'
         run: |
           # find compiled shared library
-          LIB=$(find OsCallsLinuxShim/bin -type f -name libOsCallsLinuxShim.so | head -n1)
+          LIB=$(find src/OsCallsLinuxShim/bin -type f -name libOsCallsLinuxShim.so | head -n1)
           if [ -z "$LIB" ]; then echo "libOsCallsLinuxShim.so not found"; exit 1; fi
           readelf -Ws "$LIB" | grep -E 'linux_lstat|linux_readlink|linux_canonicalize_file_name|linux_llistxattr|linux_lgetxattr|linux_getpwuid|linux_getgrgid|linux_acl_get_file_access|linux_acl_get_file_default' || { echo 'Missing linux_* exports'; readelf -Ws "$LIB"; exit 1; }
 
@@ -138,9 +138,9 @@ jobs:
           echo "$PATH"
 
       - name: Run tests
-        run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
+        run: dotnet test src/DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r linux-x64
         env:
-          LD_LIBRARY_PATH: "${{ github.workspace }}/OsCallsCommonShim/bin/${{ matrix.configuration }}/net8.0:${{ github.workspace }}/OsCallsLinuxShim/bin/${{ matrix.configuration }}/net8.0"
+          LD_LIBRARY_PATH: "${{ github.workspace }}/src/OsCallsCommonShim/bin/${{ matrix.configuration }}/net8.0:${{ github.workspace }}/src/OsCallsLinuxShim/bin/${{ matrix.configuration }}/net8.0"
           DEDU_ARCHIVE_ROOT: "${{ env.DEDU_ARCHIVE_ROOT }}"
 
       - name: Package Linux artifacts
@@ -212,8 +212,8 @@ jobs:
       - name: Cache native build (OsCallsWindowsShim)
         uses: actions/cache@v4
         with:
-          path: OsCallsWindowsShim/build-win-x64/bin
-          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('OsCallsWindowsShim/**') }}
+          path: src/OsCallsWindowsShim/build-win-x64/bin
+          key: ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-${{ hashFiles('src/OsCallsWindowsShim/**') }}
           restore-keys: |
             ${{ runner.os }}-cmake-oscallswinshim-${{ matrix.configuration }}-
 
@@ -232,7 +232,7 @@ jobs:
 
       - name: Build Windows shim (cross)
         run: |
-          dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj \
+          dotnet build src/OsCallsWindowsShim/OsCallsWindowsShim.csproj \
             --configuration ${{ matrix.configuration }} \
             -r win-x64
 
@@ -304,39 +304,39 @@ jobs:
           }
           Write-Host "--- Directory listing (root of repo) ---"
           Get-ChildItem -Force | Select-Object Name,Mode,Length | Sort-Object Name | Format-Table -AutoSize
-          Write-Host "--- Check OsCallsWindowsShim folder and CMakeLists.txt ---"
-          if (Test-Path OsCallsWindowsShim) {
-            Write-Host "OsCallsWindowsShim directory exists"
-            if (Test-Path OsCallsWindowsShim/CMakeLists.txt) {
+          Write-Host "--- Check src/OsCallsWindowsShim folder and CMakeLists.txt ---"
+          if (Test-Path src/OsCallsWindowsShim) {
+            Write-Host "src/OsCallsWindowsShim directory exists"
+            if (Test-Path src/OsCallsWindowsShim/CMakeLists.txt) {
               Write-Host "CMakeLists.txt found"
             } else {
-              Write-Host "CMakeLists.txt is missing in OsCallsWindowsShim"
+              Write-Host "CMakeLists.txt is missing in src/OsCallsWindowsShim"
             }
-            Write-Host "Listing OsCallsWindowsShim top-level files"
-            Get-ChildItem OsCallsWindowsShim | Select-Object Name,Mode,Length | Format-Table -AutoSize
+            Write-Host "Listing src/OsCallsWindowsShim top-level files"
+            Get-ChildItem src/OsCallsWindowsShim | Select-Object Name,Mode,Length | Format-Table -AutoSize
           } else {
-            Write-Host "OsCallsWindowsShim directory does not exist"
+            Write-Host "src/OsCallsWindowsShim directory does not exist"
           }
           Write-Host "=== End diagnostics ==="
 
       - name: Show native build folder (Windows)
         shell: pwsh
         run: |
-          Write-Host "--- Showing OsCallsWindowsShim/build-win-x64 ---"
-          if (Test-Path OsCallsWindowsShim/build-win-x64) {
-            Get-ChildItem OsCallsWindowsShim/build-win-x64 | Select-Object Name,Mode,Length | Format-Table -AutoSize
+          Write-Host "--- Showing src/OsCallsWindowsShim/build-win-x64 ---"
+          if (Test-Path src/OsCallsWindowsShim/build-win-x64) {
+            Get-ChildItem src/OsCallsWindowsShim/build-win-x64 | Select-Object Name,Mode,Length | Format-Table -AutoSize
           } else {
-            Write-Host "OsCallsWindowsShim/build-win-x64 not present"
+            Write-Host "src/OsCallsWindowsShim/build-win-x64 not present"
           }
 
       - name: Build OsCallsCommonShim project (Windows)
-        run: dotnet build OsCallsCommonShim/OsCallsCommonShim.csproj --configuration ${{ matrix.configuration }} --no-restore
+        run: dotnet build src/OsCallsCommonShim/OsCallsCommonShim.csproj --configuration ${{ matrix.configuration }} --no-restore
 
       - name: Build OsCallsWindowsShim project (Windows)
-        run: dotnet build OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
+        run: dotnet build src/OsCallsWindowsShim/OsCallsWindowsShim.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
       - name: Build DeDuBa project (Windows)
-        run: dotnet build DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
+        run: dotnet build src/DeDuBa/DeDuBa.csproj --configuration ${{ matrix.configuration }} --no-restore -r win-x64
 
       - name: Enable native debug logs (Windows)
         if: always()
@@ -355,7 +355,7 @@ jobs:
           Write-Host $env:LD_LIBRARY_PATH
 
       - name: Run tests (Windows)
-        run: dotnet test DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
+        run: dotnet test src/DeDuBa.Test/DeDuBa.Test.csproj --configuration ${{ matrix.configuration }} --verbosity normal -r win-x64
         env:
           DEDU_ARCHIVE_ROOT: "${{ env.DEDU_ARCHIVE_ROOT }}"
 
@@ -363,7 +363,7 @@ jobs:
         if: matrix.configuration == 'Release'
         shell: pwsh
         run: |
-          dotnet publish DeDuBa/DeDuBa.csproj `
+          dotnet publish src/DeDuBa/DeDuBa.csproj `
             --configuration ${{ matrix.configuration }} `
             -r win-x64 `
             -p:PublishSingleFile=true `
