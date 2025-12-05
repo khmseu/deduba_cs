@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4-alpha] - 2025-12-05
+
+### Added
+
+- Extracted the archive store and configuration into `IArchiveStore`/`ArchiveStore` and added `BackupConfig` to centralize archive settings and behavior.
+- Introduced the `IHighLevelOsApi` abstraction and moved `InodeData`/`OsException` into `OsCallsCommon` to cleanly separate OS metadata collection from backup logic.
+- Initial Windows metadata implementation: minimal `CreateInodeDataFromPath` to enable Windows-targeted integration tests and several Windows shim helpers.
+
+### Changed
+
+- Refactored `Deduba` to use `IHighLevelOsApi.CreateInodeDataFromPath()` and `ListDirectory()` for OS-specific metadata collection, reducing inline platform-specific code in `Backup_worker`.
+- ArchiveStore integrated as the single source of truth for content-addressable storage; removed legacy compatibility wrappers and fields from `DedubaClass`.
+- CI and build system improvements: migrated shims to CMake, added multi-config handling, improved native output layout, and made tag triggers and caching more robust.
+
+### Fixed
+
+- Multiple Windows shim and native export fixes (entry-point exports, struct packing, .def/generate_export_header fixes) to resolve P/Invoke and test-host crashes on Windows.
+- Stabilized Windows native iterator/error handling to avoid AccessViolationException and marshaling bugs (ValXfer/ValueT lifetime and error returns).
+- Test reliability fixes: reset per-run static state (Dirtmp, Fs2Ino, Devices, Bstats, counters), add clearer per-entry logging, and canonicalize paths to avoid test-order leakage.
+- ArchiveStore: improved stream/hash handling, more robust logging, and minor reorganization logic fixes.
+
+### Docs
+
+- Added and expanded XML documentation for public APIs (`InodeData`, `OsException`, `IHighLevelOsApi`) and improved Doxygen/C++ shim docs.
+- Added changelog links in README and updated `FUTURE_PLANS.md` with progress snapshots.
+
+
 ## [0.1.3-alpha.1] - 2025-11-17
 
 ### Fixed
