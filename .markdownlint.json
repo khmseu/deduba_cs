@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "files": ["docs/CHANGELOG.md"],
+      "rules": {
+        "MD024": false
+      }
+    }
+  ]
+}
