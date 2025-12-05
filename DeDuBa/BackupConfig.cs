@@ -82,7 +82,7 @@ public sealed class BackupConfig
             archiveRoot = envArchiveRoot;
         else if (testing)
             // Use a workspace-local / tmp directory in testing mode so CI and local runs don't attempt to create paths under /home/kai
-            archiveRoot = Path.Combine(Path.GetTempPath(), "ARCHIVE4");
+            archiveRoot = Path.Combine(Path.GetTempPath(), "ARCHIVE5");
         else
             archiveRoot = "/archive/backup";
         var verbose = Utilities.VerboseOutput;

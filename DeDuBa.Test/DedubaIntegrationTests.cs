@@ -21,9 +21,7 @@ public class DedubaIntegrationTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]
@@ -51,7 +49,7 @@ public class DedubaIntegrationTests : IDisposable
         Utilities.Testing = true;
         var config = BackupConfig.FromUtilities();
         // Use a workspace-local archive path inside the temp dir
-        var archiveRoot = Path.Combine(_tmpDir, "ARCHIVE4");
+        var archiveRoot = Path.Combine(_tmpDir, "ARCHIVE5");
         Environment.SetEnvironmentVariable("DEDU_ARCHIVE_ROOT", archiveRoot);
         Directory.CreateDirectory(archiveRoot);
 
@@ -64,7 +62,7 @@ public class DedubaIntegrationTests : IDisposable
     {
         Utilities.Testing = true;
         var parent = Path.Combine(_tmpDir, "parent");
-        var archiveRoot = Path.Combine(parent, "ARCHIVE4");
+        var archiveRoot = Path.Combine(parent, "ARCHIVE5");
         Directory.CreateDirectory(archiveRoot);
         Directory.CreateDirectory(parent);
 
@@ -84,7 +82,8 @@ public class DedubaIntegrationTests : IDisposable
         Console.WriteLine($"[DEBUG] OutsideFile (canonical)={outsideFile}");
         Console.WriteLine($"[DEBUG] InsideFile (canonical)={insideFile}");
         Console.WriteLine(
-            $"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}");
+            $"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}"
+        );
 
         DedubaClass.Backup(new[] { parent });
 
@@ -98,7 +97,9 @@ public class DedubaIntegrationTests : IDisposable
 
         // Print the list of files in the created archive root for diagnostics
         Console.WriteLine("[DEBUG] ArchiveRoot contents:");
-        foreach (var f in Directory.EnumerateFiles(config.ArchiveRoot, "*", SearchOption.AllDirectories))
+        foreach (
+            var f in Directory.EnumerateFiles(config.ArchiveRoot, "*", SearchOption.AllDirectories)
+        )
             Console.WriteLine("[DEBUG]  " + f);
 
         Console.WriteLine("[DEBUG] Parent directory contents:");
@@ -120,13 +121,16 @@ public class DedubaIntegrationTests : IDisposable
         foreach (var line in lines)
         {
             var m = pathRegex.Match(line);
-            if (m.Success) Console.WriteLine("[DEBUG]  -> " + m.Groups["path"].Value);
+            if (m.Success)
+                Console.WriteLine("[DEBUG]  -> " + m.Groups["path"].Value);
         }
 
         // Additional diagnostics for flaky test: check basename and relative matches in the log
         var outsideBasename = Path.GetFileName(outsideFile);
         var outsideRel = Path.GetRelativePath(parent, outsideFile);
-        Console.WriteLine($"[DEBUG] Checking alternate forms: basename={outsideBasename}, rel={outsideRel}");
+        Console.WriteLine(
+            $"[DEBUG] Checking alternate forms: basename={outsideBasename}, rel={outsideRel}"
+        );
         Console.WriteLine($"[DEBUG] Contains basename: {log.Contains(outsideBasename)}");
         Console.WriteLine($"[DEBUG] Contains rel (parent): {log.Contains(outsideRel)}");
 

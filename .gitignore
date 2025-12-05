@@ -481,7 +481,7 @@ OsCallsWindowsShim/build-win-x64/
 OsCallsWindowsShim/build-win*/
 
 # Local test archive used by integration tests
-ARCHIVE4/
+ARCHIVE[0-9]/
 doxygen/
 
 #others

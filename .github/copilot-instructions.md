@@ -74,44 +74,44 @@ DeDuBa is a deduplicating backup system ported from Perl to C&num;. Uses content
    If anything here is unclear or you want more detail (examples of implementing a new OS capability, script templates for running a Windows-native test locally, or exact CMake commands), tell me which area to expand.
    ```
 
-  ## Release checklist (quick)
+## Release checklist (quick)
 
-  When preparing a release, follow these steps to ensure CI and artifacts are consistent:
+When preparing a release, follow these steps to ensure CI and artifacts are consistent:
 
-  - Update `docs/CHANGELOG.md` with a new section for the version (date + summary).
-  - Commit the changelog entry (use a conventional commit like `docs(changelog): prepare vX.Y.Z`).
-  - Create an annotated tag: `git tag -a vX.Y.Z -m "vX.Y.Z: short summary"`.
-  - Push commits and tag: `git push origin master && git push origin vX.Y.Z`.
-  - Wait for the GitHub Actions run to complete successfully for the tag (use `gh run list --limit 5 --repo <owner>/<repo>` and `gh run watch <run-id>`).
-  - If CI artifacts are produced, verify checksums and that `release-files/release-metadata.json` is present.
-  - Create a GitHub Release (draft) with the changelog notes or use the `docs/CHANGELOG.md` entry as the release body.
+- Update `docs/CHANGELOG.md` with a new section for the version (date + summary).
+- Commit the changelog entry (use a conventional commit like `docs(changelog): prepare vX.Y.Z`).
+- Create an annotated tag: `git tag -a vX.Y.Z -m "vX.Y.Z: short summary"`.
+- Push commits and tag: `git push origin master && git push origin vX.Y.Z`.
+- Wait for the GitHub Actions run to complete successfully for the tag (use `gh run list --limit 5 --repo <owner>/<repo>` and `gh run watch <run-id>`).
+- If CI artifacts are produced, verify checksums and that `release-files/release-metadata.json` is present.
+- Create a GitHub Release (draft) with the changelog notes or use the `docs/CHANGELOG.md` entry as the release body.
 
-  Examples (preferred):
+Examples (preferred):
 
-  ```bash
-  # push local work and tag
-  git push origin master
-  git tag -a v0.1.4-alpha -m "v0.1.4-alpha: first version barely portable to Windows"
-  git push origin v0.1.4-alpha
+```bash
+# push local work and tag
+git push origin master
+git tag -a v0.1.4-alpha -m "v0.1.4-alpha: first version barely portable to Windows"
+git push origin v0.1.4-alpha
 
-  # create a draft release using gh (recommended)
-  gh release create v0.1.4-alpha \
-    --title "v0.1.4-alpha" \
-    --notes-file docs/CHANGELOG.md --repo khmseu/deduba_cs --draft
+# create a draft release using gh (recommended)
+gh release create v0.1.4-alpha \
+  --title "v0.1.4-alpha" \
+  --notes-file docs/CHANGELOG.md --repo khmseu/deduba_cs --draft
 
-  # watch CI runs
-  gh run list --repo khmseu/deduba_cs --limit 5
-  gh run watch --repo khmseu/deduba_cs <run-id>
-  ```
+# watch CI runs
+gh run list --repo khmseu/deduba_cs --limit 5
+gh run watch --repo khmseu/deduba_cs <run-id>
+```
 
-  ### Prefer `gh` over raw HTTP
+### Prefer `gh` over raw HTTP
 
-  This repository authorizes the `gh` CLI for the account and repo. Use `gh` for creating releases, querying runs, and fetching artifacts instead of raw HTTP requests (curl/wget/fetch), because `gh` handles authentication, redirects, artifact downloads, and rate-limiting more reliably. Example operations:
+This repository authorizes the `gh` CLI for the account and repo. Use `gh` for creating releases, querying runs, and fetching artifacts instead of raw HTTP requests (curl/wget/fetch), because `gh` handles authentication, redirects, artifact downloads, and rate-limiting more reliably. Example operations:
 
-  - `gh release create` — create a release with notes and artifacts
-  - `gh run download <run-id>` — fetch workflow artifacts
-  - `gh run list`, `gh run watch` — inspect workflow run status
+- `gh release create` — create a release with notes and artifacts
+- `gh run download <run-id>` — fetch workflow artifacts
+- `gh run list`, `gh run watch` — inspect workflow run status
 
-  If `gh` is not available on the runner, fall back to the documented HTTP endpoints, but prefer `gh` whenever possible.
+If `gh` is not available on the runner, fall back to the documented HTTP endpoints, but prefer `gh` whenever possible.
 
-   ./demo-xattr.sh &num; Demo xattr functionality
+./demo-xattr.sh &num; Demo xattr functionality

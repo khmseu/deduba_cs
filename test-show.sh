@@ -9,7 +9,7 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}/OsCallsCommonShim/bin/Debug/net8.0:${SCRIP
 
 cd "${SCRIPT_DIR}" || exit 1
 
-# Default testing archive path to a workspace-local ARCHIVE4 (overridable via DEDU_ARCHIVE_ROOT)
-export DEDU_ARCHIVE_ROOT="${SCRIPT_DIR}/ARCHIVE4"
+# Default testing archive path to a workspace-local ARCHIVE5 (overridable via DEDU_ARCHIVE_ROOT)
+export DEDU_ARCHIVE_ROOT="${SCRIPT_DIR}/ARCHIVE5"
 rm -rf "${DEDU_ARCHIVE_ROOT}" || true
 script -c "'time' -v  timeout -s USR1 1d dotnet run --project=DeDuBa --no-build -- $(echo *)" ../test.ansi

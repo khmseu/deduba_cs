@@ -16,7 +16,7 @@
       <DirsToRemove Include="$(RepoRoot)build_native" />
       <DirsToRemove Include="$(RepoRoot)artifacts" />
       <DirsToRemove Include="$(RepoRoot)dist" />
-      <DirsToRemove Include="$(RepoRoot)ARCHIVE4" />
+      <DirsToRemove Include="$(RepoRoot)ARCHIVE5" />
       <DirsToRemove Include="$(RepoRoot)docs/_site" />
       <DirsToRemove Include="$(RepoRoot)docs/doxygen" />
     </ItemGroup>

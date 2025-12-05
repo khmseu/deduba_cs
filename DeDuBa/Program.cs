@@ -52,7 +52,7 @@ internal class Program
         Console.WriteLine("Options:");
         Console.WriteLine("  -v, --verbose      Enable verbose diagnostic output");
         Console.WriteLine("  -p, --production   Use production archive path (/archive/backup)");
-        Console.WriteLine("                     Default: test mode (~/projects/Backup/ARCHIVE4)");
+        Console.WriteLine("                     Default: test mode (~/projects/Backup/ARCHIVE5)");
         Console.WriteLine("  -h, --help         Show this help message");
         Console.WriteLine();
         Console.WriteLine("Examples:");

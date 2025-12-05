@@ -120,7 +120,7 @@ This plan unifies Linux and Windows OS interactions behind a testable, mockable 
 
 3. **Async support** — Add `async` variants (`GetFileStatAsync`, `GetLinkTargetAsync`) now or defer until archival performance bottlenecks are measured? Current implementation is synchronous throughout.
 
-khmseu: Make sure that all interactions with the file system (and supporting OS-related calls like mapping users ids to names) that are required for scanning and reading the directories to backup go through IHighLevelOsApi (and thus have supporting interfaces in there). On the other hand, the code handling the archive directory (such as ARCHIVE4) should ultimately use standard C# dotnet core runtime functions. So make sure the IHighLevelOsApi is capable of supporting this functionality.
+khmseu: Make sure that all interactions with the file system (and supporting OS-related calls like mapping users ids to names) that are required for scanning and reading the directories to backup go through IHighLevelOsApi (and thus have supporting interfaces in there). On the other hand, the code handling the archive directory (such as ARCHIVE5) should ultimately use standard C# dotnet core runtime functions. So make sure the IHighLevelOsApi is capable of supporting this functionality.
 Make a proposal for the IHighLevelOsApi interface to review.
 
 GitHub Copilot: I'll analyze the filesystem interactions in `Deduba.cs` to design a comprehensive `IHighLevelOsApi` interface that covers all backup source scanning needs while keeping archive operations using standard .NET APIs.
