@@ -28,7 +28,9 @@
     },
     {
       "type": "msbuild",
-      "problemMatcher": ["$msCompile"],
+      "problemMatcher": [
+        "$msCompile"
+      ],
       "group": "build",
       "label": "Build: DeDuBa.csproj",
       "detail": "Build the DeDuBa.csproj project using dotnet build"
@@ -37,7 +39,10 @@
       "label": "build",
       "command": "dotnet",
       "type": "process",
-      "args": ["build", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "args": [
+        "build",
+        "${workspaceFolder}/DeDuBa/DeDuBa.csproj"
+      ],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
@@ -55,7 +60,10 @@
       "label": "Clean: DeDuBa.csproj",
       "command": "dotnet",
       "type": "process",
-      "args": ["clean", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "args": [
+        "clean",
+        "${workspaceFolder}/DeDuBa/DeDuBa.csproj"
+      ],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
@@ -92,7 +100,9 @@
       "label": "Docs: Doxygen (C++)",
       "type": "shell",
       "command": "doxygen",
-      "args": ["${workspaceFolder}/docs/Doxyfile"],
+      "args": [
+        "${workspaceFolder}/docs/Doxyfile"
+      ],
       "group": "build",
       "problemMatcher": []
     },
@@ -100,7 +110,9 @@
       "label": "Docs: DocFX site (C#)",
       "type": "shell",
       "command": "docfx",
-      "args": ["${workspaceFolder}/docs/docfx.json"],
+      "args": [
+        "${workspaceFolder}/docs/docfx.json"
+      ],
       "group": "build",
       "problemMatcher": []
     },
@@ -108,7 +120,10 @@
       "label": "Docs: Generate all (Doxygen + DocFX)",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "'${workspaceFolder}/generate-docs.sh'"],
+      "args": [
+        "-lc",
+        "'${workspaceFolder}/generate-docs.sh'"
+      ],
       "group": "build",
       "problemMatcher": []
     },
@@ -127,7 +142,10 @@
       "label": "Docs: Serve site (local)",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "'${workspaceFolder}/scripts/serve-docs.sh'"],
+      "args": [
+        "-lc",
+        "'${workspaceFolder}/scripts/serve-docs.sh'"
+      ],
       "group": "test",
       "isBackground": true,
       "options": {
@@ -159,7 +177,10 @@
       "label": "Docs: Open served URL",
       "type": "shell",
       "command": "bash",
-      "args": ["-c", "${workspaceFolder}/scripts/open-served-docs.sh"],
+      "args": [
+        "-c",
+        "${workspaceFolder}/scripts/open-served-docs.sh"
+      ],
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -175,7 +196,10 @@
       "label": "Format: Trunk + CSharpier",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "'${workspaceFolder}/scripts/format-all.sh'"],
+      "args": [
+        "-lc",
+        "'${workspaceFolder}/scripts/format-all.sh'"
+      ],
       "options": {
         "env": {
           "DOTNET_ROOT": "${env:HOME}/.dotnet",
@@ -191,7 +215,10 @@
       "label": "Test: Run DeDuBa on workspace files",
       "type": "shell",
       "command": "bash",
-      "args": ["-x", "${workspaceFolder}/test.sh"],
+      "args": [
+        "-x",
+        "${workspaceFolder}/test.sh"
+      ],
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -218,14 +245,20 @@
       "label": "Pre-commit build validation",
       "type": "shell",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/DeDuBa/DeDuBa.csproj"],
+      "args": [
+        "build",
+        "${workspaceFolder}/DeDuBa/DeDuBa.csproj"
+      ],
       "group": "build"
     },
     {
       "label": "Package: All Debug",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "${workspaceFolder}/scripts/package.sh all Debug"],
+      "args": [
+        "-lc",
+        "${workspaceFolder}/scripts/package.sh all Debug"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -244,7 +277,10 @@
       "label": "Package: All Release",
       "type": "shell",
       "command": "bash",
-      "args": ["-lc", "${workspaceFolder}/scripts/package.sh all Release"],
+      "args": [
+        "-lc",
+        "${workspaceFolder}/scripts/package.sh all Release"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -258,6 +294,15 @@
         "showReuseMessage": true,
         "clear": false
       }
+    },
+    {
+      "type": "msbuild",
+      "problemMatcher": [
+        "$msCompile"
+      ],
+      "group": "build",
+      "label": "Build: DeDuBa.csproj",
+      "detail": "Build the DeDuBa.csproj project using dotnet build"
     }
   ]
 }

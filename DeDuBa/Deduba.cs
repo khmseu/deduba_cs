@@ -302,7 +302,7 @@ public class DedubaClass
                 if (Utilities.VerboseOutput)
                     Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
 
-                Utilities.ConWrite(Utilities.Dumper(Utilities.D(_archiveStore?.Stats ?? Bstats)));
+                Utilities.ConWrite(Utilities.Dumper(Utilities.D(_archiveStore.Stats ?? Bstats)));
 
                 // untie %arlist;
                 // untie %preflist;
@@ -617,7 +617,7 @@ public class DedubaClass
                         InodeData inodeData;
                         try
                         {
-                            inodeData = _osApi.CreateInodeDataFromPath(entry, _archiveStore!);
+                            inodeData = _osApi!.CreateInodeDataFromPath(entry, _archiveStore!);
                         }
                         catch (OsException ex)
                         {

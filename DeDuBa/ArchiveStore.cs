@@ -15,7 +15,7 @@ public sealed class ArchiveStore : IArchiveStore
 {
     private readonly ConcurrentDictionary<string, string> _arlist = new();
     private readonly BackupConfig _config;
-    private readonly Action<string>? _log;
+    private readonly Action<string> _log;
     private readonly ConcurrentDictionary<string, HashSet<string>> _preflist = new();
     private readonly object _reorgLock = new();
     private readonly ConcurrentDictionary<string, long> _stats = new();
@@ -83,7 +83,7 @@ public sealed class ArchiveStore : IArchiveStore
     public string? GetTargetPathForHash(string hash)
     {
         if (_config.Verbose)
-            _log?.Invoke($"GetTargetPathForHash: {hash}");
+            _log.Invoke($"GetTargetPathForHash: {hash}");
 
         if (_arlist.TryGetValue(hash, out var existingPrefix))
         {
@@ -133,7 +133,7 @@ public sealed class ArchiveStore : IArchiveStore
                 if (nlist > _config.PrefixSplitThreshold)
                 {
                     if (_config.Verbose)
-                        _log?.Invoke($"*** reorganizing '{prefix}' [{nlist} entries]");
+                        _log.Invoke($"*** reorganizing '{prefix}' [{nlist} entries]");
 
                     var depth = prefixList.Count;
                     var plen = 2 * depth;
@@ -233,9 +233,7 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch
-                {
-                }
+                catch { }
 
                 return hash;
             }
@@ -244,12 +242,10 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch
-            {
-            }
+            catch { }
 
             if (_config.Verbose)
-                _log?.Invoke(hash);
+                _log.Invoke(hash);
         }
         else
         {
@@ -257,7 +253,7 @@ public sealed class ArchiveStore : IArchiveStore
             var dataLen2 = data.Length;
             _stats.AddOrUpdate("duplicate_bytes", dataLen2, (_, v) => v + dataLen2);
             if (_config.Verbose)
-                _log?.Invoke($"{hash} already exists");
+                _log.Invoke($"{hash} already exists");
         }
 
         return hash;
@@ -305,7 +301,7 @@ public sealed class ArchiveStore : IArchiveStore
         if (entry == _config.DataPath)
         {
             if (_config.Verbose)
-                _log?.Invoke($"+ {entry}");
+                _log.Invoke($"+ {entry}");
             try
             {
                 foreach (var e in Directory.GetFileSystemEntries(entry).OrderBy(x => x))
@@ -333,7 +329,7 @@ public sealed class ArchiveStore : IArchiveStore
         if (Regex.IsMatch(file, "^[0-9a-f][0-9a-f]$"))
         {
             if (_config.Verbose)
-                _log?.Invoke($"+ {entry}:{prefix}:{file}");
+                _log.Invoke($"+ {entry}:{prefix}:{file}");
             var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
             lock (set)
             {
@@ -390,7 +386,7 @@ public sealed class ArchiveStore : IArchiveStore
         {
             const string blue = "\u001b[34m";
             const string reset = "\u001b[0m";
-            _log?.Invoke($"{blue}Created directory: {path}{reset}");
+            _log.Invoke($"{blue}Created directory: {path}{reset}");
         }
     }
 }
