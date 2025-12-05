@@ -83,7 +83,15 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
         var inodeData = new InodeData
         {
-            FileId = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(new List<object?> { statObj?["st_dev"]?.GetValue<long>() ?? 0, statObj?["st_ino"]?.GetValue<long>() ?? 0 })),
+            FileId = JsonSerializer.Deserialize<JsonElement>(
+                JsonSerializer.Serialize(
+                    new List<object?>
+                    {
+                        statObj?["st_dev"]?.GetValue<long>() ?? 0,
+                        statObj?["st_ino"]?.GetValue<long>() ?? 0,
+                    }
+                )
+            ),
             Mode = statObj?["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statObj?["st_nlink"]?.GetValue<long>() ?? 0,
@@ -167,7 +175,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
     /// <summary>
     ///     List the directory entries for <paramref name="path"/> ordered by
-    ///     ordinal string comparison. Wraps <see cref="Directory.GetFileSystemEntries"/>
+    ///     ordinal string comparison. Wraps <see cref="System.IO.Directory.GetFileSystemEntries(System.String)"/>
     ///     and maps system exceptions to <see cref="OsException"/>.
     /// </summary>
     /// <param name="path">Directory to list.</param>

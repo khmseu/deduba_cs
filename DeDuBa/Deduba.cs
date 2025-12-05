@@ -1,14 +1,14 @@
-#if WINDOWS
-using OsCallsWindows;
-#else
-using OsCallsLinux;
-#endif
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using OsCallsCommon;
 using UtilitiesLibrary;
+#if WINDOWS
+using OsCallsWindows;
+#else
+using OsCallsLinux;
+#endif
 
 namespace DeDuBa;
 
@@ -124,7 +124,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
                 };
         }
         catch (Exception ex)
@@ -181,7 +181,7 @@ public class DedubaClass
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : "")
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -555,9 +555,7 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     // Always compute the file-type flags from statBuf so subsequent code
@@ -593,14 +591,15 @@ public class DedubaClass
                             {
                                 // Enqueue children into work queue and update total
                                 var childEntries = _osApi
-                                    .ListDirectory(entry)
+                                    ?.ListDirectory(entry)
                                     .Where(x => !IsPathWithinArchive(x))
                                     .ToList();
 
-                                _statusQueueTotal += childEntries.Count;
+                                _statusQueueTotal += (long)(childEntries?.Count ?? 0);
 
-                                foreach (var childEntry in childEntries)
-                                    workQueue.Enqueue(childEntry);
+                                if (childEntries != null)
+                                    foreach (var childEntry in childEntries)
+                                        workQueue.Enqueue(childEntry);
                             }
                             catch (OsException ex)
                             {
