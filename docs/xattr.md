@@ -132,6 +132,6 @@ dotnet test --filter "FullyQualifiedName~XattrTests"
 
 ## See Also
 
-- [ValXfer.cs](../OsCalls/ValXfer.cs) - Value transfer mechanism
-- [FileSystem.cs](../OsCalls/FileSystem.cs) - Similar POSIX API wrappers
+- [ValXfer.cs](../src/OsCallsCommon/ValXfer.cs) - Value transfer mechanism
+- [FileSystem.cs](../src/OsCallsLinux/FileSystem.cs) - Similar POSIX API wrappers
 - [XattrTests.cs](../DeDuBa.Test/XattrTests.cs) - Comprehensive test examples

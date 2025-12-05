@@ -27,7 +27,7 @@ Generate metadata + site:
 
 ```bash
 cd docs
-# Will read ../DeDuBa/DeDuBa.csproj, ../OsCalls/OsCalls.csproj, ../UtilitiesLibrary/UtilitiesLibrary.csproj
+# Will read ../src/DeDuBa/DeDuBa.csproj, ../src/OsCallsCommon/OsCallsCommon.csproj, ../src/UtilitiesLibrary/UtilitiesLibrary.csproj
 # and use their XML docs from bin/ to generate API YAML, then build the site
 # If docfx is not installed, see https://dotnet.github.io/docfx/
 docfx docfx.json

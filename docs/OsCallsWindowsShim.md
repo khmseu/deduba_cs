@@ -59,7 +59,7 @@ Create a new C++ DLL project and:
 1. Add all `.cpp` files from `src/` directory
 2. Add include directories:
    - `include/`
-   - `../OsCallsCommonShim/include/`
+   - `../src/OsCallsCommonShim/include/`
 3. Link against: `advapi32.lib`, `shlwapi.lib`
 
 ## Implementation Status

@@ -5,11 +5,11 @@
         {
           "src": "..",
           "files": [
-            "DeDuBa/DeDuBa.csproj",
-            "OsCallsCommon/OsCallsCommon.csproj",
-            "OsCallsLinux/OsCallsLinux.csproj",
-            "OsCallsWindows/OsCallsWindows.csproj",
-            "UtilitiesLibrary/UtilitiesLibrary.csproj"
+            "src/DeDuBa/DeDuBa.csproj",
+            "src/OsCallsCommon/OsCallsCommon.csproj",
+            "src/OsCallsLinux/OsCallsLinux.csproj",
+            "src/OsCallsWindows/OsCallsWindows.csproj",
+            "src/UtilitiesLibrary/UtilitiesLibrary.csproj"
           ]
         }
       ],
@@ -22,21 +22,33 @@
   "build": {
     "content": [
       {
-        "files": ["index.md"]
+        "files": [
+          "index.md"
+        ]
       },
       {
-        "files": ["api/**.yml", "api/index.md"]
+        "files": [
+          "api/**.yml",
+          "api/index.md"
+        ]
       },
       {
-        "files": ["articles/**.md", "toc.yml"]
+        "files": [
+          "articles/**.md",
+          "toc.yml"
+        ]
       }
     ],
     "resource": [
       {
-        "files": ["images/**"]
+        "files": [
+          "images/**"
+        ]
       },
       {
-        "files": ["doxygen/**"]
+        "files": [
+          "doxygen/**"
+        ]
       }
     ],
     "dest": "_site"
