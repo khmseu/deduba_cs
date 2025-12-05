@@ -59,7 +59,7 @@ DeDuBa is a deduplicating backup system ported from Perl to C&num;. Uses content
 
    - CI and release notes:
      - Repo uses GitHub Actions; tags `v*` trigger the release workflow.
-     - When creating a tag, update `docs/CHANGELOG.md` and push tag; CI will build packages and create a release.
+     - When creating a tag or a release, update `docs/CHANGELOG.md` and push tag; CI will build packages and create a release.
 
    - Troubleshooting quick tips:
      - If you see `DllNotFoundException` or missing entry points: ensure native shim builds and that native DLL/.so are copied to managed output (check CMake outputs and csproj copy tasks).
@@ -78,7 +78,7 @@ DeDuBa is a deduplicating backup system ported from Perl to C&num;. Uses content
 
 When preparing a release, follow these steps to ensure CI and artifacts are consistent:
 
-- Update `docs/CHANGELOG.md` with a new section for the version (date + summary).
+- Update `docs/CHANGELOG.md` with a new section for the version (date + summary) from the git comments since the previous release on that branch.
 - Commit the changelog entry (use a conventional commit like `docs(changelog): prepare vX.Y.Z`).
 - Create an annotated tag: `git tag -a vX.Y.Z -m "vX.Y.Z: short summary"`.
 - Push commits and tag: `git push origin master && git push origin vX.Y.Z`.
@@ -115,3 +115,39 @@ This repository authorizes the `gh` CLI for the account and repo. Use `gh` for c
 If `gh` is not available on the runner, fall back to the documented HTTP endpoints, but prefer `gh` whenever possible.
 
 ./demo-xattr.sh &num; Demo xattr functionality
+
+## Post-release: ensure future commits show an increased version
+
+This repo uses MinVer (see `Directory.Build.props`) which derives the build
+version from git tags. After publishing a release (for example `v0.1.4-alpha`),
+you have two options to ensure subsequent commits are reported under an
+incremented base version:
+
+- Option A (recommended): Update the changelog and commit the next development
+  intent. Edit `docs/CHANGELOG.md` to add an `Unreleased` or the next version
+  header (e.g. `## [0.1.5-alpha] - UNRELEASED`) and commit with a conventional
+  message such as:
+
+  ```bash
+  git add docs/CHANGELOG.md
+  git commit -m "docs(changelog): prepare 0.1.5-alpha (post-release)"
+  git push origin master
+  ```
+
+  This documents the next target version for humans and automated docs.
+
+- Option B: If you need the *base* semver to advance immediately (so builds
+  show `0.1.5-alpha` rather than `0.1.4-alpha.<height>`), create the next
+  pre-release tag right after publishing the release:
+
+  ```bash
+  git tag -a v0.1.5-alpha -m "v0.1.5-alpha: start next development cycle"
+  git push origin v0.1.5-alpha
+  ```
+
+Notes
+- If you do nothing, MinVer will continue to show the released tag plus a
+  commit height suffix (e.g., `0.1.4-alpha.1`), which is valid but keeps the
+  base semver identical to the last tag.
+- Pick Option A for a clean changelog-driven workflow; pick Option B when
+  other systems expect an immediate semantic bump.
