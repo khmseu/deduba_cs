@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.5-alpha] - UNRELEASED
+## [0.1.6-alpha] - UNRELEASED
 
 ### Added
 
-- (placeholder) Prepare changelog for next development cycle targeting 0.1.5-alpha.
+- (placeholder) Prepare changelog for next development cycle targeting 0.1.6-alpha.
 
 ### Changed
 
@@ -22,6 +22,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - (placeholder) Minor post-release fixes and documentation updates.
+
+## [0.1.5-alpha] - 2025-12-05
+
+### Added
+
+- Consolidated all managed and native projects under `src/` to declutter the workspace root.
+
+### Changed
+
+- Updated solution, CMake, CI workflows, packaging, and test/demo scripts to use the new `src/` paths.
+
+### Fixed
+
+- Corrected Doxygen/DocFX input paths and LD_LIBRARY_PATH references so docs-and-includes CI now passes.
 
 ## [0.1.4-alpha] - 2025-12-05
 
