@@ -32,5 +32,6 @@
   <!-- Common references -->
   <ItemGroup>
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
+    <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
   </ItemGroup>
 </Project>

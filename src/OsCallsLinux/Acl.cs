@@ -32,7 +32,9 @@ public static unsafe partial class Acl
                         Marshal.GetDelegateForFunctionPointer<ShimAclDelegate>(p);
             }
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     /// <summary>

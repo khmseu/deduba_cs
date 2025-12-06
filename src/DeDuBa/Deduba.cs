@@ -2,11 +2,13 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using ArchiveStore;
 using OsCallsCommon;
 using UtilitiesLibrary;
 #if DEDUBA_LINUX
 using OsCallsLinux;
 #endif
+
 #if DEDUBA_WINDOWS
 using OsCallsWindows;
 #endif
@@ -125,7 +127,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
                 };
         }
         catch (Exception ex)
@@ -182,7 +184,7 @@ public class DedubaClass
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                            .Select(path => path != null ? Path.GetFullPath(path) : "")
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -216,16 +218,24 @@ public class DedubaClass
                     Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
                 }
 
+                // Initialize high-level OS API early (needed for LStat calls below)
+#if DEDUBA_LINUX
+                _osApi = new LinuxHighLevelOsApi();
+#endif
+#if DEDUBA_WINDOWS
+                _osApi = new WindowsHighLevelOsApi();
+#endif
+
                 foreach (var root in argv)
                 {
                     JsonNode? st;
                     try
                     {
-                        st = FileSystem.LStat(root);
+                        st = _osApi!.LStat(root);
                     }
                     catch (Exception ex)
                     {
-                        Utilities.Error(root, nameof(FileSystem.LStat), ex);
+                        Utilities.Error(root, nameof(IHighLevelOsApi.LStat), ex);
                         throw;
                     }
 
@@ -252,16 +262,11 @@ public class DedubaClass
                     _config.PrefixSplitThreshold
                 );
                 _dataPath = _config.DataPath;
-                _archiveStore = new ArchiveStore(_config, msg => Utilities.ConWrite(msg));
+                _archiveStore = new ArchiveStore.ArchiveStore(
+                    _config,
+                    msg => Utilities.ConWrite(msg)
+                );
                 _archiveStore.BuildIndex();
-
-                // Initialize high-level OS API
-#if DEDUBA_LINUX
-                _osApi = new LinuxHighLevelOsApi();
-#endif
-#if DEDUBA_WINDOWS
-                _osApi = new WindowsHighLevelOsApi();
-#endif
 
                 if (Utilities.VerboseOutput)
                 {
@@ -514,7 +519,7 @@ public class DedubaClass
                 var start = DateTime.Now;
                 try
                 {
-                    statBuf = FileSystem.LStat(entry);
+                    statBuf = _osApi!.LStat(entry);
                     if (statBuf == null)
                         throw new Win32Exception("null statBuf");
                     // var sb = statBuf.Value;
@@ -523,7 +528,7 @@ public class DedubaClass
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Error(entry, nameof(FileSystem.LStat), ex);
+                    Utilities.Error(entry, nameof(IHighLevelOsApi.LStat), ex);
                 }
 
                 var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
@@ -557,7 +562,9 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     // Always compute the file-type flags from statBuf so subsequent code
@@ -597,7 +604,7 @@ public class DedubaClass
                                     .Where(x => !IsPathWithinArchive(x))
                                     .ToList();
 
-                                _statusQueueTotal += (long)(childEntries?.Count ?? 0);
+                                _statusQueueTotal += childEntries?.Count ?? 0;
 
                                 if (childEntries != null)
                                     foreach (var childEntry in childEntries)
@@ -631,9 +638,6 @@ public class DedubaClass
                             Utilities.Error(entry, "CreateInodeDataFromPath", ex);
                             continue;
                         }
-
-                        // Override FileId with fsfid format (for compatibility with existing archive format)
-                        inodeData.FileId = Sdunpack(fsfid) as JsonElement?;
 
                         // For directories, we need to handle Dirtmp content separately
                         // because it's built up as children are processed

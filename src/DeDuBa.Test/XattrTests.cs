@@ -54,7 +54,7 @@ public class XattrTests : IDisposable
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true,
+                CreateNoWindow = true
             }
         );
         process?.WaitForExit();
@@ -140,10 +140,7 @@ public class XattrTests : IDisposable
     {
         // Act & Assert
         // The error is wrapped in a System.Exception by Utilities.Error
-        var ex = Assert.Throws<Exception>(() =>
-        {
-            Xattr.GetXattr(_testFilePath, "user.nonexistent");
-        });
+        var ex = Assert.Throws<Exception>(() => { Xattr.GetXattr(_testFilePath, "user.nonexistent"); });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -158,10 +155,7 @@ public class XattrTests : IDisposable
 
         // Act & Assert
         // The error is wrapped in a System.Exception by Utilities.Error
-        var ex = Assert.Throws<Exception>(() =>
-        {
-            Xattr.ListXattr(nonExistentPath);
-        });
+        var ex = Assert.Throws<Exception>(() => { Xattr.ListXattr(nonExistentPath); });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -176,10 +170,7 @@ public class XattrTests : IDisposable
 
         // Act & Assert
         // The error is wrapped in a System.Exception by Utilities.Error
-        var ex = Assert.Throws<Exception>(() =>
-        {
-            Xattr.GetXattr(nonExistentPath, "user.test");
-        });
+        var ex = Assert.Throws<Exception>(() => { Xattr.GetXattr(nonExistentPath, "user.test"); });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -203,7 +194,7 @@ public class XattrTests : IDisposable
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true,
+                    CreateNoWindow = true
                 }
             );
             process?.WaitForExit();

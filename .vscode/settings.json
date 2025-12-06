@@ -1,5 +1,5 @@
 {
-  "cmake.sourceDirectory": "/bigdata/KAI/projects/Backup/deduba_cs/OsCallsWindowsShim",
+  "cmake.sourceDirectory": "/bigdata/KAI/projects/Backup/deduba_cs",
   "cmake.configureOnOpen": true,
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "clangd.path": "clangd",

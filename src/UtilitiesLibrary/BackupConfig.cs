@@ -1,6 +1,4 @@
-using UtilitiesLibrary;
-
-namespace DeDuBa;
+namespace UtilitiesLibrary;
 
 /// <summary>
 ///     Configuration settings for the backup archive system.

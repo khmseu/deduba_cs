@@ -51,7 +51,9 @@ public static unsafe partial class UserGroupDatabase
                     _linux_getgrgid = Marshal.GetDelegateForFunctionPointer<ShimGrGidDelegate>(ptr);
             }
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     [LibraryImport(NativeLibraryName)]

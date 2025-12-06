@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
 using UtilitiesLibrary;
 
-namespace DeDuBa;
+namespace ArchiveStore;
 
 /// <summary>
 ///     Implementation of content-addressable archive storage with automatic deduplication.
@@ -233,7 +233,9 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch { }
+                catch
+                {
+                }
 
                 return hash;
             }
@@ -242,7 +244,9 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch { }
+            catch
+            {
+            }
 
             if (_config.Verbose)
                 _log.Invoke(hash);

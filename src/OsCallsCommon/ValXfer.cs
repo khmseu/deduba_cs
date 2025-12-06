@@ -83,7 +83,7 @@ public static unsafe partial class ValXfer
         IsTimeSpec,
 
         /// <summary>Current value is a boolean.</summary>
-        IsBoolean,
+        IsBoolean
     }
 
 #if DEDUBA_LINUX
@@ -117,7 +117,8 @@ public static unsafe partial class ValXfer
         var more = GetNextValue(value);
         if (wasOk == TypeT.IsError)
         {
-            var win32Exception = new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
+            var win32Exception =
+                new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
             // Report the error via the utilities layer (which may log or rethrow depending on the test harness).
             Utilities.Error(file, op, win32Exception);
             // Always rethrow a generic Exception wrapper with the Win32Exception as InnerException so
@@ -148,7 +149,7 @@ public static unsafe partial class ValXfer
                     case TypeT.IsTimeSpec:
                         array.Add(
                             value->TimeSpec.TvSec
-                                + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
+                            + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
                         );
                         break;
                     case TypeT.IsBoolean:
@@ -282,7 +283,7 @@ public static unsafe partial class ValXfer
                 TypeT.IsComplex => $"[{Handle}] {Name}: [{Complex}]",
                 TypeT.IsError => $"[{Handle}] {Name}: [Error {Number}]",
                 TypeT.IsOk => $"[{Handle}] {Name}: [OK]",
-                _ => $"[{Handle}] {Name}: [Unknown type {Type}]",
+                _ => $"[{Handle}] {Name}: [Unknown type {Type}]"
             };
         }
 
@@ -327,7 +328,7 @@ public static unsafe partial class ValXfer
             {
                 Index = value->Handle.index,
                 Data1 = (ulong)value->Handle.data1,
-                Data2 = (ulong)value->Handle.data2,
+                Data2 = (ulong)value->Handle.data2
             },
             TvSec = value->TimeSpec.TvSec,
             TvNsec = value->TimeSpec.TvNsec,
@@ -336,7 +337,7 @@ public static unsafe partial class ValXfer
             String = value->String != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->String) : null,
             Boolean = value->Boolean,
             Type = value->Type,
-            Complex = null,
+            Complex = null
         };
 
         if (value->Type == TypeT.IsComplex && value->Complex != null && maxDepth > 0)
@@ -406,7 +407,6 @@ public static unsafe partial class ValXfer
         public readonly ValueT* Complex;
 
         /// <summary>Boolean value when Type == IsBoolean.</summary>
-        [MarshalAs(UnmanagedType.I1)]
-        public readonly bool Boolean;
+        [MarshalAs(UnmanagedType.I1)] public readonly bool Boolean;
     }
 }

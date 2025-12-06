@@ -88,6 +88,7 @@ public sealed class InodeData
             " ",
             new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s))
         );
-        return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
+        return
+            $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
     }
 }

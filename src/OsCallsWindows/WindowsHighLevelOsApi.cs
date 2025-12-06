@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using ArchiveStore;
 using OsCallsCommon;
 
 namespace OsCallsWindows;
@@ -28,13 +25,25 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     public bool HasAlternateStreamSupport => true;
 
     /// <summary>
-    ///     Create an <see cref="InodeData"/> for <paramref name="path"/> using
+    ///     Get file status for the supplied path (like Win32 GetFileInformationByHandle),
+    ///     without following symlinks/reparse points.
+    /// </summary>
+    /// <param name="path">Filesystem path to inspect.</param>
+    /// <returns>A JsonNode containing file attributes (st_dev, st_ino, st_mode, timestamps, etc.).</returns>
+    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    public JsonNode LStat(string path)
+    {
+        return FileSystem.LStat(path);
+    }
+
+    /// <summary>
+    ///     Create an <see cref="InodeData" /> for <paramref name="path" /> using
     ///     Windows-specific APIs and persist any auxiliary data via
-    ///     <paramref name="archiveStore"/>. Not implemented yet.
+    ///     <paramref name="archiveStore" />. Not implemented yet.
     /// </summary>
     /// <param name="path">Path to inspect.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary streams.</param>
-    /// <returns>Populated <see cref="InodeData"/>.</returns>
+    /// <returns>Populated <see cref="InodeData" />.</returns>
     /// <exception cref="NotImplementedException">Always; Windows shim not yet implemented.</exception>
     public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
     {
@@ -88,7 +97,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                     new List<object?>
                     {
                         statObj?["st_dev"]?.GetValue<long>() ?? 0,
-                        statObj?["st_ino"]?.GetValue<long>() ?? 0,
+                        statObj?["st_ino"]?.GetValue<long>() ?? 0
                     }
                 )
             ),
@@ -102,19 +111,19 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
+            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0
         };
 
         // Try to capture security descriptor (SDDL) and save via archiveStore
         try
         {
-            var sd = Security.GetSecurityDescriptor(path, includeSacl: false);
+            var sd = Security.GetSecurityDescriptor(path, false);
             if (sd is JsonObject sdObj && sdObj.ContainsKey("sddl"))
             {
                 var sddl = sdObj["sddl"]?.ToString() ?? string.Empty;
                 if (!string.IsNullOrEmpty(sddl))
                 {
-                    var aclBytes = System.Text.Encoding.UTF8.GetBytes(sddl);
+                    var aclBytes = Encoding.UTF8.GetBytes(sddl);
                     using var ms = new MemoryStream(aclBytes);
                     var aclHashes = archiveStore
                         .SaveStream(ms, aclBytes.Length, $"{path} $acl", _ => { })
@@ -135,7 +144,6 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
         if (flags.Contains("reg"))
         {
             if (fileSize != 0)
-            {
                 try
                 {
                     using var fs = File.OpenRead(path);
@@ -149,7 +157,6 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                         ex
                     );
                 }
-            }
         }
         else if (flags.Contains("lnk"))
         {
@@ -157,7 +164,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             {
                 var linkNode = FileSystem.ReadLink(path);
                 var linkTarget = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
-                var linkBytes = System.Text.Encoding.UTF8.GetBytes(linkTarget);
+                var linkBytes = Encoding.UTF8.GetBytes(linkTarget);
                 using var lm = new MemoryStream(linkBytes);
                 hashes = archiveStore
                     .SaveStream(lm, linkBytes.Length, $"{path} $data readlink", _ => { })
@@ -174,9 +181,9 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     }
 
     /// <summary>
-    ///     List the directory entries for <paramref name="path"/> ordered by
-    ///     ordinal string comparison. Wraps <see cref="System.IO.Directory.GetFileSystemEntries(System.String)"/>
-    ///     and maps system exceptions to <see cref="OsException"/>.
+    ///     List the directory entries for <paramref name="path" /> ordered by
+    ///     ordinal string comparison. Wraps <see cref="System.IO.Directory.GetFileSystemEntries(System.String)" />
+    ///     and maps system exceptions to <see cref="OsException" />.
     /// </summary>
     /// <param name="path">Directory to list.</param>
     /// <returns>Ordered array of filesystem entries (files and directories).</returns>

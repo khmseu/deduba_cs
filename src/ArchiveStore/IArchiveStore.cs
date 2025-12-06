@@ -1,4 +1,4 @@
-namespace OsCallsCommon;
+namespace ArchiveStore;
 
 /// <summary>
 ///     Interface for content-addressable archive storage with deduplication.

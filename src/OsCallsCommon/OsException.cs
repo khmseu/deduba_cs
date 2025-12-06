@@ -7,8 +7,8 @@ namespace OsCallsCommon;
 public class OsException : Exception
 {
     /// <summary>
-    ///     Create a new <see cref="OsException"/> with a human readable
-    ///     message, a normalized <see cref="ErrorKind"/>, and an optional
+    ///     Create a new <see cref="OsException" /> with a human readable
+    ///     message, a normalized <see cref="ErrorKind" />, and an optional
     ///     inner exception.
     /// </summary>
     /// <param name="message">A descriptive error message.</param>
@@ -54,5 +54,5 @@ public enum ErrorKind
     NotASymlink,
 
     /// <summary>Unknown or unmapped error</summary>
-    Unknown,
+    Unknown
 }

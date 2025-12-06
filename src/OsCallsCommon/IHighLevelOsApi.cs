@@ -1,3 +1,6 @@
+using System.Text.Json.Nodes;
+using ArchiveStore;
+
 namespace OsCallsCommon;
 
 /// <summary>
@@ -9,6 +12,15 @@ namespace OsCallsCommon;
 /// </summary>
 public interface IHighLevelOsApi
 {
+    /// <summary>
+    ///     Get file status for the supplied path (like POSIX lstat or Win32 GetFileInformationByHandle),
+    ///     without following symlinks.
+    /// </summary>
+    /// <param name="path">Filesystem path to inspect.</param>
+    /// <returns>A JsonNode containing file attributes (st_dev, st_ino, st_mode, timestamps, etc.).</returns>
+    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    JsonNode LStat(string path);
+
     /// <summary>
     ///     Create complete InodeData from pathname with all metadata, ACLs, xattrs, and content hashes.
     ///     This is the main entry point that encapsulates:

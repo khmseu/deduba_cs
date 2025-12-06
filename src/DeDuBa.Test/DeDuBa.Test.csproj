@@ -33,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
     <ProjectReference Include="../DeDuBa/DeDuBa.csproj" />
+    <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
   </ItemGroup>
   <!-- Conditional platform-specific references -->
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
@@ -42,63 +43,23 @@
     <ProjectReference Include="../OsCallsWindows/OsCallsWindows.csproj" />
   </ItemGroup>
   <!-- Copy native libraries to test output for Linux -->
-  <Target
-    Name="CopyNativeLibsForTests"
-    AfterTargets="Build"
-    Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR '$(RuntimeIdentifier)' == ''"
-  >
+  <Target Name="CopyNativeLibsForTests" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR '$(RuntimeIdentifier)' == ''">
     <ItemGroup>
-      <NativeLibsLinux
-        Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so"
-        Condition="Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so')"
-      />
-      <NativeLibsLinux
-        Include="../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so"
-        Condition="Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so')"
-      />
-      <NativeLibsLinux
-        Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so"
-        Condition="!Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so') AND Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so')"
-      />
-      <NativeLibsLinux
-        Include="../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so"
-        Condition="!Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so') AND Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so')"
-      />
+      <NativeLibsLinux Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so" Condition="Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so')" />
+      <NativeLibsLinux Include="../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so" Condition="Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so')" />
+      <NativeLibsLinux Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so" Condition="!Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so') AND Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/libOsCallsCommonShim.so')" />
+      <NativeLibsLinux Include="../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so" Condition="!Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so') AND Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so')" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(NativeLibsLinux)"
-      DestinationFolder="$(OutputPath)"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(NativeLibsLinux)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
   <!-- Copy native libraries to test output for Windows -->
-  <Target
-    Name="CopyNativeLibsForTestsWindows"
-    AfterTargets="Build"
-    Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'"
-  >
+  <Target Name="CopyNativeLibsForTestsWindows" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
     <ItemGroup>
-      <NativeLibsWindows
-        Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll"
-        Condition="Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll')"
-      />
-      <NativeLibsWindows
-        Include="../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll"
-        Condition="Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll')"
-      />
-      <NativeLibsWindows
-        Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll"
-        Condition="!Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll') AND Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll')"
-      />
-      <NativeLibsWindows
-        Include="../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll"
-        Condition="!Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll') AND Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll')"
-      />
+      <NativeLibsWindows Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll" Condition="Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll')" />
+      <NativeLibsWindows Include="../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll" Condition="Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll')" />
+      <NativeLibsWindows Include="../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll" Condition="!Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll') AND Exists('../OsCallsCommonShim/bin/$(Configuration)/net8.0/OsCallsCommonShim.dll')" />
+      <NativeLibsWindows Include="../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll" Condition="!Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll') AND Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll')" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(NativeLibsWindows)"
-      DestinationFolder="$(OutputPath)"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(NativeLibsWindows)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
 </Project>

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using ArchiveStore;
 using OsCallsCommon;
 
 namespace OsCallsLinux;
@@ -24,15 +25,26 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     public bool HasAlternateStreamSupport => false;
 
     /// <summary>
-    ///     Collects full inode metadata for <paramref name="path"/>, including
+    ///     Get file status for the supplied path (like POSIX lstat), without following symlinks.
+    /// </summary>
+    /// <param name="path">Filesystem path to inspect.</param>
+    /// <returns>A JsonNode containing file attributes (st_dev, st_ino, st_mode, timestamps, etc.).</returns>
+    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    public JsonNode LStat(string path)
+    {
+        return FileSystem.LStat(path);
+    }
+
+    /// <summary>
+    ///     Collects full inode metadata for <paramref name="path" />, including
     ///     stat, ACLs, xattrs and content hashes where applicable. Uses
-    ///     <paramref name="archiveStore"/> to persist any associated auxiliary
+    ///     <paramref name="archiveStore" /> to persist any associated auxiliary
     ///     streams (ACL text, xattr values, file content) and returns an
-    ///     <see cref="InodeData"/> describing the file.
+    ///     <see cref="InodeData" /> describing the file.
     /// </summary>
     /// <param name="path">Filesystem path to read metadata from.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
-    /// <returns>Populated <see cref="InodeData"/> instance.</returns>
+    /// <returns>Populated <see cref="InodeData" /> instance.</returns>
     public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
     {
         // Get file stat (lstat - does not follow symlinks)
@@ -83,7 +95,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                     new List<object?>
                     {
                         statBuf["st_dev"]?.GetValue<long>() ?? 0,
-                        statBuf["st_ino"]?.GetValue<long>() ?? 0,
+                        statBuf["st_ino"]?.GetValue<long>() ?? 0
                     }
                 )
             ),
@@ -97,7 +109,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
+            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0
         };
 
         // Read ACLs
@@ -250,9 +262,9 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     }
 
     /// <summary>
-    ///     List the directory entries for <paramref name="path"/> ordered by
-    ///     ordinal string comparison. Wraps <see cref="Directory.GetFileSystemEntries(string)"/>
-    ///     and maps system exceptions to <see cref="OsException"/>.
+    ///     List the directory entries for <paramref name="path" /> ordered by
+    ///     ordinal string comparison. Wraps <see cref="Directory.GetFileSystemEntries(string)" />
+    ///     and maps system exceptions to <see cref="OsException" />.
     /// </summary>
     /// <param name="path">Directory to list.</param>
     /// <returns>Ordered array of filesystem entries (files and directories).</returns>
