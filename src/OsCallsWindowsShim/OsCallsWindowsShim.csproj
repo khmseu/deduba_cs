@@ -17,8 +17,8 @@
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
     <DefineConstants>$(DefineConstants);DEDUBA_LINUX</DefineConstants>
   </PropertyGroup>
-  <!-- Define DEDUBA_WINDOWS symbol for Windows builds (prioritize RuntimeIdentifier over OS check) -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
+  <!-- Define DEDUBA_WINDOWS symbol for Windows builds -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86' OR '$(OS)' == 'Windows_NT'">
     <DefineConstants>$(DefineConstants);DEDUBA_WINDOWS</DefineConstants>
   </PropertyGroup>
   <!-- Windows DLL will be built using MSBuild/CMake in the future -->
