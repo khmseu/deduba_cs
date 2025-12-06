@@ -7,8 +7,8 @@
     <IsTestProject>true</IsTestProject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <!-- Define DEDUBA_LINUX constant for Linux platforms (default/no RID treated as Linux) -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
+  <!-- Define DEDUBA_LINUX symbol for Linux builds (default/no RID treated as Linux) -->
+  <PropertyGroup Condition="('$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64') AND '$(RuntimeIdentifier)' != 'win-x64' AND '$(RuntimeIdentifier)' != 'win-arm64' AND '$(RuntimeIdentifier)' != 'win-x86'">
     <DefineConstants>$(DefineConstants);DEDUBA_LINUX</DefineConstants>
   </PropertyGroup>
   <!-- Define DEDUBA_WINDOWS constant for Windows platforms -->
