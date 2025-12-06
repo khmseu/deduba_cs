@@ -5,12 +5,6 @@ using System.Text.Json.Nodes;
 using ArchiveStore;
 using OsCallsCommon;
 using UtilitiesLibrary;
-#if DEDUBA_LINUX
-using OsCallsLinux;
-#endif
-#if DEDUBA_WINDOWS
-using OsCallsWindows;
-#endif
 
 namespace DeDuBa;
 
@@ -172,16 +166,19 @@ public class DedubaClass
             try
             {
                 // @ARGV = map { canonpath realpath $_ } @ARGV;
+                // Initialize high-level OS API early (needed for LStat and path canonicalization calls)
+                _osApi = HighLevelOsApiFactory.GetOsApi();
+
                 try
                 {
                     Utilities.ConWrite($"Before: {Utilities.Dumper(Utilities.D(argv))}");
                     if (Utilities.VerboseOutput)
                         Utilities.ConWrite(
-                            $"Before: {Utilities.Dumper(Utilities.D(argv.Select(FileSystem.Canonicalizefilename)))}"
+                            $"Before: {Utilities.Dumper(Utilities.D(argv.Select(_osApi!.Canonicalizefilename)))}"
                         );
                     argv =
                     [
-                        .. argv.Select(FileSystem.Canonicalizefilename)
+                        .. argv.Select(_osApi!.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
                             .Select(path => path != null ? Path.GetFullPath(path) : ""),
                     ];
@@ -207,7 +204,7 @@ public class DedubaClass
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Error(nameof(argv), nameof(FileSystem.Canonicalizefilename), ex);
+                    Utilities.Error(nameof(argv), nameof(IHighLevelOsApi.Canonicalizefilename), ex);
                     throw;
                 }
 
@@ -216,14 +213,6 @@ public class DedubaClass
                     Utilities.ConWrite("Filtered:");
                     Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
                 }
-
-                // Initialize high-level OS API early (needed for LStat calls below)
-#if DEDUBA_LINUX
-                _osApi = new LinuxHighLevelOsApi();
-#endif
-#if DEDUBA_WINDOWS
-                _osApi = new WindowsHighLevelOsApi();
-#endif
 
                 foreach (var root in argv)
                 {

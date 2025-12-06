@@ -294,4 +294,15 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             throw new OsException($"Failed to list directory {path}", ErrorKind.IOError, ex);
         }
     }
+
+    /// <summary>
+    ///     Canonicalizes a filesystem path by resolving symlinks and normalizing separators.
+    ///     Delegates to the FileSystem module's platform-specific implementation.
+    /// </summary>
+    /// <param name="path">Path to canonicalize</param>
+    /// <returns>A JsonNode containing the canonical path under the "path" key</returns>
+    public JsonNode Canonicalizefilename(string path)
+    {
+        return FileSystem.Canonicalizefilename(path);
+    }
 }

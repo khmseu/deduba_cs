@@ -48,4 +48,13 @@ public interface IHighLevelOsApi
     /// <returns>Array of full paths to directory entries, sorted</returns>
     /// <exception cref="OsException">Thrown if directory cannot be read</exception>
     string[] ListDirectory(string path);
+
+    /// <summary>
+    ///     Canonicalizes a filesystem path by resolving symlinks and normalizing separators.
+    ///     Returns a JsonNode containing the canonical path.
+    /// </summary>
+    /// <param name="path">Path to canonicalize</param>
+    /// <returns>A JsonNode containing the canonical path under the "path" key</returns>
+    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    JsonNode Canonicalizefilename(string path);
 }

@@ -2,33 +2,15 @@
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
-  <!-- Define DEDUBA_LINUX symbol for Linux builds (default/no RID treated as Linux) -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Unix')">
-    <DefineConstants>$(DefineConstants);DEDUBA_LINUX</DefineConstants>
-    <HasLinuxDefine>true</HasLinuxDefine>
-    <HasWindowsDefine>false</HasWindowsDefine>
-  </PropertyGroup>
-  <!-- Define DEDUBA_WINDOWS symbol for Windows builds -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Windows_NT')">
-    <DefineConstants>$(DefineConstants);DEDUBA_WINDOWS</DefineConstants>
-    <HasLinuxDefine>false</HasLinuxDefine>
-    <HasWindowsDefine>true</HasWindowsDefine>
-  </PropertyGroup>
   <!-- Validate that exactly one platform symbol is defined -->
   <Target Name="ValidatePlatformDefinition" BeforeTargets="Build">
-    <PropertyGroup>
-      <HasLinuxDefineCheck>false</HasLinuxDefineCheck>
-      <HasWindowsDefineCheck>false</HasWindowsDefineCheck>
-      <HasLinuxDefineCheck Condition="$(DefineConstants.Contains('DEDUBA_LINUX'))">true</HasLinuxDefineCheck>
-      <HasWindowsDefineCheck Condition="$(DefineConstants.Contains('DEDUBA_WINDOWS'))">true</HasWindowsDefineCheck>
-    </PropertyGroup>
     <Error
       Text="Platform definition error: neither DEDUBA_LINUX nor DEDUBA_WINDOWS is defined. RuntimeIdentifier = '$(RuntimeIdentifier)' OS = '$(OS)'"
-      Condition="'$(HasLinuxDefineCheck)' == 'false' AND '$(HasWindowsDefineCheck)' == 'false'"
+      Condition="'$(HasLinuxDefine)' == 'false' AND '$(HasWindowsDefine)' == 'false'"
     />
     <Error
       Text="Platform definition error: both DEDUBA_LINUX and DEDUBA_WINDOWS are defined. RuntimeIdentifier = '$(RuntimeIdentifier)' OS = '$(OS)'"
-      Condition="'$(HasLinuxDefineCheck)' == 'true' AND '$(HasWindowsDefineCheck)' == 'true'"
+      Condition="'$(HasLinuxDefine)' == 'true' AND '$(HasWindowsDefine)' == 'true'"
     />
   </Target>
   <Target

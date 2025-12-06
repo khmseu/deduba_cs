@@ -10,6 +10,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <!-- Platform-specific project references -->
+  <ItemGroup Condition="'$(HasLinuxDefine)' == 'true'">
+    <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(HasWindowsDefine)' == 'true'">
+    <ProjectReference Include="..\OsCallsWindows\OsCallsWindows.csproj" />
+  </ItemGroup>
+  <!-- Common references -->
   <ItemGroup>
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="ZoneTree" Version="1.8.2" />
@@ -18,8 +26,5 @@
     <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
     <ProjectReference Include="..\OsCallsCommon\OsCallsCommon.csproj" />
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
-    <!-- Platform-specific implementations -->
-    <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" Condition="'$(HasLinuxDefine)' == 'true'" />
-    <ProjectReference Include="..\OsCallsWindows\OsCallsWindows.csproj" Condition="'$(HasWindowsDefine)' == 'true'" />
   </ItemGroup>
 </Project>

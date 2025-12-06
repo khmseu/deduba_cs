@@ -16,5 +16,8 @@
   },
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "[msbuild]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
+  }
 }
