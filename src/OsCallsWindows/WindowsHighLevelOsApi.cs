@@ -117,7 +117,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
         // Try to capture security descriptor (SDDL) and save via archiveStore
         try
         {
-            var sd = Security.GetSecurityDescriptor(path, false);
+            var sd = Security.GetSecurityDescriptor(path);
             if (sd is JsonObject sdObj && sdObj.ContainsKey("sddl"))
             {
                 var sddl = sdObj["sddl"]?.ToString() ?? string.Empty;
