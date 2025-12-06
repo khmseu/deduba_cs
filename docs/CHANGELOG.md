@@ -7,21 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
 
-## [0.1.6-alpha] - UNRELEASED
+## [0.1.6-alpha] - 2025-12-06
 
 ### Added
 
-- (placeholder) Prepare changelog for next development cycle targeting 0.1.6-alpha.
+- Centralized platform-specific build constants in Directory.Build.targets; removed duplication from all .csproj files
+- Improved platform symbol validation and error reporting in build targets
+- Extracted ArchiveStore to a dedicated project and implemented IArchiveStore
 
 ### Changed
 
-- (placeholder) Post-release housekeeping: bump target version and notes.
+- Refactored and improved native/managed project structure, scripts, and platform detection logic
+- Reverted multi-line JSON formatting in .vscode/tasks.json to single-line style; added missing presentation config for tasks
+- Various build, CI, and housekeeping improvements
 
 ### Fixed
 
-- (placeholder) Minor post-release fixes and documentation updates.
+- Fixed WindowsHighLevelOsApi: corrected Security.GetSecurityDescriptor usage
 
 ## [0.1.5-alpha] - 2025-12-05
 
