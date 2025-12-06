@@ -8,7 +8,6 @@ using UtilitiesLibrary;
 #if DEDUBA_LINUX
 using OsCallsLinux;
 #endif
-
 #if DEDUBA_WINDOWS
 using OsCallsWindows;
 #endif
@@ -127,7 +126,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
                 };
         }
         catch (Exception ex)
@@ -184,7 +183,7 @@ public class DedubaClass
                     [
                         .. argv.Select(FileSystem.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : "")
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -562,9 +561,7 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     // Always compute the file-type flags from statBuf so subsequent code

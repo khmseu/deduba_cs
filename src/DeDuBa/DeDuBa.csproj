@@ -14,16 +14,12 @@
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="ZoneTree" Version="1.8.2" />
   </ItemGroup>
-  <!-- Platform-specific project references -->
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
-    <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86'">
-    <ProjectReference Include="..\OsCallsWindows\OsCallsWindows.csproj" />
-  </ItemGroup>
-  <!-- Common references -->
   <ItemGroup>
-    <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
     <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
+    <ProjectReference Include="..\OsCallsCommon\OsCallsCommon.csproj" />
+    <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
+    <!-- Platform-specific implementations -->
+    <ProjectReference Include="..\OsCallsLinux\OsCallsLinux.csproj" Condition="'$(HasLinuxDefine)' == 'true'" />
+    <ProjectReference Include="..\OsCallsWindows\OsCallsWindows.csproj" Condition="'$(HasWindowsDefine)' == 'true'" />
   </ItemGroup>
 </Project>
