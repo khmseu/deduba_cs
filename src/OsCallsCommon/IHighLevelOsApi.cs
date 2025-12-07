@@ -31,12 +31,14 @@ public interface IHighLevelOsApi
     ///     - File content reading and hashing (via IArchiveStore)
     ///     - Symlink target reading
     ///     - Directory entry serialization
+    ///     Accepts a pre-fetched statBuf (from LStat) for efficiency.
     /// </summary>
     /// <param name="path">Path to file/directory to process (backup source, not archive)</param>
+    /// <param name="statBuf">Pre-fetched file stat buffer (from LStat).</param>
     /// <param name="archiveStore">Archive store for content hashing and storage</param>
     /// <returns>Fully populated InodeData object with all collected metadata</returns>
     /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
-    InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore);
+    InodeData CreateInodeDataFromPath(string path, JsonNode statBuf, IArchiveStore archiveStore);
 
     /// <summary>
     ///     List directory entries for breadth-first traversal.

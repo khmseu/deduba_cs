@@ -40,30 +40,24 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     ///     Create an <see cref="InodeData" /> for <paramref name="path" /> using
     ///     Windows-specific APIs and persist any auxiliary data via
     ///     <paramref name="archiveStore" />. Not implemented yet.
+    ///     Accepts a pre-fetched statBuf (from LStat) for efficiency.
     /// </summary>
     /// <param name="path">Path to inspect.</param>
+    /// <param name="statBuf">Pre-fetched file stat buffer (from LStat).</param>
     /// <param name="archiveStore">Archive store used to save auxiliary streams.</param>
     /// <returns>Populated <see cref="InodeData" />.</returns>
     /// <exception cref="NotImplementedException">Always; Windows shim not yet implemented.</exception>
-    public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
+    public InodeData CreateInodeDataFromPath(
+        string path,
+        JsonNode statBuf,
+        IArchiveStore archiveStore
+    )
     {
         // Minimal Windows implementation mirroring Linux behavior where practical.
         // Uses the native Windows shim (FileSystem) to obtain stat-like fields
         // and Security to obtain an SDDL string when available. Errors are
         // mapped to OsException to preserve test expectations.
-        JsonNode? statBuf;
-        JsonObject? statObj = null;
-        try
-        {
-            statBuf = FileSystem.LStat(path);
-            if (statBuf is null)
-                throw new OsException($"LStat returned null for {path}", ErrorKind.Unknown);
-            statObj = statBuf as JsonObject;
-        }
-        catch (Exception ex)
-        {
-            throw new OsException($"Failed to stat {path}", ErrorKind.IOError, ex);
-        }
+        JsonObject? statObj = statBuf as JsonObject;
 
         // Determine textual flags (reg/dir/lnk etc.) from S_IS* or S_TYPEIS* booleans
         var flags = new HashSet<string>();
@@ -97,7 +91,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                     new List<object?>
                     {
                         statObj?["st_dev"]?.GetValue<long>() ?? 0,
-                        statObj?["st_ino"]?.GetValue<long>() ?? 0
+                        statObj?["st_ino"]?.GetValue<long>() ?? 0,
                     }
                 )
             ),
@@ -111,7 +105,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0
+            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
         };
 
         // Try to capture security descriptor (SDDL) and save via archiveStore

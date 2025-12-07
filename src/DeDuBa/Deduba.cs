@@ -120,7 +120,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
                 };
         }
         catch (Exception ex)
@@ -180,7 +180,7 @@ public class DedubaClass
                     [
                         .. argv.Select(_osApi!.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : "")
+                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -507,9 +507,7 @@ public class DedubaClass
                 var start = DateTime.Now;
                 try
                 {
-                    statBuf = _osApi!.LStat(entry);
-                    if (statBuf == null)
-                        throw new Win32Exception("null statBuf");
+                    statBuf = _osApi!.LStat(entry) ?? throw new Win32Exception("null statBuf");
                     // var sb = statBuf.Value;
                     // Utilities.ConWrite(
                     //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
@@ -550,9 +548,7 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     // Always compute the file-type flags from statBuf so subsequent code
@@ -614,7 +610,11 @@ public class DedubaClass
                         InodeData inodeData;
                         try
                         {
-                            inodeData = _osApi!.CreateInodeDataFromPath(entry, _archiveStore!);
+                            inodeData = _osApi.CreateInodeDataFromPath(
+                                entry,
+                                statBuf!,
+                                _archiveStore!
+                            );
                         }
                         catch (OsException ex)
                         {

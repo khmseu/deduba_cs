@@ -41,25 +41,18 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     ///     <paramref name="archiveStore" /> to persist any associated auxiliary
     ///     streams (ACL text, xattr values, file content) and returns an
     ///     <see cref="InodeData" /> describing the file.
+    ///     Accepts a pre-fetched statBuf (from LStat) for efficiency.
     /// </summary>
     /// <param name="path">Filesystem path to read metadata from.</param>
+    /// <param name="statBuf">Pre-fetched file stat buffer (from LStat).</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Populated <see cref="InodeData" /> instance.</returns>
-    public InodeData CreateInodeDataFromPath(string path, IArchiveStore archiveStore)
+    public InodeData CreateInodeDataFromPath(
+        string path,
+        JsonNode statBuf,
+        IArchiveStore archiveStore
+    )
     {
-        // Get file stat (lstat - does not follow symlinks)
-        JsonNode? statBuf;
-        try
-        {
-            statBuf = FileSystem.LStat(path);
-            if (statBuf == null)
-                throw new OsException($"LStat returned null for {path}", ErrorKind.Unknown);
-        }
-        catch (Exception ex)
-        {
-            throw new OsException($"Failed to stat {path}", ErrorKind.IOError, ex);
-        }
-
         // Extract file type flags from S_IS* boolean fields
         var flags = new HashSet<string>();
         if (statBuf is JsonObject statObj)
@@ -95,7 +88,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                     new List<object?>
                     {
                         statBuf["st_dev"]?.GetValue<long>() ?? 0,
-                        statBuf["st_ino"]?.GetValue<long>() ?? 0
+                        statBuf["st_ino"]?.GetValue<long>() ?? 0,
                     }
                 )
             ),
@@ -109,7 +102,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0
+            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
         };
 
         // Read ACLs
