@@ -8,6 +8,9 @@ using OsCallsWindows;
 
 namespace OsCallsCommon;
 
+/// <summary>
+///     Factory class for creating platform-specific IHighLevelOsApi implementations.
+/// </summary>
 public static class HighLevelOsApiFactory
 {
     /// <summary>
