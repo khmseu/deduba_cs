@@ -610,7 +610,7 @@ public class DedubaClass
                         InodeData inodeData;
                         try
                         {
-                            inodeData = _osApi.CreateInodeDataFromPath(
+                            inodeData = _osApi!.CreateInodeDataFromPath(
                                 entry,
                                 statBuf!,
                                 _archiveStore!

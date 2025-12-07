@@ -15,7 +15,7 @@ public sealed class InodeData
     ///     Serialized as a compact JSON element to preserve platform structure.
     /// </summary>
     [JsonPropertyName("fi")]
-    public JsonElement? FileId { get; set; }
+    public JsonElement? FileId { get; init; }
 
     /// <summary>File mode bits (POSIX st_mode or equivalent).</summary>
     [JsonPropertyName("md")]
@@ -35,7 +35,7 @@ public sealed class InodeData
 
     /// <summary>Resolved user name for the owner, or UID as string when unavailable.</summary>
     [JsonPropertyName("un")]
-    public string UserName { get; init; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 
     /// <summary>Numeric group id owning the inode.</summary>
     [JsonPropertyName("gi")]
@@ -43,7 +43,7 @@ public sealed class InodeData
 
     /// <summary>Resolved group name for the owner, or GID as string when unavailable.</summary>
     [JsonPropertyName("gn")]
-    public string GroupName { get; init; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
 
     /// <summary>Raw device id for character/block devices.</summary>
     [JsonPropertyName("rd")]
@@ -88,7 +88,6 @@ public sealed class InodeData
             " ",
             new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s))
         );
-        return
-            $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
+        return $"[mode=0{Mode:o} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
     }
 }

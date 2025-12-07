@@ -119,16 +119,14 @@ public sealed class ArchiveStore : IArchiveStore
         if (prefixList.Count == 0)
             prefix = string.Join("/", prefixList);
 
-        var list = _preflist.ContainsKey(prefix) ? _preflist[prefix].ToList() : new List<string>();
+        var list = _preflist.ContainsKey(prefix) ? _preflist[prefix].ToList() : [];
         var nlist = list.Count;
 
         if (nlist > _config.PrefixSplitThreshold)
         {
             lock (_reorgLock)
             {
-                list = _preflist.ContainsKey(prefix)
-                    ? _preflist[prefix].ToList()
-                    : new List<string>();
+                list = _preflist.ContainsKey(prefix) ? [.. _preflist[prefix]] : [];
                 nlist = list.Count;
                 if (nlist > _config.PrefixSplitThreshold)
                 {
@@ -147,7 +145,7 @@ public sealed class ArchiveStore : IArchiveStore
                         {
                             CreateDirectoryWithLogging(Path.Combine(_config.DataPath, prefix, dir));
                             newDirs.Add(de);
-                            _preflist.TryAdd(JoinPrefix(prefix, dir), new HashSet<string>());
+                            _preflist.TryAdd(JoinPrefix(prefix, dir), []);
                         }
                     }
 
@@ -175,7 +173,7 @@ public sealed class ArchiveStore : IArchiveStore
 
                         var newpfx = JoinPrefix(prefix, dir);
                         _arlist[f] = newpfx;
-                        var set = _preflist.GetOrAdd(newpfx, p => new HashSet<string>());
+                        var set = _preflist.GetOrAdd(newpfx, p => []);
                         lock (set)
                         {
                             set.Add(f);
@@ -193,7 +191,7 @@ public sealed class ArchiveStore : IArchiveStore
         }
 
         _arlist[hash] = prefix;
-        var pset = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
+        var pset = _preflist.GetOrAdd(prefix, _ => []);
         lock (pset)
         {
             pset.Add(hash);
@@ -233,9 +231,7 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch
-                {
-                }
+                catch { }
 
                 return hash;
             }
@@ -244,9 +240,7 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch
-            {
-            }
+            catch { }
 
             if (_config.Verbose)
                 _log.Invoke(hash);
@@ -334,7 +328,7 @@ public sealed class ArchiveStore : IArchiveStore
         {
             if (_config.Verbose)
                 _log.Invoke($"+ {entry}:{prefix}:{file}");
-            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
+            var set = _preflist.GetOrAdd(prefix, _ => []);
             lock (set)
             {
                 set.Add($"{file}/");
@@ -353,7 +347,7 @@ public sealed class ArchiveStore : IArchiveStore
         else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
         {
             _arlist[file] = prefix;
-            var set = _preflist.GetOrAdd(prefix, _ => new HashSet<string>());
+            var set = _preflist.GetOrAdd(prefix, _ => []);
             lock (set)
             {
                 set.Add(file);
