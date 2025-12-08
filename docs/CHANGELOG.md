@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7-alpha] - 2025-12-08
+
+### Added
+
+- Added minimal inode metadata APIs (`CreateMinimalInodeDataFromPath`, `CompleteInodeDataFromPath`) and implemented the Windows path to align platform behavior.
+
+### Changed
+
+- Replaced the JsonElement-based `FileId` with typed `Int128` `Device`/`FileIndex` fields (and `RDev` to `Int128`) across OS APIs and backup logic to improve type safety and future-proof large device identifiers.
+- Updated backup traversal to use minimal inode data for device tracking and reuse across completion flows.
+
 ## [0.1.6-alpha] - 2025-12-06
 
 ### Added
