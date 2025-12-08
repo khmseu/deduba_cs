@@ -83,6 +83,7 @@
 #include "Platform.h"
 // Platform.h must come first
 #include "FileSystem.h"
+#include <cstdio>
 #include <cstring>
 #include <vector>
 #if 0
@@ -262,7 +263,7 @@ static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
  * @param ft Windows FILETIME structure (creation/access/write time).
  * @return Unix timespec with tv_sec and tv_nsec fields.
  */
-static timespec filetime_to_timespec(const FILETIME &ft) {
+static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
   // FILETIME is 100-nanosecond intervals since 1601-01-01
   // Unix epoch is 1970-01-01, difference is 11644473600 seconds
   ULARGE_INTEGER ull;
@@ -290,11 +291,16 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
     seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
   }
 
-  uint64_t nanoseconds = (total_100ns % 10000000ULL) * 100;
+  int64_t nanoseconds = static_cast<int64_t>((total_100ns % 10000000ULL) * 100);
 
-  timespec ts;
+  OsCalls::TimeSpec64 ts;
   ts.tv_sec = seconds;
-  ts.tv_nsec = static_cast<long>(nanoseconds);
+  ts.tv_nsec = nanoseconds;
+
+  // DEBUG: Output the final timespec values
+  fprintf(stderr, "[DEBUG filetime_to_timespec] RESULT: tv_sec=%lld, tv_nsec=%lld\n", 
+          (long long)ts.tv_sec, (long long)ts.tv_nsec);
+
   return ts;
 }
 
@@ -394,17 +400,17 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
     set_val(Number, "st_size", info->fileSize.QuadPart);
     return true;
   case 19: {
-    timespec ts = filetime_to_timespec(info->lastAccessTime);
+    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastAccessTime);
     set_val(TimeSpec, "st_atim", ts);
     return true;
   }
   case 20: {
-    timespec ts = filetime_to_timespec(info->lastWriteTime);
+    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastWriteTime);
     set_val(TimeSpec, "st_mtim", ts);
     return true;
   }
   case 21: {
-    timespec ts = filetime_to_timespec(info->creationTime);
+    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->creationTime);
     set_val(TimeSpec, "st_ctim", ts); // Using creation time as ctime
     return true;
   }

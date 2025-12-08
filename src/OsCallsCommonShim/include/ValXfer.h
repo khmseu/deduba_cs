@@ -24,6 +24,18 @@ namespace OsCalls {
 struct ValueT;
 
 /**
+ * @brief Custom timespec-compatible struct with explicit 64-bit fields.
+ * 
+ * Standard timespec uses `long` for tv_nsec, which is 32-bit on Windows x64
+ * but 64-bit on Linux x64. To ensure consistent struct layout for P/Invoke,
+ * we define our own struct with explicit int64_t fields.
+ */
+struct TimeSpec64 {
+  int64_t tv_sec;   ///< Seconds since epoch
+  int64_t tv_nsec;  ///< Nanoseconds component
+};
+
+/**
  * @brief Function pointer type for value iteration handlers.
  *
  * Handler functions are invoked by GetNextValue to populate the ValueT
@@ -68,7 +80,7 @@ struct ValueT {
   HandleT     Handle;
   const char *Name;
   TypeT       Type;
-  timespec    TimeSpec;
+  TimeSpec64  TimeSpec;  ///< Custom 64-bit timespec (int64_t for both fields)
   int64_t     Number;
   const char *String;
   ValueT     *Complex;
