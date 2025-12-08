@@ -86,8 +86,8 @@ public class HighLevelOsApiTests : IDisposable
         Assert.NotEqual(0, inodeData.FileIndex);
         Assert.NotEqual(0, inodeData.Mode);
         Assert.Contains("reg", inodeData.Flags);
-        Assert.True(inodeData.Size > 0);
-        Assert.True(inodeData.MTime > 0);
+        Assert.True(inodeData.Size > 0, $"Expected Size > 0, got {inodeData.Size}");
+        Assert.True(inodeData.MTime > 0, $"Expected MTime > 0, got {inodeData.MTime}");
 
         // Minimal data should not have ACLs, xattrs, or hashes
         Assert.Empty(inodeData.Acl);
