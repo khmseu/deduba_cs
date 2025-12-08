@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8-alpha] - 2025-12-08
+
+### Changed
+
+- Simplified `IHighLevelOsApi` interface by removing `LStat` and `CreateInodeDataFromPath(path, statBuf, archiveStore)` methods
+- Enforced two-step metadata collection pattern: `CreateMinimalInodeDataFromPath` for fast stat-only operations, then `CompleteInodeDataFromPath` for expensive ACLs/xattrs/hashes
+
+### Added
+
+- Added comprehensive `HighLevelOsApiTests` test suite demonstrating proper usage of minimal and complete inode data APIs
+
+### Fixed
+
+- Applied consistent code formatting (trailing commas, newlines at EOF) across platform implementations
+
 ## [0.1.7-alpha] - 2025-12-08
 
 ### Added
