@@ -11,18 +11,6 @@ namespace OsCallsWindows;
 /// </summary>
 public class WindowsHighLevelOsApi : IHighLevelOsApi
 {
-    /// <summary>Whether the Windows implementation exposes ACL support.</summary>
-    public bool HasAclSupport => false;
-
-    /// <summary>Whether the Windows implementation exposes extended attribute support.</summary>
-    public bool HasXattrSupport => false;
-
-    /// <summary>Whether security descriptor support (Windows ACL objects) is available.</summary>
-    public bool HasSecurityDescriptorSupport => true;
-
-    /// <summary>Whether alternate data streams (ADS) are supported on this platform.</summary>
-    public bool HasAlternateStreamSupport => true;
-
     /// <summary>
     ///     Creates a minimal InodeData object from a filesystem path containing only
     ///     stat information (no security descriptors, alternate data streams, or content hashes).

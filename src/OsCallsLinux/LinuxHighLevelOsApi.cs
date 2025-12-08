@@ -11,18 +11,6 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
-    /// <summary>Whether the current platform/filesystem exposes POSIX ACLs.</summary>
-    public bool HasAclSupport => true;
-
-    /// <summary>Whether the current platform/filesystem exposes extended attributes.</summary>
-    public bool HasXattrSupport => true;
-
-    /// <summary>Whether the platform supports security descriptor (Windows-style) objects.</summary>
-    public bool HasSecurityDescriptorSupport => false;
-
-    /// <summary>Whether alternate data streams are supported for this platform.</summary>
-    public bool HasAlternateStreamSupport => false;
-
     /// <summary>
     ///     Creates a minimal InodeData object from a filesystem path containing only
     ///     stat information (no ACLs, xattrs, or content hashes).

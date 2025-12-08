@@ -19,5 +19,8 @@
   "files.insertFinalNewline": true,
   "[msbuild]": {
     "editor.defaultFormatter": "redhat.vscode-xml"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
   }
 }
