@@ -298,8 +298,7 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
   ts.tv_nsec = nanoseconds;
 
   // DEBUG: Output the final timespec values
-  fprintf(stderr,
-          "[DEBUG filetime_to_timespec] RESULT: tv_sec=%lld, tv_nsec=%lld\n",
+  fprintf(stderr, "[DEBUG filetime_to_timespec] RESULT: tv_sec=%lld, tv_nsec=%lld\n",
           (long long)ts.tv_sec,
           (long long)ts.tv_nsec);
 
