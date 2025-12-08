@@ -7,6 +7,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+// Helper function to convert timespec to TimeSpec64
+static OsCalls::TimeSpec64 timespec_to_timespec64(const struct timespec &ts) {
+  OsCalls::TimeSpec64 result;
+  result.tv_sec = ts.tv_sec;
+  result.tv_nsec = ts.tv_nsec;
+  return result;
+}
+
 // Safe wrappers for file type test macros (not all are available on all
 // platforms)
 #ifdef S_ISBLK
@@ -138,13 +146,13 @@ bool handle_lstat(ValueT *value) {
     set_val(Number, "st_size", stbuf->st_size);
     return true;
   case 19:
-    set_val(TimeSpec, "st_atim", stbuf->st_atim);
+    set_val(TimeSpec, "st_atim", timespec_to_timespec64(stbuf->st_atim));
     return true;
   case 20:
-    set_val(TimeSpec, "st_mtim", stbuf->st_mtim);
+    set_val(TimeSpec, "st_mtim", timespec_to_timespec64(stbuf->st_mtim));
     return true;
   case 21:
-    set_val(TimeSpec, "st_ctim", stbuf->st_ctim);
+    set_val(TimeSpec, "st_ctim", timespec_to_timespec64(stbuf->st_ctim));
     return true;
   case 22:
     set_val(Number, "st_blksize", stbuf->st_blksize);
