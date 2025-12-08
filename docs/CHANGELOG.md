@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9-alpha] - 2025-12-08
+
+### Fixed
+
+- Fixed critical Windows timestamp bug where negative MTime values were reported due to struct layout mismatch in P/Invoke marshaling
+- Created platform-independent `TimeSpec64` struct with explicit `int64_t` fields to ensure consistent layout across Windows x64 (32-bit `long`) and Linux x64 (64-bit `long`)
+- Updated both Windows and Linux filesystem shims to use `TimeSpec64` for all timestamp operations
+- Added `timespec_to_timespec64` conversion helper for Linux standard `timespec` values
+
+### Changed
+
+- Expanded `.clang-format` configuration with comprehensive explicit formatting rules for consistency across clang-format versions (16.x and 18.x)
+- Added detailed formatting specifications for indentation, alignment, spacing, line breaking penalties, and C++ standards
+- Removed debug fprintf statements after timestamp fix verification
+
+### Improved
+
+- Enhanced CI formatting compatibility by resolving discrepancies between local (clang-format 16) and CI (clang-format 18) environments
+- All CI checks now pass: format-check, build-linux, build-windows-native, build-windows-cross
+
 ## [0.1.8-alpha] - 2025-12-08
 
 ### Changed
