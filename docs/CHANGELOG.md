@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Instance-based logging abstraction `ILogging` and adapter `UtilitiesLogger`.
+  - Enables injecting a logger implementation for tests and modular components while
+      preserving `CallerArgumentExpression` semantics used by `D(...)` helpers.
+
+### Changed
+
+- Converted several OS-call modules to use an injectable module-level logger
+   (defaulting to `UtilitiesLogger`): `OsCallsCommon/ValXfer.cs`,
+   `OsCallsLinux/FileSystem.cs`, `OsCallsWindows/FileSystem.cs`.
+  - This reduces static coupling to `Utilities` and improves testability of native
+      resolver and P/Invoke initialization code.
+
+### Improved
+
+- All unit tests pass after the refactor (local run: 39 passed, 0 failed).
+
 ## [0.1.9-alpha] - 2025-12-08
 
 ### Fixed

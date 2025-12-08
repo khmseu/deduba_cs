@@ -4,7 +4,7 @@ namespace UtilitiesLibrary;
 ///     Configuration settings for the backup archive system.
 ///     Encapsulates archive root path, chunk size, and operational flags.
 /// </summary>
-public sealed class BackupConfig
+public sealed class BackupConfig : IBackupConfig
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="BackupConfig" /> class.

@@ -8,7 +8,7 @@ namespace DeDuBa.Test;
 [ResetUtilitiesLog]
 public class ArchiveStoreTests : IDisposable
 {
-    private readonly BackupConfig _cfg;
+    private readonly IBackupConfig _cfg;
     private readonly ArchiveStore.ArchiveStore _store;
     private readonly string _tmpDir;
 
@@ -17,13 +17,7 @@ public class ArchiveStoreTests : IDisposable
         _tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
         _cfg = new BackupConfig(_tmpDir, 1024 * 16, true, false, 10);
-        _store = new ArchiveStore.ArchiveStore(
-            _cfg,
-            s =>
-            {
-                /* no-op */
-            }
-        );
+        _store = new ArchiveStore.ArchiveStore(_cfg, new UtilitiesLibrary.UtilitiesLogger());
     }
 
     public void Dispose()
@@ -32,9 +26,7 @@ public class ArchiveStoreTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]

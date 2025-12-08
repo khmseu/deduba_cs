@@ -14,6 +14,11 @@ namespace OsCallsLinux;
 /// </summary>
 public static unsafe partial class FileSystem
 {
+    /// <summary>
+    /// Instance logger for this module. Replaceable for tests; defaults to adapter.
+    /// </summary>
+    public static UtilitiesLibrary.ILogging Logger { get; set; } =
+        new UtilitiesLibrary.UtilitiesLogger();
     private const string NativeLibraryName = "libOsCallsLinuxShim.so";
 
     private static readonly ShimFnDelegate? _linux_lstat_fn;
@@ -25,8 +30,8 @@ public static unsafe partial class FileSystem
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite(
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite(
                     $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeLibraryName}'"
                 );
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
@@ -71,8 +76,8 @@ public static unsafe partial class FileSystem
             return IntPtr.Zero;
         try
         {
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite(
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite(
                     $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
                 );
         }

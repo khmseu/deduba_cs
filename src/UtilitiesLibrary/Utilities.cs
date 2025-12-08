@@ -23,8 +23,7 @@ public class Utilities
     /// <returns>A labeled <see cref="KeyValuePair{TKey,TValue}" /> suitable for dumping.</returns>
     public static KeyValuePair<string, object?> D(
         object? value,
-        [CallerArgumentExpression(nameof(value))]
-        string name = ""
+        [CallerArgumentExpression(nameof(value))] string name = ""
     )
     {
         return new KeyValuePair<string, object?>(name, value);
@@ -53,7 +52,7 @@ public class Utilities
             IncludeFields = true,
             // ReferenceHandler = ReferenceHandler.Preserve,
             WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
         options.Converters.Add(new JsonStringEnumConverter());
         return options;

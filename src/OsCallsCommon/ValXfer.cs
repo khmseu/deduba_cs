@@ -15,6 +15,13 @@ namespace OsCallsCommon;
 /// </summary>
 public static unsafe partial class ValXfer
 {
+    /// <summary>
+    /// Instance logger for this module. Callers may replace this with a test
+    /// double or alternate implementation. Defaults to forwarding adapter.
+    /// </summary>
+    public static UtilitiesLibrary.ILogging Logger { get; set; } =
+        new UtilitiesLibrary.UtilitiesLogger();
+
     static ValXfer()
     {
         // Log and track any P/Invoke load attempts originating from this
@@ -24,13 +31,13 @@ public static unsafe partial class ValXfer
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(ValXfer).Assembly, DllImportLoggingResolver);
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite("DllImportResolver registered for OsCallsCommon assembly.");
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite("DllImportResolver registered for OsCallsCommon assembly.");
         }
         catch (Exception e)
         {
             // Don't fail initialization for diagnostics; report error and continue.
-            Utilities.Error("ValXfer", "SetDllImportResolver", e);
+            Logger.Error("ValXfer", "SetDllImportResolver", e);
         }
     }
 
@@ -44,8 +51,8 @@ public static unsafe partial class ValXfer
         {
             // Keep the log short but useful: record the requested library name,
             // the calling assembly, and the configured search path if any.
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite(
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite(
                     $"DllImportResolver: library='{libraryName}' assembly='{assembly?.GetName()?.Name}' searchPath='{searchPath}'"
                 );
         }
@@ -83,7 +90,7 @@ public static unsafe partial class ValXfer
         IsTimeSpec,
 
         /// <summary>Current value is a boolean.</summary>
-        IsBoolean
+        IsBoolean,
     }
 
 #if DEDUBA_LINUX
@@ -117,10 +124,9 @@ public static unsafe partial class ValXfer
         var more = GetNextValue(value);
         if (wasOk == TypeT.IsError)
         {
-            var win32Exception =
-                new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
+            var win32Exception = new Win32Exception(maybeError); //$"{nameof(ToNode)} found {op} caused error {maybeError}"
             // Report the error via the utilities layer (which may log or rethrow depending on the test harness).
-            Utilities.Error(file, op, win32Exception);
+            Logger.Error(file, op, win32Exception);
             // Always rethrow a generic Exception wrapper with the Win32Exception as InnerException so
             // callers and tests consistently receive a System.Exception containing the native error.
             throw new Exception($"{op} failed with error {win32Exception.Message}", win32Exception);
@@ -149,7 +155,7 @@ public static unsafe partial class ValXfer
                     case TypeT.IsTimeSpec:
                         array.Add(
                             value->TimeSpec.TvSec
-                            + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
+                                + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
                         );
                         break;
                     case TypeT.IsBoolean:
@@ -213,21 +219,21 @@ public static unsafe partial class ValXfer
         {
             if (false)
 #pragma warning disable CS0162 // Unerreichbarer Code wurde entdeckt.
-                Utilities.ConWrite(
-                    Utilities.Dumper(
-                        Utilities.D(op),
-                        Utilities.D(name),
-                        Utilities.D(value->Handle.index),
-                        Utilities.D((ulong)value->Handle.data1),
-                        Utilities.D((ulong)value->Handle.data2),
-                        Utilities.D(value->Type),
-                        Utilities.D((ulong)value->Name),
-                        Utilities.D(Marshal.PtrToStringUTF8(value->Name)),
-                        Utilities.D(value->Number),
-                        Utilities.D((ulong)value->String),
-                        Utilities.D((ulong)value->Complex),
-                        Utilities.D(value->TimeSpec),
-                        Utilities.D(value->Boolean)
+                Logger.ConWrite(
+                    Logger.Dumper(
+                        Logger.D(op),
+                        Logger.D(name),
+                        Logger.D(value->Handle.index),
+                        Logger.D((ulong)value->Handle.data1),
+                        Logger.D((ulong)value->Handle.data2),
+                        Logger.D(value->Type),
+                        Logger.D((ulong)value->Name),
+                        Logger.D(Marshal.PtrToStringUTF8(value->Name)),
+                        Logger.D(value->Number),
+                        Logger.D((ulong)value->String),
+                        Logger.D((ulong)value->Complex),
+                        Logger.D(value->TimeSpec),
+                        Logger.D(value->Boolean)
                     )
                 );
 #pragma warning restore CS0162 // Unerreichbarer Code wurde entdeckt.
@@ -283,7 +289,7 @@ public static unsafe partial class ValXfer
                 TypeT.IsComplex => $"[{Handle}] {Name}: [{Complex}]",
                 TypeT.IsError => $"[{Handle}] {Name}: [Error {Number}]",
                 TypeT.IsOk => $"[{Handle}] {Name}: [OK]",
-                _ => $"[{Handle}] {Name}: [Unknown type {Type}]"
+                _ => $"[{Handle}] {Name}: [Unknown type {Type}]",
             };
         }
 
@@ -328,7 +334,7 @@ public static unsafe partial class ValXfer
             {
                 Index = value->Handle.index,
                 Data1 = (ulong)value->Handle.data1,
-                Data2 = (ulong)value->Handle.data2
+                Data2 = (ulong)value->Handle.data2,
             },
             TvSec = value->TimeSpec.TvSec,
             TvNsec = value->TimeSpec.TvNsec,
@@ -337,7 +343,7 @@ public static unsafe partial class ValXfer
             String = value->String != IntPtr.Zero ? Marshal.PtrToStringUTF8(value->String) : null,
             Boolean = value->Boolean,
             Type = value->Type,
-            Complex = null
+            Complex = null,
         };
 
         if (value->Type == TypeT.IsComplex && value->Complex != null && maxDepth > 0)
@@ -407,6 +413,7 @@ public static unsafe partial class ValXfer
         public readonly ValueT* Complex;
 
         /// <summary>Boolean value when Type == IsBoolean.</summary>
-        [MarshalAs(UnmanagedType.I1)] public readonly bool Boolean;
+        [MarshalAs(UnmanagedType.I1)]
+        public readonly bool Boolean;
     }
 }

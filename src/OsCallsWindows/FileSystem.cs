@@ -14,6 +14,11 @@ namespace OsCallsWindows;
 /// </summary>
 public static unsafe partial class FileSystem
 {
+    /// <summary>
+    /// Instance logger for this module. Replaceable for tests; defaults to adapter.
+    /// </summary>
+    public static UtilitiesLibrary.ILogging Logger { get; set; } =
+        new UtilitiesLibrary.UtilitiesLogger();
     private const string NativeLibraryName = "OsCallsWindowsShimNative.dll";
 
     static FileSystem()
@@ -21,8 +26,8 @@ public static unsafe partial class FileSystem
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite(
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite(
                     $"OsCallsWindows.FileSystem resolver registered: searching for '{NativeLibraryName}'"
                 );
             // Preload to improve deterministic behavior in CI where PATH changes later.
@@ -143,23 +148,23 @@ public static unsafe partial class FileSystem
             return IntPtr.Zero;
         try
         {
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite(
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite(
                     $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
                 );
             var full = FindNativeLibraryPath(NativeLibraryName);
             if (full is not null)
             {
-                if (Utilities.IsNativeDebugEnabled())
-                    Utilities.ConWrite($"Resolver: Found native path {full}");
+                if (Logger.IsNativeDebugEnabled())
+                    Logger.ConWrite($"Resolver: Found native path {full}");
                 try
                 {
                     return NativeLibrary.Load(full);
                 }
                 catch (Exception e)
                 {
-                    if (Utilities.IsNativeDebugEnabled())
-                        Utilities.ConWrite(
+                    if (Logger.IsNativeDebugEnabled())
+                        Logger.ConWrite(
                             $"Resolver: NativeLibrary.Load failed for {full}: {e.Message}"
                         );
                     return IntPtr.Zero;
@@ -168,8 +173,8 @@ public static unsafe partial class FileSystem
         }
         catch (Exception e)
         {
-            if (Utilities.IsNativeDebugEnabled())
-                Utilities.ConWrite($"Resolver error: {e.Message}");
+            if (Logger.IsNativeDebugEnabled())
+                Logger.ConWrite($"Resolver error: {e.Message}");
         }
 
         return IntPtr.Zero;

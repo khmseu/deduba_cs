@@ -16,6 +16,8 @@ internal class Program
     private static void Main(string[] args)
     {
         Utilities.Testing = true; // Default to testing mode
+        // Ensure the program-level logger is available (defaults already set in DedubaClass)
+        DedubaClass.Logger = new UtilitiesLibrary.UtilitiesLogger();
 
         // Parse command-line options
         var fileArgs = new List<string>();
@@ -46,18 +48,28 @@ internal class Program
     /// </summary>
     private static void ShowHelp()
     {
-        Console.WriteLine("DeDuBa - Deduplicating Backup System");
-        Console.WriteLine("Usage: DeDuBa [options] <files-to-backup>");
-        Console.WriteLine();
-        Console.WriteLine("Options:");
-        Console.WriteLine("  -v, --verbose      Enable verbose diagnostic output");
-        Console.WriteLine("  -p, --production   Use production archive path (/archive/backup)");
-        Console.WriteLine("                     Default: test mode (~/projects/Backup/ARCHIVE5)");
-        Console.WriteLine("  -h, --help         Show this help message");
-        Console.WriteLine();
-        Console.WriteLine("Examples:");
-        Console.WriteLine("  DeDuBa /tmp                    # Backup /tmp to test archive");
-        Console.WriteLine("  DeDuBa --verbose /home/user    # Backup with diagnostic output");
-        Console.WriteLine("  DeDuBa --production /data      # Backup to production archive");
+        DedubaClass.Logger.ConWrite("DeDuBa - Deduplicating Backup System");
+        DedubaClass.Logger.ConWrite("Usage: DeDuBa [options] <files-to-backup>");
+        DedubaClass.Logger.ConWrite("");
+        DedubaClass.Logger.ConWrite("Options:");
+        DedubaClass.Logger.ConWrite("  -v, --verbose      Enable verbose diagnostic output");
+        DedubaClass.Logger.ConWrite(
+            "  -p, --production   Use production archive path (/archive/backup)"
+        );
+        DedubaClass.Logger.ConWrite(
+            "                     Default: test mode (~/projects/Backup/ARCHIVE5)"
+        );
+        DedubaClass.Logger.ConWrite("  -h, --help         Show this help message");
+        DedubaClass.Logger.ConWrite("");
+        DedubaClass.Logger.ConWrite("Examples:");
+        DedubaClass.Logger.ConWrite(
+            "  DeDuBa /tmp                    # Backup /tmp to test archive"
+        );
+        DedubaClass.Logger.ConWrite(
+            "  DeDuBa --verbose /home/user    # Backup with diagnostic output"
+        );
+        DedubaClass.Logger.ConWrite(
+            "  DeDuBa --production /data      # Backup to production archive"
+        );
     }
 }

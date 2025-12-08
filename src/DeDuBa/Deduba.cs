@@ -21,7 +21,7 @@ public class DedubaClass
     private static string? _archive;
 
     private static string _dataPath = "";
-    private static BackupConfig? _config;
+    private static IBackupConfig? _config;
     private static IArchiveStore? _archiveStore;
     private static IHighLevelOsApi? _osApi;
 
@@ -32,6 +32,13 @@ public class DedubaClass
     private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
     private static readonly Dictionary<Int128, int> Devices = [];
+
+    /// <summary>
+    /// Module-level injectable logger for DeDuBa runtime messages.
+    /// Defaults to forwarding adapter that calls legacy `Utilities`.
+    /// </summary>
+    public static UtilitiesLibrary.ILogging Logger { get; set; } =
+        new UtilitiesLibrary.UtilitiesLogger();
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
@@ -90,7 +97,7 @@ public class DedubaClass
     public static void Backup(string[] argv)
     {
         _startTimestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-        Utilities.ConWrite($"DeDuBa Version: {Utilities.GetVersion()}");
+        Logger.ConWrite($"DeDuBa Version: {Logger.GetVersion()}");
 
         var envArchiveRoot = Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT");
         if (!string.IsNullOrEmpty(envArchiveRoot))
@@ -99,7 +106,7 @@ public class DedubaClass
             _archive = Utilities.Testing
                 ? Path.Combine(Path.GetTempPath(), "ARCHIVE5")
                 : "/archive/backup";
-        Utilities.ConWrite(
+        Logger.ConWrite(
             $"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})"
         );
         _dataPath = Path.Combine(_archive, "DATA");
@@ -137,7 +144,7 @@ public class DedubaClass
             }
             catch (Exception ex)
             {
-                Utilities.Error(logname, nameof(StreamWriter), ex);
+                Logger.Error(logname, nameof(StreamWriter), ex);
                 throw;
             } // STDOUT->autoflush(1);
 
@@ -170,10 +177,10 @@ public class DedubaClass
 
                 try
                 {
-                    Utilities.ConWrite($"Before: {Utilities.Dumper(Utilities.D(argv))}");
+                    Logger.ConWrite($"Before: {Logger.Dumper(Logger.D(argv))}");
                     if (Utilities.VerboseOutput)
-                        Utilities.ConWrite(
-                            $"Before: {Utilities.Dumper(Utilities.D(argv.Select(_osApi!.Canonicalizefilename)))}"
+                        Logger.ConWrite(
+                            $"Before: {Logger.Dumper(Logger.D(argv.Select(_osApi!.Canonicalizefilename)))}"
                         );
                     argv =
                     [
@@ -203,14 +210,14 @@ public class DedubaClass
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Error(nameof(argv), nameof(IHighLevelOsApi.Canonicalizefilename), ex);
+                    Logger.Error(nameof(argv), nameof(IHighLevelOsApi.Canonicalizefilename), ex);
                     throw;
                 }
 
                 if (Utilities.VerboseOutput)
                 {
-                    Utilities.ConWrite("Filtered:");
-                    Utilities.ConWrite($"{Utilities.Dumper(Utilities.D(argv))}");
+                    Logger.ConWrite("Filtered:");
+                    Logger.ConWrite($"{Logger.Dumper(Logger.D(argv))}");
                 }
 
                 foreach (var root in argv)
@@ -237,14 +244,14 @@ public class DedubaClass
                     Devices[deviceId]++;
                 }
 
-                Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
+                Logger.ConWrite(Logger.Dumper(Logger.D(Devices)));
 
                 // ############################################################################
 
                 // tie % arlist,   'DB_File', undef;    #, "$tmpp.arlist";
                 // tie % preflist, 'DB_File', undef;    #, "$tmpp.preflist";
 
-                Utilities.ConWrite("Getting archive state\n");
+                Logger.ConWrite("Getting archive state\n");
                 // Initialize config & archive store
                 _config = BackupConfig.FromUtilities();
                 _config = new BackupConfig(
@@ -257,16 +264,16 @@ public class DedubaClass
                 _dataPath = _config.DataPath;
                 _archiveStore = new ArchiveStore.ArchiveStore(
                     _config,
-                    msg => Utilities.ConWrite(msg)
+                    new UtilitiesLibrary.UtilitiesLogger()
                 );
                 _archiveStore.BuildIndex();
 
                 if (Utilities.VerboseOutput)
                 {
-                    Utilities.ConWrite("Before backup:\n");
+                    Logger.ConWrite("Before backup:\n");
                     foreach (var kvp in _archiveStore!.Arlist)
-                        Utilities.ConWrite(
-                            Utilities.Dumper(
+                        Logger.ConWrite(
+                            Logger.Dumper(
                                 new KeyValuePair<string, object?>($"Arlist['{kvp.Key}']", kvp.Value)
                             )
                         );
@@ -274,8 +281,8 @@ public class DedubaClass
                     // Iterate over preflist
                     // Iterate over preflist
                     foreach (var kvp in _archiveStore!.Preflist)
-                        Utilities.ConWrite(
-                            Utilities.Dumper(
+                        Logger.ConWrite(
+                            Logger.Dumper(
                                 new KeyValuePair<string, object?>(
                                     $"Preflist['{kvp.Key}']",
                                     kvp.Value
@@ -286,23 +293,23 @@ public class DedubaClass
 
                 // ##############################################################################
 
-                Utilities.ConWrite("Backup starting\n");
+                Logger.ConWrite("Backup starting\n");
 
                 Backup_worker(argv);
 
-                Utilities.ConWrite("\n");
+                Logger.ConWrite("\n");
 
                 // ##############################################################################
 
                 // # my $status = unxz $input => $output [,OPTS] or print "\n", __LINE__, ' ', scalar localtime, ' ',  "\n", __ "unxz failed: $UnXzError\n" if TESTING;
 
                 if (Utilities.VerboseOutput)
-                    Utilities.ConWrite(Utilities.Dumper(Utilities.D(Dirtmp)));
+                    Logger.ConWrite(Logger.Dumper(Logger.D(Dirtmp)));
 
                 if (Utilities.VerboseOutput)
-                    Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
+                    Logger.ConWrite(Logger.Dumper(Logger.D(Devices)));
 
-                Utilities.ConWrite(Utilities.Dumper(Utilities.D(_archiveStore.Stats ?? Bstats)));
+                Logger.ConWrite(Logger.Dumper(Logger.D(_archiveStore.Stats ?? Bstats)));
 
                 // untie %arlist;
                 // untie %preflist;
@@ -310,11 +317,11 @@ public class DedubaClass
 
                 Utilities.Log.Close();
 
-                Utilities.ConWrite("Backup done\n");
+                Logger.ConWrite("Backup done\n");
             }
             catch (Exception ex)
             {
-                Utilities.Error(logname, nameof(Utilities.Log.Close), ex);
+                Logger.Error(logname, nameof(Utilities.Log.Close), ex);
                 // Rethrow validation errors (e.g. we refused to backup the archive root) so callers/tests can
                 // observe the exception. Other exceptions continue to be handled here.
                 if (ex is InvalidOperationException)
@@ -415,8 +422,8 @@ public class DedubaClass
     {
         ArgumentNullException.ThrowIfNull(name);
         if (name.Length > 0 && Utilities.VerboseOutput)
-            Utilities.ConWrite(
-                $"{name}: {Utilities.Dumper(Utilities.D(v?.GetType().FullName), Utilities.D(v))}"
+            Logger.ConWrite(
+                $"{name}: {Logger.Dumper(Logger.D(v?.GetType().FullName), Logger.D(v))}"
             );
         if (v is InodeData inode)
             return JsonSerializer.Serialize(inode, typeof(InodeData));
@@ -451,7 +458,7 @@ public class DedubaClass
                     0,
                     _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
                 );
-                Utilities.Status(
+                Logger.Status(
                     _statusFilesDone,
                     _statusDirsDone,
                     queuedRemaining,
@@ -493,7 +500,7 @@ public class DedubaClass
                 if (!string.IsNullOrEmpty(_archive) && IsPathWithinArchive(entry))
                 {
                     if (Utilities.VerboseOutput)
-                        Utilities.ConWrite(
+                        Logger.ConWrite(
                             $"Skipping archive/internal path during traversal: {entry}"
                         );
                     continue;
@@ -518,11 +525,7 @@ public class DedubaClass
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Error(
-                        entry,
-                        nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
-                        ex
-                    );
+                    Logger.Error(entry, nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath), ex);
                 }
 
                 var stDev = minimalData?.Device ?? 0;
@@ -584,11 +587,11 @@ public class DedubaClass
                             }
                             catch (OsException ex)
                             {
-                                Utilities.Error(entry, "ListDirectory", ex);
+                                Logger.Error(entry, "ListDirectory", ex);
                             }
                             catch (Exception ex)
                             {
-                                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                                Logger.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
                             }
 
                         _packsum = 0;
@@ -600,7 +603,7 @@ public class DedubaClass
                         {
                             if (minimalData is null)
                             {
-                                Utilities.Error(
+                                Logger.Error(
                                     entry,
                                     nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
                                     new InvalidOperationException("null inodeData")
@@ -619,12 +622,12 @@ public class DedubaClass
                         }
                         catch (OsException ex)
                         {
-                            Utilities.Error(entry, "CompleteInodeDataFromPath", ex);
+                            Logger.Error(entry, "CompleteInodeDataFromPath", ex);
                             continue;
                         }
                         catch (Exception ex)
                         {
-                            Utilities.Error(entry, "CompleteInodeDataFromPath", ex);
+                            Logger.Error(entry, "CompleteInodeDataFromPath", ex);
                             continue;
                         }
 
@@ -646,7 +649,7 @@ public class DedubaClass
                             }
                             catch (Exception ex)
                             {
-                                Utilities.Error(entry, nameof(MemoryStream), ex);
+                                Logger.Error(entry, nameof(MemoryStream), ex);
                                 continue;
                             }
 
@@ -672,7 +675,7 @@ public class DedubaClass
                         }
                         catch (Exception ex)
                         {
-                            Utilities.Error(entry, nameof(MemoryStream), ex);
+                            Logger.Error(entry, nameof(MemoryStream), ex);
                             continue;
                         }
 
@@ -739,7 +742,7 @@ public class DedubaClass
                     catch (Exception ex)
                     {
                         // Do not let debug logging break backup; write error to utilities
-                        Utilities.Error(entry, "debug-log", ex);
+                        Logger.Error(entry, "debug-log", ex);
                     }
 
                     // File or directory completed -> update counters and status line
@@ -755,7 +758,7 @@ public class DedubaClass
                     // Percent for completed item is 100; for directory we don't compute size percent
                     var sizeFinal = fileSize;
                     var percentDone = sizeFinal > 0 && !flags.Contains("dir") ? 100.0 : double.NaN;
-                    Utilities.Status(
+                    Logger.Status(
                         _statusFilesDone,
                         _statusDirsDone,
                         queuedRemaining,
@@ -766,7 +769,7 @@ public class DedubaClass
                 }
                 else
                 {
-                    Utilities.Error(entry, "pruning");
+                    Logger.Error(entry, "pruning");
                 }
             }
         }

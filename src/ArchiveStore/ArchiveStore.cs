@@ -14,7 +14,8 @@ namespace ArchiveStore;
 public sealed class ArchiveStore : IArchiveStore
 {
     private readonly ConcurrentDictionary<string, string> _arlist = new();
-    private readonly BackupConfig _config;
+    private readonly IBackupConfig _config;
+    private readonly ILogging _logger;
     private readonly Action<string> _log;
     private readonly ConcurrentDictionary<string, HashSet<string>> _preflist = new();
     private readonly object _reorgLock = new();
@@ -26,25 +27,22 @@ public sealed class ArchiveStore : IArchiveStore
     /// <param name="config">Configuration settings for the archive.</param>
     /// <param name="log">Optional logging callback for diagnostic output.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="config" /> is null.</exception>
-    public ArchiveStore(BackupConfig config, Action<string>? log = null)
+    public ArchiveStore(IBackupConfig config, ILogging? logger = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _log =
-            log
-            ?? (
-                s =>
-                {
-                    if (_config.Verbose)
-                        Utilities.ConWrite(s);
-                }
-            );
+        _logger = logger ?? new UtilitiesLogger();
+        _log = s =>
+        {
+            if (_config.Verbose)
+                _logger.ConWrite(s);
+        };
         try
         {
             Directory.CreateDirectory(_config.DataPath);
         }
         catch (Exception ex)
         {
-            Utilities.Error(_config.DataPath, nameof(Directory.CreateDirectory), ex);
+            _logger.Error(_config.DataPath, nameof(Directory.CreateDirectory), ex);
             throw;
         }
     }
@@ -167,7 +165,7 @@ public sealed class ArchiveStore : IArchiveStore
                         }
                         catch (Exception ex)
                         {
-                            Utilities.Error($"[GTPFH] {from} -> {to}", nameof(File.Move), ex);
+                            _logger.Error($"[GTPFH] {from} -> {to}", nameof(File.Move), ex);
                             continue;
                         }
 
@@ -226,7 +224,7 @@ public sealed class ArchiveStore : IArchiveStore
             }
             catch (Exception ex)
             {
-                Utilities.Error(outFile, nameof(BZip2OutputStream), ex);
+                _logger.Error(outFile, nameof(BZip2OutputStream), ex);
                 try
                 {
                     PackSum += new FileInfo(outFile).Length;
@@ -307,7 +305,7 @@ public sealed class ArchiveStore : IArchiveStore
             }
             catch (Exception ex)
             {
-                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                _logger.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
             }
 
             return;
@@ -341,7 +339,7 @@ public sealed class ArchiveStore : IArchiveStore
             }
             catch (Exception ex)
             {
-                Utilities.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
+                _logger.Error(entry, nameof(Directory.GetFileSystemEntries), ex);
             }
         }
         else if (Regex.IsMatch(file, "^[0-9a-f]+$"))
