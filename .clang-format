@@ -1,28 +1,95 @@
-# Based on the coding style observed in the repo.
-#  - 2-space indentation
-#  - Attach braces to signatures
-#  - Pointer alignment with identifier (ValueT *value)
-#  - Limit lines to 100 (reasonably relaxed)
+# DeDuBa C/C++ Code Formatting Configuration
+#
+# This configuration specifies the exact formatting rules for the DeDuBa project.
+# Based on LLVM style with custom adjustments for consistency across platforms.
+#
+# Key principles:
+#  - 2-space indentation for clarity and consistency
+#  - Pointer alignment with identifier: ValueT *value (not ValueT* value)
+#  - Line length limit of 100 characters
+#  - Braces attached to signatures
+#  - Strict alignment of declarations for readability
 ---
+
+# Core formatting style
 BasedOnStyle: LLVM
+
+# Indentation settings
 IndentWidth: 2
 TabWidth: 2
 UseTab: Never
+IndentCaseLabels: false
+IndentGotoLabels: false
+IndentAccessModifiers: false
+
+# Line length and column settings
 ColumnLimit: 100
+ContinuationIndentWidth: 4
+
+# Brace and statement formatting
+BreakBeforeBraces: Attach
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
-BreakBeforeBraces: Attach
-SpaceBeforeParens: ControlStatements
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: false
+
+# Pointer and reference alignment
 PointerAlignment: Right
-NamespaceIndentation: Inner
+ReferenceAlignment: Right
+DerivePointerAlignment: false
+
+# Spacing around operators and keywords
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceAroundPointerQualifiers: Default
+SpacesBeforeTrailingComments: 2
+SpacesInSquareBrackets: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+
+# Alignment settings
 AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments: false
-DerivePointerAlignment: false
+AlignConsecutiveMacros: false
+AlignEscapedNewlines: Right
+AlignOperands: Align
+AlignTrailingComments: true
+
+# Namespace and scope indentation
+NamespaceIndentation: Inner
+CompactNamespaces: false
+
+# Comment handling
+ReflowComments: true
+CommentPragmas: '^ IWYU pragma:'
+
+# Include sorting
+IncludeBlocks: Preserve
+
+# Penalties for line breaking
 PenaltyReturnTypeOnItsOwnLine: 0
-IndentCaseLabels: false
-# Standard and Language were removed due to compatibility issues with some
-# clang-format build configurations. The repo uses 2-space indentation and
-# is based on LLVM style; the version-specific standard can be enforced via
-# compiler flags instead of the formatter if needed.
-...
+PenaltyBreakBeforeFunctionCallParameter: 100
+PenaltyBreakAssignment: 10
+PenaltyBreakComment: 100
+PenaltyExcessCharacter: 1000
+
+# C++ specific
+Standard: Latest
+Cpp11BracedListStyle: true
+SpaceAfterLogicalNot: false
+
+# Line breaking
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeConceptDeclarations: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+
+# Notes on version compatibility
+# Standard and Language were removed to support older clang-format versions
+# (some CI environments may not have the latest version). The repo targets
+# modern C++17/C++20 standards as specified in CMakeLists.txt and Directory.Build.props.
+# Formatter version compatibility: tested with clang-format 16.0.3 and 18.0.x
