@@ -272,11 +272,21 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
   // Convert to seconds and nanoseconds
   const uint64_t EPOCH_DIFF = 11644473600ULL;
   uint64_t       total_100ns = ull.QuadPart;
-  uint64_t       seconds = total_100ns / 10000000ULL - EPOCH_DIFF;
-  uint64_t       nanoseconds = (total_100ns % 10000000ULL) * 100;
+  uint64_t       seconds_since_1601 = total_100ns / 10000000ULL;
+
+  // Handle timestamps before Unix epoch (1970) or zero/invalid timestamps
+  // by clamping to epoch (0 seconds)
+  int64_t seconds;
+  if (seconds_since_1601 < EPOCH_DIFF) {
+    seconds = 0; // Clamp to Unix epoch for pre-1970 or invalid timestamps
+  } else {
+    seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
+  }
+
+  uint64_t nanoseconds = (total_100ns % 10000000ULL) * 100;
 
   timespec ts;
-  ts.tv_sec = static_cast<time_t>(seconds);
+  ts.tv_sec = seconds;
   ts.tv_nsec = static_cast<long>(nanoseconds);
   return ts;
 }
