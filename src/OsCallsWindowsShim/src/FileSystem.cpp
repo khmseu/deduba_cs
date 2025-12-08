@@ -274,11 +274,18 @@ static timespec filetime_to_timespec(const FILETIME &ft) {
   uint64_t       total_100ns = ull.QuadPart;
   uint64_t       seconds_since_1601 = total_100ns / 10000000ULL;
 
+  // DEBUG: Always output to stderr to verify this code path is executed
+  fprintf(stderr,
+          "[DEBUG filetime_to_timespec] QuadPart=%llu, seconds_since_1601=%llu, EPOCH_DIFF=%llu\n",
+          (unsigned long long)ull.QuadPart, (unsigned long long)seconds_since_1601,
+          (unsigned long long)EPOCH_DIFF);
+
   // Handle timestamps before Unix epoch (1970) or zero/invalid timestamps
-  // by clamping to epoch (0 seconds)
+  // by clamping to epoch+1 (1 second) as a sentinel value for debugging
   int64_t seconds;
   if (seconds_since_1601 < EPOCH_DIFF) {
-    seconds = 0; // Clamp to Unix epoch for pre-1970 or invalid timestamps
+    fprintf(stderr, "[DEBUG filetime_to_timespec] CLAMPING to 1 (pre-epoch detected)\n");
+    seconds = 1; // Clamp to Unix epoch+1 for pre-1970 or invalid timestamps (sentinel for testing)
   } else {
     seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
   }
