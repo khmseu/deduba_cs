@@ -6,8 +6,7 @@ namespace DeDuBa.Test;
 
 /// <summary>
 ///     Tests for IHighLevelOsApi implementations using the high-level metadata collection APIs.
-///     These tests validate CreateMinimalInodeDataFromPath and CompleteInodeDataFromPath
-///     instead of the low-level LStat/CreateInodeDataFromPath methods.
+///     These tests validate CreateMinimalInodeDataFromPath and CompleteInodeDataFromPath.
 /// </summary>
 [Collection("TestEnvironment")]
 [ResetUtilitiesLog]
@@ -22,10 +21,7 @@ public class HighLevelOsApiTests : IDisposable
 
     public HighLevelOsApiTests()
     {
-        _tmpDir = Path.Combine(
-            Path.GetTempPath(),
-            "deduba_hlapi_" + Guid.NewGuid().ToString("N")
-        );
+        _tmpDir = Path.Combine(Path.GetTempPath(), "deduba_hlapi_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
 
         _testFilePath = Path.Combine(_tmpDir, "testfile.txt");
@@ -50,7 +46,7 @@ public class HighLevelOsApiTests : IDisposable
                         $"-s {_testFilePath} {_testSymlinkPath}"
                     )
                     {
-                        UseShellExecute = false
+                        UseShellExecute = false,
                     }
                 );
                 si?.WaitForExit();
@@ -75,9 +71,7 @@ public class HighLevelOsApiTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]
