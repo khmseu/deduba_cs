@@ -121,7 +121,7 @@ using namespace OsCalls;
  * @return false Always (no values to iterate).
  */
 static bool handle_error(ValueT *value) {
-  (void)value; // Suppress unused parameter warning
+  (void)value;  // Suppress unused parameter warning
   return false;
 }
 
@@ -137,7 +137,7 @@ static bool handle_error(ValueT *value) {
  */
 static bool handle_GetNamedSecurityInfoW(ValueT *value) {
   auto               sddl = reinterpret_cast<wchar_t *>(value->Handle.data1);
-  static const char *sddl_name = "sddl"; // Stable static pointer
+  static const char *sddl_name = "sddl";  // Stable static pointer
   switch (value->Handle.index) {
   case 0:
     if (value->Type == TypeT::IsOk) {
@@ -147,7 +147,7 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, sddl, -1, utf8, size, nullptr, nullptr);
         value->String = utf8;
-        value->Name = sddl_name; // Use stable static literal
+        value->Name = sddl_name;  // Use stable static literal
         value->Type = TypeT::IsString;
         return true;
       }
@@ -155,7 +155,7 @@ static bool handle_GetNamedSecurityInfoW(ValueT *value) {
   // Error or conversion failed - fall through
   default:
     if (sddl) {
-      LocalFree(sddl); // SDDL strings are allocated by LocalAlloc
+      LocalFree(sddl);  // SDDL strings are allocated by LocalAlloc
     }
     // REMOVED: delete value; - managed code owns ValueT lifetime
     return false;
@@ -166,11 +166,11 @@ extern "C" DLL_EXPORT ValueT *
 windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
   wchar_t           *sddl = nullptr;
   auto               v = new ValueT();
-  static const char *errno_name = "errno"; // Stable static pointer
+  static const char *errno_name = "errno";  // Stable static pointer
 
   // Determine which security information to retrieve
-  SECURITY_INFORMATION secInfo =
-      OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
+  SECURITY_INFORMATION secInfo = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION |
+                                 DACL_SECURITY_INFORMATION;
 
   if (include_sacl) {
     secInfo |= SACL_SECURITY_INFORMATION;
@@ -178,19 +178,27 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
 
   // Get the security descriptor
   PSECURITY_DESCRIPTOR pSD = nullptr;
-  DWORD result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path), SE_FILE_OBJECT, secInfo,
-                                       nullptr, // Owner SID
-                                       nullptr, // Group SID
-                                       nullptr, // DACL
-                                       nullptr, // SACL
+  DWORD                result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
+                                       SE_FILE_OBJECT,
+                                       secInfo,
+                                       nullptr,  // Owner SID
+                                       nullptr,  // Group SID
+                                       nullptr,  // DACL
+                                       nullptr,  // SACL
                                        &pSD);
 
   if (result != ERROR_SUCCESS) {
     // If SACL access was denied, try again without SACL
     if (include_sacl && result == ERROR_PRIVILEGE_NOT_HELD) {
       secInfo &= ~SACL_SECURITY_INFORMATION;
-      result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path), SE_FILE_OBJECT, secInfo, nullptr,
-                                     nullptr, nullptr, nullptr, &pSD);
+      result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
+                                     SE_FILE_OBJECT,
+                                     secInfo,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     nullptr,
+                                     &pSD);
     }
 
     if (result != ERROR_SUCCESS) {
@@ -204,8 +212,8 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
 
   // Convert security descriptor to SDDL string
   LPWSTR sddlString = nullptr;
-  if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(pSD, SDDL_REVISION_1, secInfo,
-                                                            &sddlString, nullptr)) {
+  if (!ConvertSecurityDescriptorToStringSecurityDescriptorW(
+          pSD, SDDL_REVISION_1, secInfo, &sddlString, nullptr)) {
     DWORD err = GetLastError();
     LocalFree(pSD);
     CreateHandle(v, handle_error, nullptr, nullptr);
@@ -233,4 +241,4 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
 extern "C" DLL_EXPORT ValueT *win_get_sd(const wchar_t *path, bool include_sacl) {
   return windows_GetNamedSecurityInfoW(path, include_sacl);
 }
-} // namespace OsCallsWindows
+}  // namespace OsCallsWindows

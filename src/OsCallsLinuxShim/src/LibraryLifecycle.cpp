@@ -16,7 +16,8 @@ static void __attribute__((constructor)) on_load(void) {
     return;
   Dl_info info;
   if (dladdr((void *)on_load, &info) != 0) {
-    fprintf(stderr, "OsCallsLinuxShim: loaded: path=%s\n",
+    fprintf(stderr,
+            "OsCallsLinuxShim: loaded: path=%s\n",
             info.dli_fname ? info.dli_fname : "(unknown)");
   } else {
     fprintf(stderr, "OsCallsLinuxShim: loaded (dladdr failed)\n");

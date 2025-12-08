@@ -51,6 +51,6 @@ ValueT *linux_lstat(const char *path);
 ValueT *linux_readlink(const char *path);
 ValueT *linux_canonicalize_file_name(const char *path);
 }
-} // namespace OsCalls
+}  // namespace OsCalls
 
-#endif // FILESYSTEM_H
+#endif  // FILESYSTEM_H

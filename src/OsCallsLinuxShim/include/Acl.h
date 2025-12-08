@@ -36,6 +36,6 @@ ValueT *linux_acl_get_file_default(const char *path);
 }
 
 /** @} */
-} // namespace OsCalls
+}  // namespace OsCalls
 
-#endif // ACL_H
+#endif  // ACL_H

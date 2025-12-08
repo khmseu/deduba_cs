@@ -46,6 +46,6 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl);
  * @return ValueT* with SDDL string
  */
 extern "C" DLL_EXPORT OsCalls::ValueT *win_get_sd(const wchar_t *path, bool include_sacl);
-} // namespace OsCallsWindows
+}  // namespace OsCallsWindows
 
-#endif // SECURITY_WINDOWS_H
+#endif  // SECURITY_WINDOWS_H

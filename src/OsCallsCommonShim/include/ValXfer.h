@@ -111,7 +111,7 @@ struct ValueT {
  * Functions exported with C linkage for consumption via P/Invoke.
  * @{
  */
-} // namespace OsCalls
+}  // namespace OsCalls
 
 extern "C" {
 /** Advance the cursor and populate the current ValueT fields. */
@@ -123,11 +123,11 @@ CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, vo
 
 namespace OsCalls {
 /** @} */
-} // namespace OsCalls
+}  // namespace OsCalls
 
 // Restore default packing
 #ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
-#endif // VALXFER_H
+#endif  // VALXFER_H

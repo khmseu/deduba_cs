@@ -28,6 +28,6 @@ ValueT *getgrgid(std::int64_t gid);
 ValueT *linux_getpwuid(std::int64_t uid);
 ValueT *linux_getgrgid(std::int64_t gid);
 }
-} // namespace OsCalls
+}  // namespace OsCalls
 
-#endif // USERGROUPDATABASE_H
+#endif  // USERGROUPDATABASE_H

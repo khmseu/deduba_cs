@@ -87,4 +87,4 @@
 #endif
 #endif
 
-#endif // PLATFORM_H
+#endif  // PLATFORM_H

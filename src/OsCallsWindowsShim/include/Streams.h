@@ -70,6 +70,6 @@ extern "C" DLL_EXPORT OsCalls::ValueT *win_list_streams(const wchar_t *path);
  */
 extern "C" DLL_EXPORT OsCalls::ValueT                       *
 win_read_stream(const wchar_t *path, const wchar_t *stream_name);
-} // namespace OsCallsWindows
+}  // namespace OsCallsWindows
 
-#endif // STREAMS_WINDOWS_H
+#endif  // STREAMS_WINDOWS_H

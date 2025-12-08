@@ -318,4 +318,4 @@ ValueT *canonicalize_file_name(const char *path) {
   return linux_canonicalize_file_name(path);
 };
 }
-} // namespace OsCalls
+}  // namespace OsCalls

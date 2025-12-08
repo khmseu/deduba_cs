@@ -189,4 +189,4 @@ ValueT *getgrgid(int64_t gid) {
   return linux_getgrgid(gid);
 };
 }
-} // namespace OsCalls
+}  // namespace OsCalls

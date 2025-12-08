@@ -123,7 +123,7 @@ using namespace OsCalls;
  * @return false Always (no values to iterate).
  */
 static bool handle_error(ValueT *value) {
-  (void)value; // Suppress unused parameter warning
+  (void)value;  // Suppress unused parameter warning
   return false;
 }
 
@@ -188,11 +188,11 @@ static bool handle_FindFirstStreamW(ValueT *value) {
   auto data = new StreamObjectData();
 
   // Convert stream name to UTF-8
-  int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0,
-                                     nullptr, nullptr);
+  int nameSize = WideCharToMultiByte(
+      CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0, nullptr, nullptr);
   data->name = new char[nameSize];
-  WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, data->name, nameSize, nullptr,
-                      nullptr);
+  WideCharToMultiByte(
+      CP_UTF8, 0, streams->names[idx].c_str(), -1, data->name, nameSize, nullptr, nullptr);
   data->size = streams->sizes[idx].QuadPart;
   data->fieldIndex = 0;
 
@@ -202,12 +202,12 @@ static bool handle_FindFirstStreamW(ValueT *value) {
     switch (v->Handle.index) {
     case 0:
       v->Type = TypeT::IsString;
-      v->Name = "name"; // String literal has static storage duration
+      v->Name = "name";  // String literal has static storage duration
       v->String = sod->name;
       return true;
     case 1:
       v->Type = TypeT::IsNumber;
-      v->Name = "size"; // String literal has static storage duration
+      v->Name = "size";  // String literal has static storage duration
       v->Number = sod->size;
       return true;
     default:
@@ -222,7 +222,7 @@ static bool handle_FindFirstStreamW(ValueT *value) {
   streamObj->Type = TypeT::IsOk;
 
   value->Type = TypeT::IsComplex;
-  value->Name = "[]"; // Array element
+  value->Name = "[]";  // Array element
   value->Complex = streamObj;
 
   streams->currentIndex++;
@@ -232,7 +232,7 @@ static bool handle_FindFirstStreamW(ValueT *value) {
 extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   auto               streams = new StreamInfo{};
   auto               v = new ValueT();
-  static const char *errno_name = "errno"; // Stable static pointer
+  static const char *errno_name = "errno";  // Stable static pointer
 
   WIN32_FIND_STREAM_DATA findStreamData;
   HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
@@ -255,7 +255,9 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   size_t streamCount = 0;
   do {
     std::wstring streamName = findStreamData.cStreamName;
-    fwprintf(stderr, L"Found stream: %s, size: %lld\n", streamName.c_str(),
+    fwprintf(stderr,
+             L"Found stream: %s, size: %lld\n",
+             streamName.c_str(),
              findStreamData.StreamSize.QuadPart);
 
     // Skip the default ::$DATA stream (or optionally include it with a flag)
@@ -270,7 +272,9 @@ extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
   DWORD lastErr = GetLastError();
   FindClose(hFind);
 
-  fwprintf(stderr, L"GetLastError after enumeration: %lu (ERROR_HANDLE_EOF=%lu)\n", lastErr,
+  fwprintf(stderr,
+           L"GetLastError after enumeration: %lu (ERROR_HANDLE_EOF=%lu)\n",
+           lastErr,
            (DWORD)ERROR_HANDLE_EOF);
   fwprintf(stderr, L"streams->names.size(): %zu\n", streams->names.size());
 
@@ -314,7 +318,7 @@ struct StreamData {
  */
 static bool handle_ReadFile_Stream(ValueT *value) {
   auto               streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
-  static const char *content_name = "content"; // Stable static pointer
+  static const char *content_name = "content";  // Stable static pointer
   switch (value->Handle.index) {
   case 0:
     if (value->Type == TypeT::IsOk) {
@@ -325,7 +329,7 @@ static bool handle_ReadFile_Stream(ValueT *value) {
       memcpy(str, streamData->data.data(), dataSize);
       str[dataSize] = '\0';
       value->String = str;
-      value->Name = content_name; // Use stable static literal
+      value->Name = content_name;  // Use stable static literal
       value->Type = TypeT::IsString;
       return true;
     }
@@ -341,7 +345,7 @@ extern "C" DLL_EXPORT ValueT *
 windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   auto               streamData = new StreamData{};
   auto               v = new ValueT();
-  static const char *errno_name = "errno"; // Stable static pointer
+  static const char *errno_name = "errno";  // Stable static pointer
 
   // Construct full stream path: path:streamname:\c DATA
   std::wstring fullPath = path;
@@ -352,8 +356,13 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   }
 
   // Open the stream
-  HANDLE hFile = CreateFileW(fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE hFile = CreateFileW(fullPath.c_str(),
+                             GENERIC_READ,
+                             FILE_SHARE_READ,
+                             nullptr,
+                             OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL,
+                             nullptr);
 
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -379,7 +388,7 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   }
 
   // Read stream content (limit to reasonable size)
-  const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024; // 10 MB limit
+  const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024;  // 10 MB limit
   DWORD       bytesToRead =
       static_cast<DWORD>(std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
 
@@ -397,7 +406,7 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
   }
 
   CloseHandle(hFile);
-  streamData->data.resize(bytesRead); // Adjust to actual bytes read
+  streamData->data.resize(bytesRead);  // Adjust to actual bytes read
 
   CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
   v->Type = TypeT::IsOk;
@@ -408,4 +417,4 @@ windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
 extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
   return windows_ReadFile_Stream(path, stream_name);
 }
-} // namespace OsCallsWindows
+}  // namespace OsCallsWindows

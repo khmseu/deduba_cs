@@ -44,4 +44,4 @@ CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, vo
   value->Complex = nullptr;
   value->TimeSpec = {0, 0};
 };
-} // extern "C"
+}  // extern "C"

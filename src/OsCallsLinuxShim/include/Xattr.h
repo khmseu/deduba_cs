@@ -38,6 +38,6 @@ ValueT *linux_lgetxattr(const char *path, const char *name);
 }
 
 /** @} */
-} // namespace OsCalls
+}  // namespace OsCalls
 
-#endif // XATTR_H
+#endif  // XATTR_H

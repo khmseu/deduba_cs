@@ -149,7 +149,7 @@ using namespace OsCalls;
  * @return false to indicate no values to iterate.
  */
 static bool handle_error(ValueT *value) {
-  (void)value; // Unused parameter
+  (void)value;  // Unused parameter
   return false;
 }
 
@@ -160,8 +160,8 @@ struct WinFileInfo {
   FILETIME      creationTime;
   FILETIME      lastAccessTime;
   FILETIME      lastWriteTime;
-  LARGE_INTEGER fileIndex;          // File ID (inode equivalent)
-  DWORD         volumeSerialNumber; // Device equivalent
+  LARGE_INTEGER fileIndex;           // File ID (inode equivalent)
+  DWORD         volumeSerialNumber;  // Device equivalent
   DWORD         numberOfLinks;
   DWORD         reparseTag;
 };
@@ -181,8 +181,13 @@ struct WinFileInfo {
  * @return HANDLE   Valid handle on success, INVALID_HANDLE_VALUE on failure.
  */
 static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags, DWORD access = 0) {
-  return CreateFileW(path, access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | extraFlags, nullptr);
+  return CreateFileW(path,
+                     access,
+                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                     nullptr,
+                     OPEN_EXISTING,
+                     FILE_FLAG_BACKUP_SEMANTICS | extraFlags,
+                     nullptr);
 }
 
 /**
@@ -212,31 +217,31 @@ static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
   // File type bits (high nibble)
   if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
     if (reparseTag == IO_REPARSE_TAG_SYMLINK) {
-      mode |= 0120000; // S_IFLNK
+      mode |= 0120000;  // S_IFLNK
     } else if (reparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-      mode |= 0120000; // Junction treated as symlink
+      mode |= 0120000;  // Junction treated as symlink
     } else {
-      mode |= 0100000; // S_IFREG (other reparse points as regular)
+      mode |= 0100000;  // S_IFREG (other reparse points as regular)
     }
   } else if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
-    mode |= 0040000; // S_IFDIR
+    mode |= 0040000;  // S_IFDIR
   } else {
-    mode |= 0100000; // S_IFREG
+    mode |= 0100000;  // S_IFREG
   }
 
   // Permission bits (simplified - Windows doesn't have direct equivalents)
   // Owner: always read, write if not readonly, execute if directory or .exe
-  mode |= 0000400; // S_IRUSR
+  mode |= 0000400;  // S_IRUSR
   if (!(attrs & FILE_ATTRIBUTE_READONLY)) {
-    mode |= 0000200; // S_IWUSR
+    mode |= 0000200;  // S_IWUSR
   }
   if ((attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-    mode |= 0000100; // S_IXUSR for directories
+    mode |= 0000100;  // S_IXUSR for directories
   }
 
   // Group and other: inherit from owner (simplified)
-  mode |= (mode & 0000700) >> 3; // Group
-  mode |= (mode & 0000700) >> 6; // Other
+  mode |= (mode & 0000700) >> 3;  // Group
+  mode |= (mode & 0000700) >> 6;  // Other
 
   return mode;
 }
@@ -278,7 +283,8 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
   // DEBUG: Always output to stderr to verify this code path is executed
   fprintf(stderr,
           "[DEBUG filetime_to_timespec] QuadPart=%llu, seconds_since_1601=%llu, EPOCH_DIFF=%llu\n",
-          (unsigned long long)ull.QuadPart, (unsigned long long)seconds_since_1601,
+          (unsigned long long)ull.QuadPart,
+          (unsigned long long)seconds_since_1601,
           (unsigned long long)EPOCH_DIFF);
 
   // Handle timestamps before Unix epoch (1970) or zero/invalid timestamps
@@ -286,7 +292,7 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
   int64_t seconds;
   if (seconds_since_1601 < EPOCH_DIFF) {
     fprintf(stderr, "[DEBUG filetime_to_timespec] CLAMPING to 1 (pre-epoch detected)\n");
-    seconds = 1; // Clamp to Unix epoch+1 for pre-1970 or invalid timestamps (sentinel for testing)
+    seconds = 1;  // Clamp to Unix epoch+1 for pre-1970 or invalid timestamps (sentinel for testing)
   } else {
     seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
   }
@@ -323,7 +329,7 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
   // Error case - fall through to cleanup
   default:
     if (info)
-      delete info; // Null-safe cleanup
+      delete info;  // Null-safe cleanup
     return false;
   case 1:
     set_val(Number, "st_ino", info->fileIndex.QuadPart);
@@ -334,17 +340,17 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
     return true;
   }
   case 3:
-    set_val(Boolean, "S_ISBLK", false); // Windows doesn't have block devices
+    set_val(Boolean, "S_ISBLK", false);  // Windows doesn't have block devices
     return true;
   case 4:
     set_val(Boolean, "S_ISCHR",
-            false); // Windows doesn't expose char devices this way
+            false);  // Windows doesn't expose char devices this way
     return true;
   case 5:
     set_val(Boolean, "S_ISDIR", (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
     return true;
   case 6:
-    set_val(Boolean, "S_ISFIFO", false); // Windows doesn't have FIFOs
+    set_val(Boolean, "S_ISFIFO", false);  // Windows doesn't have FIFOs
     return true;
   case 7: {
     bool is_symlink = (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
@@ -363,34 +369,34 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
   }
   case 9:
     set_val(Boolean, "S_ISSOCK",
-            false); // Windows doesn't have Unix sockets as files
+            false);  // Windows doesn't have Unix sockets as files
     return true;
   case 10:
     set_val(Boolean, "S_TYPEISMQ",
-            false); // Message queues not exposed as files
+            false);  // Message queues not exposed as files
     return true;
   case 11:
-    set_val(Boolean, "S_TYPEISSEM", false); // Semaphores not exposed as files
+    set_val(Boolean, "S_TYPEISSEM", false);  // Semaphores not exposed as files
     return true;
   case 12:
     set_val(Boolean, "S_TYPEISSHM",
-            false); // Shared memory not exposed as files
+            false);  // Shared memory not exposed as files
     return true;
   case 13:
     set_val(Boolean, "S_TYPEISTMO",
-            false); // Typed memory objects not supported
+            false);  // Typed memory objects not supported
     return true;
   case 14:
     set_val(Number, "st_nlink", info->numberOfLinks);
     return true;
   case 15:
-    set_val(Number, "st_uid", 0); // Windows doesn't have Unix UIDs
+    set_val(Number, "st_uid", 0);  // Windows doesn't have Unix UIDs
     return true;
   case 16:
-    set_val(Number, "st_gid", 0); // Windows doesn't have Unix GIDs
+    set_val(Number, "st_gid", 0);  // Windows doesn't have Unix GIDs
     return true;
   case 17:
-    set_val(Number, "st_rdev", 0); // Device files not supported
+    set_val(Number, "st_rdev", 0);  // Device files not supported
     return true;
   case 18:
     set_val(Number, "st_size", info->fileSize.QuadPart);
@@ -407,11 +413,11 @@ static bool handle_GetFileInformationByHandle(ValueT *value) {
   }
   case 21: {
     OsCalls::TimeSpec64 ts = filetime_to_timespec(info->creationTime);
-    set_val(TimeSpec, "st_ctim", ts); // Using creation time as ctime
+    set_val(TimeSpec, "st_ctim", ts);  // Using creation time as ctime
     return true;
   }
   case 22:
-    set_val(Number, "st_blksize", 4096); // Default block size
+    set_val(Number, "st_blksize", 4096);  // Default block size
     return true;
   case 23: {
     // Calculate blocks (512-byte units)
@@ -436,7 +442,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     delete info;
     CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsError;
-    v->Name = errno_name; // Use static literal
+    v->Name = errno_name;  // Use static literal
     v->Number = err;
     return v;
   }
@@ -450,7 +456,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     CreateHandle(v, handle_error, nullptr, nullptr);
     delete info;
     v->Type = TypeT::IsError;
-    v->Name = errno_name; // Use static literal
+    v->Name = errno_name;  // Use static literal
     v->Number = err;
     return v;
   }
@@ -475,8 +481,14 @@ extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *
     // Query reparse point to get tag
     BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     DWORD bytesReturned;
-    if (DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer),
-                        &bytesReturned, nullptr)) {
+    if (DeviceIoControl(hFile,
+                        FSCTL_GET_REPARSE_POINT,
+                        nullptr,
+                        0,
+                        buffer,
+                        sizeof(buffer),
+                        &bytesReturned,
+                        nullptr)) {
       auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
       info->reparseTag = reparseData->ReparseTag;
     }
@@ -546,8 +558,14 @@ extern "C" DLL_EXPORT ValueT *windows_DeviceIoControl_GetReparsePoint(const wcha
   // Get reparse point data
   BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   DWORD bytesReturned;
-  if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer),
-                       &bytesReturned, nullptr)) {
+  if (!DeviceIoControl(hFile,
+                       FSCTL_GET_REPARSE_POINT,
+                       nullptr,
+                       0,
+                       buffer,
+                       sizeof(buffer),
+                       &bytesReturned,
+                       nullptr)) {
     DWORD err = GetLastError();
     CloseHandle(hFile);
     target = new wchar_t[1];
@@ -566,15 +584,19 @@ extern "C" DLL_EXPORT ValueT *windows_DeviceIoControl_GetReparsePoint(const wcha
     USHORT targetLength = reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
     USHORT targetOffset = reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
-    wcsncpy_s(target, targetLength + 1,
-              &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset], targetLength);
+    wcsncpy_s(target,
+              targetLength + 1,
+              &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset],
+              targetLength);
     target[targetLength] = L'\0';
   } else if (reparseData->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
     USHORT targetLength = reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
     USHORT targetOffset = reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
     target = new wchar_t[targetLength + 1];
-    wcsncpy_s(target, targetLength + 1,
-              &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset], targetLength);
+    wcsncpy_s(target,
+              targetLength + 1,
+              &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset],
+              targetLength);
     target[targetLength] = L'\0';
   } else {
     // Unsupported reparse point type
@@ -618,7 +640,7 @@ static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
         auto utf8 = new char[size];
         WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
         value->String = utf8;
-        value->Name = static_name; // Use stable static literal
+        value->Name = static_name;  // Use stable static literal
         value->Type = TypeT::IsString;
         return true;
       }
@@ -642,7 +664,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
   if (hFile == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
     v->Type = TypeT::IsError;
-    v->Name = errno_name; // Use static literal
+    v->Name = errno_name;  // Use static literal
     v->Number = err;
     return v;
   }
@@ -655,14 +677,14 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     DWORD err = GetLastError();
     CloseHandle(hFile);
     v->Type = TypeT::IsError;
-    v->Name = errno_name; // Use static literal
+    v->Name = errno_name;  // Use static literal
     v->Number = err;
     return v;
   }
 
   canonical = new wchar_t[bufferSize];
-  DWORD result = GetFinalPathNameByHandleW(hFile, canonical, bufferSize,
-                                           FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+  DWORD result = GetFinalPathNameByHandleW(
+      hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
   CloseHandle(hFile);
 
   if (result == 0 || result >= bufferSize) {
@@ -670,7 +692,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     delete[] canonical;
     CreateHandle(v, handle_error, nullptr, nullptr);
     v->Type = TypeT::IsError;
-    v->Name = errno_name; // Use static literal
+    v->Name = errno_name;  // Use static literal
     v->Number = err;
     return v;
   }
@@ -683,7 +705,7 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
     // If it's a UNC path (\\?\UNC\), convert back to \\server\share format
     if (wcsncmp(finalPath, L"UNC\\", 4) == 0) {
       finalPath[0] = L'\\';
-      finalPath = finalPath + 2; // Skip "UN", keep "C\" which becomes "\\"
+      finalPath = finalPath + 2;  // Skip "UN", keep "C\" which becomes "\\"
     }
   }
 
@@ -702,4 +724,4 @@ extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *p
 extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
   return windows_GetFinalPathNameByHandleW(path);
 }
-} // namespace OsCallsWindows
+}  // namespace OsCallsWindows

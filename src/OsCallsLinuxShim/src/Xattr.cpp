@@ -11,9 +11,9 @@ namespace OsCalls {
  * @brief Context structure for llistxattr iteration
  */
 struct XattrListContext {
-  char *buffer;  // Original buffer start
-  char *current; // Current position
-  char *end;     // End of buffer (buffer + size)
+  char *buffer;   // Original buffer start
+  char *current;  // Current position
+  char *end;      // End of buffer (buffer + size)
 };
 
 /**
@@ -167,13 +167,13 @@ ValueT *linux_lgetxattr(const char *path, const char *name) {
   char *buffer = nullptr;
   if (buflen > 0) {
     // Allocate buffer and get the attribute value
-    buffer = static_cast<char *>(malloc(buflen + 1)); // +1 for null terminator
+    buffer = static_cast<char *>(malloc(buflen + 1));  // +1 for null terminator
     errno = 0;
     buflen = ::lgetxattr(path, name, buffer, buflen);
     en = errno;
 
     if (buflen >= 0)
-      buffer[buflen] = '\0'; // Null-terminate the string
+      buffer[buflen] = '\0';  // Null-terminate the string
   }
 
   auto v = new ValueT();
@@ -192,4 +192,4 @@ ValueT *lgetxattr(const char *path, const char *name) {
   return linux_lgetxattr(path, name);
 };
 }
-} // namespace OsCalls
+}  // namespace OsCalls
