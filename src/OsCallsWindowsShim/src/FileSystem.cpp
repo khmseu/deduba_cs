@@ -89,6 +89,9 @@
 #if 0
 /* Local WIN32 macros moved to Platform.h to keep OS-specific defines centralized. */
 #endif
+#include <sddl.h>
+#include <sstream>
+#include <string>
 #include <windows.h>
 #include <winioctl.h>
 
@@ -138,6 +141,125 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 namespace OsCallsWindows {
 using namespace OsCalls;
+
+// Convert SID_NAME_USE to a short keyword similar to S_TYPEIS* macros
+static const char *SidNameUseToKeyword(SID_NAME_USE use) {
+  switch (use) {
+  case SidTypeUser:
+    return "user";
+  case SidTypeGroup:
+    return "group";
+  case SidTypeDomain:
+    return "domain";
+  case SidTypeAlias:
+    return "alias";
+  case SidTypeWellKnownGroup:
+    return "wellknown";
+  case SidTypeDeletedAccount:
+    return "deleted";
+  case SidTypeInvalid:
+    return "invalid";
+  case SidTypeUnknown:
+    return "unknown";
+  case SidTypeComputer:
+    return "computer";
+  case SidTypeLabel:
+    return "label";
+  default:
+    return "unknown";
+  }
+}
+
+// Convert wide string (UTF-16) to UTF-8 std::string
+static std::string WideToUtf8(const std::wstring &w) {
+  if (w.empty())
+    return std::string();
+  int size_needed = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), NULL, 0, NULL, NULL);
+  if (size_needed <= 0)
+    return std::string();
+  std::string result(size_needed, 0);
+  WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), &result[0], size_needed, NULL, NULL);
+  return result;
+}
+
+// Resolve a PSID to a human-readable string: "<kind>: DOMAIN\\Name" or fallback to SID string
+static std::string ResolveAccountNameFromSid(PSID sid) {
+  if (!sid)
+    return std::string();
+
+  DWORD        nameSize = 0;
+  DWORD        domainSize = 0;
+  SID_NAME_USE use = SidTypeUnknown;
+
+  // First call to get required buffer sizes
+  LookupAccountSidW(NULL, sid, NULL, &nameSize, NULL, &domainSize, &use);
+  DWORD err = GetLastError();
+  if (err != ERROR_INSUFFICIENT_BUFFER && err != ERROR_NONE_MAPPED) {
+    // Fallback: return SID string
+    LPWSTR sidStr = NULL;
+    if (ConvertSidToStringSidW(sid, &sidStr)) {
+      std::wstring ws(sidStr);
+      LocalFree(sidStr);
+      return WideToUtf8(ws);
+    }
+    return std::string();
+  }
+
+  std::wstring name;
+  std::wstring domain;
+  if (nameSize > 0)
+    name.resize(nameSize);
+  if (domainSize > 0)
+    domain.resize(domainSize);
+
+  if (LookupAccountSidW(NULL, sid, name.data(), &nameSize, domain.data(), &domainSize, &use)) {
+    // Trim possible extra nulls from sizes returned
+    name.resize(nameSize);
+    domain.resize(domainSize);
+    // Remove trailing null if present
+    if (!name.empty() && name.back() == L'\0')
+      name.pop_back();
+    if (!domain.empty() && domain.back() == L'\0')
+      domain.pop_back();
+
+    std::string        kind = SidNameUseToKeyword(use);
+    std::string        dn = WideToUtf8(domain);
+    std::string        nn = WideToUtf8(name);
+    std::ostringstream out;
+    out << kind << ": ";
+    if (!dn.empty())
+      out << dn << "\\";
+    out << nn;
+    return out.str();
+  }
+
+  // Fallback: return SID string
+  LPWSTR sidStr = NULL;
+  if (ConvertSidToStringSidW(sid, &sidStr)) {
+    std::wstring ws(sidStr);
+    LocalFree(sidStr);
+    return WideToUtf8(ws);
+  }
+
+  return std::string();
+}
+
+// Simple helper: construct a SID from NT authority + single RID and resolve it.
+// Note: mapping numeric uid/gid to Windows RIDs is not guaranteed; caller should
+// only use this for best-effort resolution.
+static std::string ResolveAccountNameFromRid(uint32_t rid) {
+  SID_IDENTIFIER_AUTHORITY ntAuth = SECURITY_NT_AUTHORITY;
+  PSID                     pSid = NULL;
+  if (!AllocateAndInitializeSid(&ntAuth, 1, rid, 0, 0, 0, 0, 0, 0, 0, &pSid)) {
+    return std::to_string(rid);
+  }
+
+  std::string result = ResolveAccountNameFromSid(pSid);
+  FreeSid(pSid);
+  if (result.empty())
+    return std::to_string(rid);
+  return result;
+}
 /**
  * @brief No-op handler for error returns.
  *
@@ -305,7 +427,68 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
 
   return ts;
 }
+/**
+ * @brief Resolve a numeric RID (Relative ID) to an account name via LookupAccountSid.
+ *
+ * Converts a numeric RID to a Windows account name using the LookupAccountSid
+ * Win32 API. Similar to how we use S_ISDIR, S_ISREG macros on POSIX, this
+ * function yields SID_NAME_USE as textual flags (user, group, alias, etc).
+ *
+ * Only well-known RIDs (like SYSTEM=18) reliably map to SIDs without a domain
+ * context. Other RIDs return numeric fallback.
+ *
+ * @param rid Relative ID (typically st_uid or st_gid value).
+ * @return Textual account name, or numeric string on failure.
+ */
+static std::string LookupAccountName(uint32_t rid) {
+  // Only well-known RIDs are reliably available
+  if (rid == 0)
+    return "system";
+  if (rid == 18)
+    return "system";
 
+  // For other RIDs, return numeric ID as fallback
+  return std::to_string(rid);
+}
+
+/**
+ * @brief Convert SID_NAME_USE enum to a string flag (similar to S_ISDIR, etc).
+ *
+ * Maps Windows SID_NAME_USE values to human-readable flags like we do for
+ * POSIX file type macros (S_ISDIR → "dir", S_ISREG → "reg").
+ *
+ * Example: SidTypeUser → "user", SidTypeGroup → "group", SidTypeAlias → "alias"
+ *
+ * @param use SID_NAME_USE enum value from LookupAccountSid.
+ * @return Static string representation (user, group, alias, wellknowngroup,
+ * etc).
+ */
+static const char *sid_use_to_string(SID_NAME_USE use) {
+  switch (use) {
+  case SidTypeUser:
+    return "user";
+  case SidTypeGroup:
+    return "group";
+  case SidTypeDomain:
+    return "domain";
+  case SidTypeAlias:
+    return "alias";
+  case SidTypeWellKnownGroup:
+    return "wellknowngroup";
+  case SidTypeDeletedAccount:
+    return "deleted";
+  case SidTypeInvalid:
+    return "invalid";
+  case SidTypeUnknown:
+    return "unknown";
+  case SidTypeComputer:
+    return "computer";
+  case SidTypeLabel:
+    return "label";
+  default:
+    return "unknown";
+  }
+}
 /**
  * @brief Handler for windows_GetFileInformationByHandle results - iterates through file metadata
  * fields.
