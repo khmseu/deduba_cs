@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using ArchiveStore;
 using OsCallsCommon;
@@ -45,8 +44,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
     public InodeData CreateMinimalInodeDataFromPath(string path)
     {
-        JsonNode statBuf = FileSystem.LStat(path);
-        JsonObject? statObj = statBuf as JsonObject;
+        var statBuf = FileSystem.LStat(path);
+        var statObj = statBuf as JsonObject;
 
         // Determine textual flags (reg/dir/lnk etc.) from S_IS* or S_TYPEIS* booleans
         var flags = new HashSet<string>();
@@ -68,20 +67,20 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
         return new InodeData
         {
-            Device = (Int128)(statObj?["st_dev"]?.GetValue<long>() ?? 0),
-            FileIndex = (Int128)(statObj?["st_ino"]?.GetValue<long>() ?? 0),
+            Device = statObj?["st_dev"]?.GetValue<long>() ?? 0,
+            FileIndex = statObj?["st_ino"]?.GetValue<long>() ?? 0,
             Mode = statObj?["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statObj?["st_nlink"]?.GetValue<long>() ?? 0,
             Uid = statObj?["st_uid"]?.GetValue<long>() ?? 0,
             Gid = statObj?["st_gid"]?.GetValue<long>() ?? 0,
-            RDev = (Int128)(statObj?["st_rdev"]?.GetValue<long>() ?? 0),
+            RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
             Size = statObj?["st_size"]?.GetValue<long>() ?? 0,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
             Acl = [],
             Xattr = [],
-            Hashes = [],
+            Hashes = []
         };
     }
 
@@ -105,7 +104,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
         // Uses the native Windows shim (FileSystem) to obtain stat-like fields
         // and Security to obtain an SDDL string when available. Errors are
         // mapped to OsException to preserve test expectations.
-        JsonObject? statObj = statBuf as JsonObject;
+        var statObj = statBuf as JsonObject;
 
         // Determine textual flags (reg/dir/lnk etc.) from S_IS* or S_TYPEIS* booleans
         var flags = new HashSet<string>();
@@ -134,8 +133,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
         var inodeData = new InodeData
         {
-            Device = (Int128)(statObj?["st_dev"]?.GetValue<long>() ?? 0),
-            FileIndex = (Int128)(statObj?["st_ino"]?.GetValue<long>() ?? 0),
+            Device = statObj?["st_dev"]?.GetValue<long>() ?? 0,
+            FileIndex = statObj?["st_ino"]?.GetValue<long>() ?? 0,
             Mode = statObj?["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statObj?["st_nlink"]?.GetValue<long>() ?? 0,
@@ -143,10 +142,10 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             UserName = userName,
             Gid = groupId,
             GroupName = groupName,
-            RDev = (Int128)(statObj?["st_rdev"]?.GetValue<long>() ?? 0),
+            RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
+            CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0
         };
 
         // Try to capture security descriptor (SDDL) and save via archiveStore
@@ -208,7 +207,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    ),
+                    )
                 ];
             }
             catch (Exception ex)
@@ -222,7 +221,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     }
 
     /// <summary>
-    ///     Completes an existing <see cref="InodeData" /> instance with security descriptors and content hashes for the specified path.
+    ///     Completes an existing <see cref="InodeData" /> instance with security descriptors and content hashes for the
+    ///     specified path.
     ///     Uses <paramref name="archiveStore" /> to persist auxiliary data streams.
     ///     Resolves user and group names (best-effort on Windows).
     /// </summary>
@@ -303,7 +303,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    ),
+                    )
                 ];
             }
             catch (Exception ex)
@@ -329,7 +329,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
         {
             return
             [
-                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal),
+                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)
             ];
         }
         catch (UnauthorizedAccessException ex)

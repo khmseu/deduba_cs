@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using ArchiveStore;
 using OsCallsCommon;
@@ -44,10 +43,9 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
     public InodeData CreateMinimalInodeDataFromPath(string path)
     {
-        JsonNode statBuf = FileSystem.LStat(path);
+        var statBuf = FileSystem.LStat(path);
         var flags = new HashSet<string>();
         if (statBuf is JsonObject statObj)
-        {
             foreach (var kvp in statObj)
             {
                 var key = kvp.Key;
@@ -62,24 +60,23 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                     : key[4..].ToLowerInvariant();
                 flags.Add(flagName);
             }
-        }
 
         return new InodeData
         {
-            Device = (Int128)(statBuf["st_dev"]?.GetValue<long>() ?? 0),
-            FileIndex = (Int128)(statBuf["st_ino"]?.GetValue<long>() ?? 0),
+            Device = statBuf["st_dev"]?.GetValue<long>() ?? 0,
+            FileIndex = statBuf["st_ino"]?.GetValue<long>() ?? 0,
             Mode = statBuf["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statBuf["st_nlink"]?.GetValue<long>() ?? 0,
             Uid = statBuf["st_uid"]?.GetValue<long>() ?? 0,
             Gid = statBuf["st_gid"]?.GetValue<long>() ?? 0,
-            RDev = (Int128)(statBuf["st_rdev"]?.GetValue<long>() ?? 0),
+            RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = statBuf["st_size"]?.GetValue<long>() ?? 0,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
             Acl = [],
             Xattr = [],
-            Hashes = [],
+            Hashes = []
         };
     }
 
@@ -131,8 +128,8 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         // Create base InodeData
         var inodeData = new InodeData
         {
-            Device = (Int128)(statBuf["st_dev"]?.GetValue<long>() ?? 0),
-            FileIndex = (Int128)(statBuf["st_ino"]?.GetValue<long>() ?? 0),
+            Device = statBuf["st_dev"]?.GetValue<long>() ?? 0,
+            FileIndex = statBuf["st_ino"]?.GetValue<long>() ?? 0,
             Mode = statBuf["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statBuf["st_nlink"]?.GetValue<long>() ?? 0,
@@ -140,10 +137,10 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             UserName = userName,
             Gid = groupId,
             GroupName = groupName,
-            RDev = (Int128)(statBuf["st_rdev"]?.GetValue<long>() ?? 0),
+            RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
+            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0
         };
 
         // Read ACLs
@@ -165,7 +162,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             aclBytes.Length,
                             $"{path} $acl",
                             _ => { }
-                        ),
+                        )
                     ];
                 }
             }
@@ -286,7 +283,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    ),
+                    )
                 ];
             }
             catch (Exception ex)
@@ -306,7 +303,8 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     }
 
     /// <summary>
-    ///     Completes an existing <see cref="InodeData" /> instance with ACLs, xattrs, and content hashes for the specified path.
+    ///     Completes an existing <see cref="InodeData" /> instance with ACLs, xattrs, and content hashes for the specified
+    ///     path.
     ///     Uses <paramref name="archiveStore" /> to persist auxiliary data streams.
     ///     Resolves user and group names based on UID/GID.
     /// </summary>
@@ -347,7 +345,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             aclBytes.Length,
                             $"{path} $acl",
                             _ => { }
-                        ),
+                        )
                     ];
                 }
             }
@@ -468,7 +466,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    ),
+                    )
                 ];
             }
             catch (Exception ex)
@@ -500,7 +498,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         {
             return
             [
-                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal),
+                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)
             ];
         }
         catch (UnauthorizedAccessException ex)

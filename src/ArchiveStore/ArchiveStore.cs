@@ -231,7 +231,9 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch { }
+                catch
+                {
+                }
 
                 return hash;
             }
@@ -240,7 +242,9 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch { }
+            catch
+            {
+            }
 
             if (_config.Verbose)
                 _log.Invoke(hash);

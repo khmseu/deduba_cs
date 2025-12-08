@@ -50,7 +50,8 @@ public interface IHighLevelOsApi
     InodeData CreateInodeDataFromPath(string path, JsonNode statBuf, IArchiveStore archiveStore);
 
     /// <summary>
-    ///     Completes an existing <see cref="InodeData" /> instance with ACLs, xattrs, and content hashes for the specified path.
+    ///     Completes an existing <see cref="InodeData" /> instance with ACLs, xattrs, and content hashes for the specified
+    ///     path.
     ///     Uses <paramref name="archiveStore" /> to persist auxiliary data streams.
     ///     Resolves user and group names based on UID/GID.
     /// </summary>

@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using ArchiveStore;
 using OsCallsCommon;
 using UtilitiesLibrary;
@@ -120,7 +119,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
                 };
         }
         catch (Exception ex)
@@ -180,7 +179,7 @@ public class DedubaClass
                     [
                         .. argv.Select(_osApi!.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                            .Select(path => path != null ? Path.GetFullPath(path) : "")
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -232,7 +231,7 @@ public class DedubaClass
                     }
 
                     // Extract device ID from Device field
-                    var deviceId = (minimalData?.Device ?? 0);
+                    var deviceId = minimalData?.Device ?? 0;
 
                     Devices.TryAdd(deviceId, 0);
                     Devices[deviceId]++;
@@ -526,8 +525,8 @@ public class DedubaClass
                     );
                 }
 
-                var stDev = (minimalData?.Device ?? 0);
-                var stIno = (minimalData?.FileIndex ?? 0);
+                var stDev = minimalData?.Device ?? 0;
+                var stIno = minimalData?.FileIndex ?? 0;
                 if (
                     Devices.ContainsKey(stDev)
                     && _dataPath != null
@@ -555,7 +554,9 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     var flags = minimalData?.Flags ?? new HashSet<string>();
