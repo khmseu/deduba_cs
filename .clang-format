@@ -71,7 +71,6 @@ IncludeBlocks: Preserve
 
 # Penalties for line breaking
 PenaltyReturnTypeOnItsOwnLine: 0
-PenaltyBreakBeforeFunctionCallParameter: 100
 PenaltyBreakAssignment: 10
 PenaltyBreakComment: 100
 PenaltyExcessCharacter: 1000
