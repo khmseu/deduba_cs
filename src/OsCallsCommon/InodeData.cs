@@ -11,11 +11,18 @@ namespace OsCallsCommon;
 public sealed class InodeData
 {
     /// <summary>
-    ///     Platform-specific file identifier (device/inode or equivalent).
-    ///     Serialized as a compact JSON element to preserve platform structure.
+    ///     Device identifier (st_dev or volume serial number).
+    ///     128-bit to accommodate future filesystems and platform variations.
+    /// </summary>
+    [JsonPropertyName("dv")]
+    public Int128 Device { get; init; }
+
+    /// <summary>
+    ///     File identifier on the device (st_ino or file index).
+    ///     128-bit to accommodate future filesystems and platform variations.
     /// </summary>
     [JsonPropertyName("fi")]
-    public JsonElement? FileId { get; init; }
+    public Int128 FileIndex { get; init; }
 
     /// <summary>File mode bits (POSIX st_mode or equivalent).</summary>
     [JsonPropertyName("md")]
@@ -45,9 +52,9 @@ public sealed class InodeData
     [JsonPropertyName("gn")]
     public string GroupName { get; set; } = string.Empty;
 
-    /// <summary>Raw device id for character/block devices.</summary>
+    /// <summary>Raw device id for character/block devices (128-bit).</summary>
     [JsonPropertyName("rd")]
-    public long RDev { get; init; }
+    public Int128 RDev { get; init; }
 
     /// <summary>Size of the file in bytes.</summary>
     [JsonPropertyName("sz")]

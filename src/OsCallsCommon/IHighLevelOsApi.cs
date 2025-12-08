@@ -58,7 +58,7 @@ public interface IHighLevelOsApi
     /// <param name="data">Reference to an existing <see cref="InodeData" /> to complete.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Completed <see cref="InodeData" /> instance.</returns>
-    InodeData CompleteInodeDataFromPathj(
+    InodeData CompleteInodeDataFromPath(
         string path,
         ref InodeData data,
         IArchiveStore archiveStore

@@ -66,21 +66,14 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
 
         return new InodeData
         {
-            FileId = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(
-                    new List<object?>
-                    {
-                        statBuf["st_dev"]?.GetValue<long>() ?? 0,
-                        statBuf["st_ino"]?.GetValue<long>() ?? 0,
-                    }
-                )
-            ),
+            Device = (Int128)(statBuf["st_dev"]?.GetValue<long>() ?? 0),
+            FileIndex = (Int128)(statBuf["st_ino"]?.GetValue<long>() ?? 0),
             Mode = statBuf["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statBuf["st_nlink"]?.GetValue<long>() ?? 0,
             Uid = statBuf["st_uid"]?.GetValue<long>() ?? 0,
             Gid = statBuf["st_gid"]?.GetValue<long>() ?? 0,
-            RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
+            RDev = (Int128)(statBuf["st_rdev"]?.GetValue<long>() ?? 0),
             Size = statBuf["st_size"]?.GetValue<long>() ?? 0,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
@@ -138,15 +131,8 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         // Create base InodeData
         var inodeData = new InodeData
         {
-            FileId = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(
-                    new List<object?>
-                    {
-                        statBuf["st_dev"]?.GetValue<long>() ?? 0,
-                        statBuf["st_ino"]?.GetValue<long>() ?? 0,
-                    }
-                )
-            ),
+            Device = (Int128)(statBuf["st_dev"]?.GetValue<long>() ?? 0),
+            FileIndex = (Int128)(statBuf["st_ino"]?.GetValue<long>() ?? 0),
             Mode = statBuf["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statBuf["st_nlink"]?.GetValue<long>() ?? 0,
@@ -154,7 +140,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             UserName = userName,
             Gid = groupId,
             GroupName = groupName,
-            RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
+            RDev = (Int128)(statBuf["st_rdev"]?.GetValue<long>() ?? 0),
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
@@ -328,7 +314,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     /// <param name="data">Reference to an existing <see cref="InodeData" /> to complete.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Completed <see cref="InodeData" /> instance.</returns>
-    public InodeData CompleteInodeDataFromPathj(
+    public InodeData CompleteInodeDataFromPath(
         string path,
         ref InodeData data,
         IArchiveStore archiveStore

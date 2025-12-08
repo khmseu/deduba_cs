@@ -32,7 +32,7 @@ public class DedubaClass
     private static long _ds;
     private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
-    private static readonly Dictionary<long, int> Devices = [];
+    private static readonly Dictionary<Int128, int> Devices = [];
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
@@ -216,20 +216,26 @@ public class DedubaClass
 
                 foreach (var root in argv)
                 {
-                    JsonNode? st;
+                    InodeData? minimalData;
                     try
                     {
-                        st = _osApi!.LStat(root);
+                        minimalData = _osApi!.CreateMinimalInodeDataFromPath(root);
                     }
                     catch (Exception ex)
                     {
-                        Utilities.Error(root, nameof(IHighLevelOsApi.LStat), ex);
+                        Utilities.Error(
+                            root,
+                            nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
+                            ex
+                        );
                         throw;
                     }
 
-                    var i = st["st_dev"]?.GetValue<long>() ?? 0;
-                    Devices.TryAdd(i, 0);
-                    Devices[i]++;
+                    // Extract device ID from Device field
+                    var deviceId = (minimalData?.Device ?? 0);
+
+                    Devices.TryAdd(deviceId, 0);
+                    Devices[deviceId]++;
                 }
 
                 Utilities.ConWrite(Utilities.Dumper(Utilities.D(Devices)));
@@ -499,7 +505,7 @@ public class DedubaClass
                 var file = Path.GetFileName(entry);
                 var dir = Path.Combine(volume ?? string.Empty, directories ?? string.Empty);
                 var name = file;
-                JsonNode? statBuf = null;
+                InodeData? minimalData = null;
 
                 // $dir is the current directory name,
                 // $name is the current filename within that directory
@@ -507,17 +513,21 @@ public class DedubaClass
                 var start = DateTime.Now;
                 try
                 {
-                    statBuf = _osApi!.LStat(entry) ?? throw new Win32Exception("null statBuf");
-                    // var sb = statBuf.Value;
-                    // Utilities.ConWrite(
-                    //     $"{sb.StDev} {sb.StIno} {sb.StIsDir} {sb.StIsLnk} {sb.StIsReg} {sb.StUid} {sb.StGid} {sb.StMode} {sb.StNlink} {sb.StRdev} {sb.StSize} {sb.StBlocks} {sb.StBlksize} {sb.StAtim} {sb.StCtim} {sb.StMtim} {sb.GetHashCode()}");
+                    minimalData =
+                        _osApi!.CreateMinimalInodeDataFromPath(entry)
+                        ?? throw new Win32Exception("null inodeData");
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Error(entry, nameof(IHighLevelOsApi.LStat), ex);
+                    Utilities.Error(
+                        entry,
+                        nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
+                        ex
+                    );
                 }
 
-                var stDev = statBuf?["st_dev"]?.GetValue<long>() ?? 0;
+                var stDev = (minimalData?.Device ?? 0);
+                var stIno = (minimalData?.FileIndex ?? 0);
                 if (
                     Devices.ContainsKey(stDev)
                     && _dataPath != null
@@ -537,10 +547,7 @@ public class DedubaClass
                     // # 10 ctime    inode change time in seconds since the epoch (*)
                     // # 11 blksize  preferred I/O size in bytes for interacting with the file (may vary from file to file)
                     // # 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
-                    var fsfid = Sdpack(
-                        new List<object?> { stDev, statBuf?["st_ino"]?.GetValue<long>() ?? 0 },
-                        "fsfid"
-                    );
+                    var fsfid = Sdpack(new List<object?> { stDev, stIno }, "fsfid");
                     // Debug: record whether we've already seen this fsfid in this run
                     try
                     {
@@ -551,27 +558,9 @@ public class DedubaClass
                     catch { }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
-                    // Always compute the file-type flags from statBuf so subsequent code
-                    // can consult them without directly accessing statBuf S_IS* fields.
-                    var flags = new HashSet<string>();
-                    if (statBuf is JsonObject statObj)
-                        foreach (var kvp in statObj)
-                        {
-                            var key = kvp.Key;
-                            // Match S_IS* or S_TYPEIS* boolean fields
-                            if (key.StartsWith("S_IS") || key.StartsWith("S_TYPEIS"))
-                                if (kvp.Value?.GetValue<bool>() ?? false)
-                                {
-                                    // Transform flag name: remove prefix and convert to lowercase
-                                    var flagName = key.StartsWith("S_TYPEIS")
-                                        ? key[8..].ToLowerInvariant()
-                                        : key[4..].ToLowerInvariant();
-                                    flags.Add(flagName);
-                                }
-                        }
-
+                    var flags = minimalData?.Flags ?? new HashSet<string>();
                     string report;
-                    var fileSize = statBuf?["st_size"]?.GetValue<long>() ?? 0;
+                    var fileSize = minimalData?.Size ?? 0;
                     if (old)
                     {
                         report = $"[OLD: {fileSize:d} -> duplicate]";
@@ -610,20 +599,33 @@ public class DedubaClass
                         InodeData inodeData;
                         try
                         {
-                            inodeData = _osApi!.CreateInodeDataFromPath(
+                            if (minimalData is null)
+                            {
+                                Utilities.Error(
+                                    entry,
+                                    nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
+                                    new InvalidOperationException("null inodeData")
+                                );
+                                continue;
+                            }
+
+                            inodeData = minimalData;
+                            inodeData = _osApi!.CompleteInodeDataFromPath(
                                 entry,
-                                statBuf!,
+                                ref inodeData,
                                 _archiveStore!
                             );
+                            flags = inodeData.Flags;
+                            fileSize = inodeData.Size;
                         }
                         catch (OsException ex)
                         {
-                            Utilities.Error(entry, "CreateInodeDataFromPath", ex);
+                            Utilities.Error(entry, "CompleteInodeDataFromPath", ex);
                             continue;
                         }
                         catch (Exception ex)
                         {
-                            Utilities.Error(entry, "CreateInodeDataFromPath", ex);
+                            Utilities.Error(entry, "CompleteInodeDataFromPath", ex);
                             continue;
                         }
 

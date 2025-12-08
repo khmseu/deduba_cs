@@ -9,6 +9,7 @@ die() {
 # Track the last command for helpful diagnostics on failure.
 last_cmd=""
 trap 'last_cmd="$BASH_COMMAND"' DEBUG
+# shellcheck disable=SC2154
 trap 'rc=$?; if [ $rc -ne 0 ]; then echo "[package] ERROR: Command \"$last_cmd\" failed with exit code $rc (line ${BASH_LINENO[0]})" >&2; fi' EXIT
 
 # Ensure dotnet is available before doing any work (it's required for all actions)

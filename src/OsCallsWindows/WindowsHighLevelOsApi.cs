@@ -68,21 +68,14 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
         return new InodeData
         {
-            FileId = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(
-                    new List<object?>
-                    {
-                        statObj?["st_dev"]?.GetValue<long>() ?? 0,
-                        statObj?["st_ino"]?.GetValue<long>() ?? 0,
-                    }
-                )
-            ),
+            Device = (Int128)(statObj?["st_dev"]?.GetValue<long>() ?? 0),
+            FileIndex = (Int128)(statObj?["st_ino"]?.GetValue<long>() ?? 0),
             Mode = statObj?["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statObj?["st_nlink"]?.GetValue<long>() ?? 0,
             Uid = statObj?["st_uid"]?.GetValue<long>() ?? 0,
             Gid = statObj?["st_gid"]?.GetValue<long>() ?? 0,
-            RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
+            RDev = (Int128)(statObj?["st_rdev"]?.GetValue<long>() ?? 0),
             Size = statObj?["st_size"]?.GetValue<long>() ?? 0,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
@@ -141,15 +134,8 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
 
         var inodeData = new InodeData
         {
-            FileId = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(
-                    new List<object?>
-                    {
-                        statObj?["st_dev"]?.GetValue<long>() ?? 0,
-                        statObj?["st_ino"]?.GetValue<long>() ?? 0,
-                    }
-                )
-            ),
+            Device = (Int128)(statObj?["st_dev"]?.GetValue<long>() ?? 0),
+            FileIndex = (Int128)(statObj?["st_ino"]?.GetValue<long>() ?? 0),
             Mode = statObj?["st_mode"]?.GetValue<long>() ?? 0,
             Flags = flags,
             NLink = statObj?["st_nlink"]?.GetValue<long>() ?? 0,
@@ -157,7 +143,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             UserName = userName,
             Gid = groupId,
             GroupName = groupName,
-            RDev = statObj?["st_rdev"]?.GetValue<long>() ?? 0,
+            RDev = (Int128)(statObj?["st_rdev"]?.GetValue<long>() ?? 0),
             Size = fileSize,
             MTime = statObj?["st_mtim"]?.GetValue<double>() ?? 0,
             CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
@@ -244,7 +230,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     /// <param name="data">Reference to an existing <see cref="InodeData" /> to complete.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Completed <see cref="InodeData" /> instance.</returns>
-    public InodeData CompleteInodeDataFromPathj(
+    public InodeData CompleteInodeDataFromPath(
         string path,
         ref InodeData data,
         IArchiveStore archiveStore
@@ -330,6 +316,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
         return data;
     }
 
+    /// <summary>
     ///     List the directory entries for <paramref name="path" /> ordered by
     ///     ordinal string comparison. Wraps <see cref="System.IO.Directory.GetFileSystemEntries(System.String)" />
     ///     and maps system exceptions to <see cref="OsException" />.
