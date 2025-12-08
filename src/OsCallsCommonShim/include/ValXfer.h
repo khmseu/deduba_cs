@@ -30,8 +30,8 @@ struct ValueT;
  * we define our own struct with explicit int64_t fields.
  */
 struct TimeSpec64 {
-  int64_t tv_sec;   ///< Seconds since epoch
-  int64_t tv_nsec;  ///< Nanoseconds component
+  int64_t tv_sec;
+  int64_t tv_nsec;
 };
 
 /**
@@ -79,7 +79,7 @@ struct ValueT {
   HandleT     Handle;
   const char *Name;
   TypeT       Type;
-  TimeSpec64  TimeSpec;  ///< Custom 64-bit timespec (int64_t for both fields)
+  TimeSpec64  TimeSpec;
   int64_t     Number;
   const char *String;
   ValueT     *Complex;
