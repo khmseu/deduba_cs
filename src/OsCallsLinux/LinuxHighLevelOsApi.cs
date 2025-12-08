@@ -76,7 +76,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
             Acl = [],
             Xattr = [],
-            Hashes = []
+            Hashes = [],
         };
     }
 
@@ -140,7 +140,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             RDev = statBuf["st_rdev"]?.GetValue<long>() ?? 0,
             Size = fileSize,
             MTime = statBuf["st_mtim"]?.GetValue<double>() ?? 0,
-            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0
+            CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
         };
 
         // Read ACLs
@@ -162,7 +162,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             aclBytes.Length,
                             $"{path} $acl",
                             _ => { }
-                        )
+                        ),
                     ];
                 }
             }
@@ -283,7 +283,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    )
+                    ),
                 ];
             }
             catch (Exception ex)
@@ -345,7 +345,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             aclBytes.Length,
                             $"{path} $acl",
                             _ => { }
-                        )
+                        ),
                     ];
                 }
             }
@@ -466,7 +466,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    )
+                    ),
                 ];
             }
             catch (Exception ex)
@@ -498,7 +498,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         {
             return
             [
-                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)
+                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal),
             ];
         }
         catch (UnauthorizedAccessException ex)
