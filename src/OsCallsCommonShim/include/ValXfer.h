@@ -25,7 +25,6 @@ struct ValueT;
 
 /**
  * @brief Custom timespec-compatible struct with explicit 64-bit fields.
- * 
  * Standard timespec uses `long` for tv_nsec, which is 32-bit on Windows x64
  * but 64-bit on Linux x64. To ensure consistent struct layout for P/Invoke,
  * we define our own struct with explicit int64_t fields.

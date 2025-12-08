@@ -485,6 +485,8 @@ ARCHIVE[0-9]/
 doxygen/
 
 #others
+_codeql_build_dir/
+_codeql_detected_source_root
 .github/copilot-instructions.md.backup
 *.code-profile
 artest.diff
@@ -498,10 +500,9 @@ docs/_site/
 docs/api/.manifest
 docs/api/*.yml
 docs/doxygen/html/
+ignored_files_list.txt
 inspectcode.xml
 nohup.out
 perl
+src/OsCallsWindowsShim/build-win-x64/
 test.ansi
-ignored_files_list.txt
-_codeql_build_dir/
-_codeql_detected_source_root
