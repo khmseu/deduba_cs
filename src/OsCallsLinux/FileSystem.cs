@@ -18,7 +18,7 @@ public static unsafe partial class FileSystem
     /// Instance logger for this module. Replaceable for tests; defaults to adapter.
     /// </summary>
     public static UtilitiesLibrary.ILogging Logger { get; set; } =
-        new UtilitiesLibrary.UtilitiesLogger();
+        UtilitiesLibrary.UtilitiesLogger.Instance;
     private const string NativeLibraryName = "libOsCallsLinuxShim.so";
 
     private static readonly ShimFnDelegate? _linux_lstat_fn;

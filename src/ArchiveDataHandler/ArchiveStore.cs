@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.BZip2;
 using UtilitiesLibrary;
 
-namespace ArchiveStore;
+namespace ArchiveDataHandler;
 
 /// <summary>
 ///     Implementation of content-addressable archive storage with automatic deduplication.
@@ -13,6 +13,22 @@ namespace ArchiveStore;
 /// </summary>
 public sealed class ArchiveStore : IArchiveStore
 {
+    private static readonly object _instanceLock = new();
+    private static IArchiveStore? _instance;
+
+    /// <summary>
+    /// Default singleton instance of an ArchiveStore configured from utilities.
+    /// Constructed lazily using `BackupConfig.FromUtilities()` and the default logger.
+    /// </summary>
+    public static IArchiveStore Instance
+    {
+        get
+        {
+            if (_instance is not null)
+                return _instance;
+            throw new InvalidOperationException("ArchiveStore instance not initialized.");
+        }
+    }
     private readonly ConcurrentDictionary<string, string> _arlist = new();
     private readonly IBackupConfig _config;
     private readonly ILogging _logger;
@@ -30,7 +46,7 @@ public sealed class ArchiveStore : IArchiveStore
     public ArchiveStore(IBackupConfig config, ILogging? logger = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _logger = logger ?? new UtilitiesLogger();
+        _logger = logger ?? UtilitiesLogger.Instance;
         _log = s =>
         {
             if (_config.Verbose)
@@ -45,6 +61,7 @@ public sealed class ArchiveStore : IArchiveStore
             _logger.Error(_config.DataPath, nameof(Directory.CreateDirectory), ex);
             throw;
         }
+        _instance = this;
     }
 
     /// <inheritdoc />

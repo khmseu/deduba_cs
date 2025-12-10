@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
-using ArchiveStore;
+using ArchiveDataHandler;
 using OsCallsCommon;
 
 namespace OsCallsWindows;
@@ -11,6 +11,15 @@ namespace OsCallsWindows;
 /// </summary>
 public class WindowsHighLevelOsApi : IHighLevelOsApi
 {
+    private static readonly Lazy<WindowsHighLevelOsApi> _instance = new(() =>
+        new WindowsHighLevelOsApi()
+    );
+
+    /// <summary>
+    /// Default singleton instance for the Windows high-level OS API.
+    /// </summary>
+    public static IHighLevelOsApi Instance => _instance.Value;
+
     /// <summary>
     ///     Creates a minimal InodeData object from a filesystem path containing only
     ///     stat information (no security descriptors, alternate data streams, or content hashes).

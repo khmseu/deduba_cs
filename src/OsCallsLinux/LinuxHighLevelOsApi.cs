@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
-using ArchiveStore;
+using ArchiveDataHandler;
 using OsCallsCommon;
 
 namespace OsCallsLinux;
@@ -11,6 +11,15 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
+    private static readonly Lazy<LinuxHighLevelOsApi> _instance = new(() =>
+        new LinuxHighLevelOsApi()
+    );
+
+    /// <summary>
+    /// Default singleton instance for the Linux high-level OS API.
+    /// </summary>
+    public static IHighLevelOsApi Instance => _instance.Value;
+
     /// <summary>
     ///     Creates a minimal InodeData object from a filesystem path containing only
     ///     stat information (no ACLs, xattrs, or content hashes).

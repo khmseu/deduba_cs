@@ -8,6 +8,13 @@ namespace UtilitiesLibrary;
 /// </summary>
 public sealed class UtilitiesLogger : ILogging
 {
+    private static readonly Lazy<UtilitiesLogger> _instance = new(() => new UtilitiesLogger());
+
+    /// <summary>
+    /// Default singleton instance of the adapter.
+    /// </summary>
+    public static ILogging Instance => _instance.Value;
+
     /// <summary>
     /// Captures and returns a key-value pair for the specified value.
     /// </summary>

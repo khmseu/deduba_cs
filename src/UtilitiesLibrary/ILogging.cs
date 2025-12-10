@@ -108,4 +108,10 @@ public interface ILogging
     /// <param name="bytes">The number of bytes to convert.</param>
     /// <returns>A human-readable string representation of the byte count.</returns>
     string HumanizeBytes(long bytes);
+
+    /// <summary>
+    /// Static singleton accessor for a default logger implementation.
+    /// Implementations should provide a matching static property returning an `ILogging` singleton.
+    /// </summary>
+    static abstract ILogging Instance { get; }
 }

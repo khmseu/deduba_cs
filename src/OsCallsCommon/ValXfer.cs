@@ -20,7 +20,7 @@ public static unsafe partial class ValXfer
     /// double or alternate implementation. Defaults to forwarding adapter.
     /// </summary>
     public static UtilitiesLibrary.ILogging Logger { get; set; } =
-        new UtilitiesLibrary.UtilitiesLogger();
+        UtilitiesLibrary.UtilitiesLogger.Instance;
 
     static ValXfer()
     {

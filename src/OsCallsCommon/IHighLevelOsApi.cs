@@ -1,5 +1,5 @@
 using System.Text.Json.Nodes;
-using ArchiveStore;
+using ArchiveDataHandler;
 
 namespace OsCallsCommon;
 
@@ -56,4 +56,11 @@ public interface IHighLevelOsApi
     /// <returns>A JsonNode containing the canonical path under the "path" key</returns>
     /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
     JsonNode Canonicalizefilename(string path);
+
+    /// <summary>
+    /// Static singleton accessor for a default platform `IHighLevelOsApi` implementation.
+    /// Implementations (Linux/Windows) must provide a matching static property returning
+    /// an `IHighLevelOsApi` singleton.
+    /// </summary>
+    static abstract IHighLevelOsApi Instance { get; }
 }

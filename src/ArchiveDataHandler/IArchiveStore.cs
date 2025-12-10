@@ -1,4 +1,4 @@
-namespace ArchiveStore;
+namespace ArchiveDataHandler;
 
 /// <summary>
 ///     Interface for content-addressable archive storage with deduplication.
@@ -63,4 +63,10 @@ public interface IArchiveStore
     /// <param name="progress">Optional callback invoked with bytes processed for progress tracking.</param>
     /// <returns>List of hex-encoded SHA-512 hashes for each chunk.</returns>
     List<string> SaveStream(Stream stream, long size, string tag, Action<long>? progress = null);
+
+    /// <summary>
+    /// Static factory property that returns a default singleton instance of an archive store.
+    /// Implementations must provide a matching static property returning an `IArchiveStore`.
+    /// </summary>
+    static abstract IArchiveStore Instance { get; }
 }

@@ -21,9 +21,7 @@ public class DedubaIntegrationTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]
@@ -33,12 +31,15 @@ public class DedubaIntegrationTests : IDisposable
         File.WriteAllText(f, "integration test content");
 
         Utilities.Testing = true;
-        DedubaClass.Backup(new[] { f });
+        DedubaClass.Backup([f]);
 
-        var config = BackupConfig.FromUtilities();
-        Assert.True(Directory.Exists(config.DataPath));
+        Assert.True(Directory.Exists(BackupConfig.Instance.DataPath));
 
-        var files = Directory.GetFiles(config.DataPath, "*", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(
+            BackupConfig.Instance.DataPath,
+            "*",
+            SearchOption.AllDirectories
+        );
         Assert.True(files.Length > 0);
     }
 
@@ -49,14 +50,14 @@ public class DedubaIntegrationTests : IDisposable
         File.WriteAllText(f, "integration test content");
 
         Utilities.Testing = true;
-        var config = BackupConfig.FromUtilities();
+        var config = BackupConfig.Instance;
         // Use a workspace-local archive path inside the temp dir
         var archiveRoot = Path.Combine(_tmpDir, "ARCHIVE5");
         Environment.SetEnvironmentVariable("DEDU_ARCHIVE_ROOT", archiveRoot);
         Directory.CreateDirectory(archiveRoot);
 
         // Calling backup with archive root should throw an InvalidOperationException
-        Assert.Throws<InvalidOperationException>(() => DedubaClass.Backup(new[] { archiveRoot }));
+        Assert.Throws<InvalidOperationException>(() => DedubaClass.Backup([archiveRoot]));
     }
 
     [Fact]
@@ -87,12 +88,15 @@ public class DedubaIntegrationTests : IDisposable
             $"[DEBUG] Environment.DEDU_ARCHIVE_ROOT={Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT")}"
         );
 
-        DedubaClass.Backup(new[] { parent });
+        DedubaClass.Backup([parent]);
 
-        var config = BackupConfig.FromUtilities();
         // Basic: archive should exist and there should be a log file
-        Assert.True(Directory.Exists(config.ArchiveRoot));
-        var logs = Directory.GetFiles(config.ArchiveRoot, "log_*", SearchOption.TopDirectoryOnly);
+        Assert.True(Directory.Exists(BackupConfig.Instance.ArchiveRoot));
+        var logs = Directory.GetFiles(
+            BackupConfig.Instance.ArchiveRoot,
+            "log_*",
+            SearchOption.TopDirectoryOnly
+        );
         Assert.True(logs.Length > 0);
         var chosenLog = logs.OrderBy(x => x).Last();
         var log = File.ReadAllText(chosenLog);
@@ -100,7 +104,11 @@ public class DedubaIntegrationTests : IDisposable
         // Print the list of files in the created archive root for diagnostics
         Console.WriteLine("[DEBUG] ArchiveRoot contents:");
         foreach (
-            var f in Directory.EnumerateFiles(config.ArchiveRoot, "*", SearchOption.AllDirectories)
+            var f in Directory.EnumerateFiles(
+                BackupConfig.Instance.ArchiveRoot,
+                "*",
+                SearchOption.AllDirectories
+            )
         )
             Console.WriteLine("[DEBUG]  " + f);
 

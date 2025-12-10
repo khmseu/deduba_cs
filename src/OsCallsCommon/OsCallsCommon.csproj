@@ -9,6 +9,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
-    <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
+    <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
   </ItemGroup>
 </Project>

@@ -25,7 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
     <ProjectReference Include="../DeDuBa/DeDuBa.csproj" />
-    <ProjectReference Include="..\ArchiveStore\ArchiveStore.csproj" />
+    <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
   </ItemGroup>
   <!-- Conditional platform-specific references -->
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == '' OR '$(RuntimeIdentifier)' == 'linux-arm64'">

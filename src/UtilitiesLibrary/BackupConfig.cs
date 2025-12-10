@@ -6,6 +6,64 @@ namespace UtilitiesLibrary;
 /// </summary>
 public sealed class BackupConfig : IBackupConfig
 {
+    private static IBackupConfig? _instance;
+    private static readonly object _instanceLock = new();
+
+    /// <summary>
+    /// Default singleton instance of <see cref="IBackupConfig"/>.
+    /// Throws if not initialized via <see cref="SetInstance"/>.
+    /// </summary>
+    public static IBackupConfig Instance =>
+        _instance
+        ?? throw new InvalidOperationException(
+            "BackupConfig.Instance not initialized. Call BackupConfig.SetInstance(...) before use."
+        );
+
+    /// <summary>
+    /// Set the global BackupConfig instance. Can only be called once.
+    /// </summary>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException">If already set.</exception>
+    public static void SetInstance(IBackupConfig instance)
+    {
+        if (instance is null)
+            throw new ArgumentNullException(nameof(instance));
+
+        lock (_instanceLock)
+        {
+            if (_instance is not null)
+                throw new InvalidOperationException("BackupConfig instance already set.");
+            _instance = instance;
+        }
+    }
+
+    /// <summary>
+    /// Initialize the global BackupConfig singleton from utilities, optionally overriding the archive root.
+    /// </summary>
+    public static void InitializeFromUtilitiesWithOverride(string? overrideArchiveRoot)
+    {
+        lock (_instanceLock)
+        {
+            if (_instance is null)
+            {
+                _instance = FromUtilitiesWithOverride(overrideArchiveRoot);
+                return;
+            }
+
+            // If caller provides an explicit override archive root, prefer that
+            // and replace the current instance when the roots differ. This allows
+            // runtime initialization (which may pass an explicit archive path)
+            // to override an instance previously created by test fixtures.
+            if (
+                !string.IsNullOrEmpty(overrideArchiveRoot)
+                && _instance.ArchiveRoot != overrideArchiveRoot
+            )
+            {
+                _instance = FromUtilitiesWithOverride(overrideArchiveRoot);
+            }
+        }
+    }
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="BackupConfig" /> class.
     /// </summary>
@@ -67,23 +125,41 @@ public sealed class BackupConfig : IBackupConfig
     public int PrefixSplitThreshold { get; init; } = 255;
 
     /// <summary>
-    ///     Creates a <see cref="BackupConfig" /> instance using current <see cref="Utilities" /> settings.
+    /// Create an effective <see cref="BackupConfig" /> based on current utilities, but allow
+    /// optionally overriding the archive root. This replicates the previous two-step
+    /// InitializeBackupConfig behaviour used by the main program.
     /// </summary>
-    /// <returns>A new <see cref="BackupConfig" /> initialized from global utility settings.</returns>
+    /// <param name="overrideArchiveRoot">If non-null, use this as the archive root instead of the utilities-derived value.</param>
+    /// <returns>A new <see cref="BackupConfig" /> with the effective settings.</returns>
+    public static BackupConfig FromUtilitiesWithOverride(string? overrideArchiveRoot)
+    {
+        // Derive base values from Utilities (same logic previously in FromUtilities)
+        var testing = Utilities.Testing;
+        var envArchiveRoot = Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT");
+        string baseArchiveRoot;
+        if (!string.IsNullOrEmpty(envArchiveRoot))
+            baseArchiveRoot = envArchiveRoot;
+        else if (testing)
+            baseArchiveRoot = Path.Combine(Path.GetTempPath(), "ARCHIVE5");
+        else
+            baseArchiveRoot = "/archive/backup";
+
+        var verbose = Utilities.VerboseOutput;
+        var chunkSize = 1024L * 1024L * 1024L;
+        var prefixSplitThreshold = 255;
+
+        var archiveRoot = !string.IsNullOrEmpty(overrideArchiveRoot)
+            ? overrideArchiveRoot
+            : baseArchiveRoot;
+
+        return new BackupConfig(archiveRoot, chunkSize, testing, verbose, prefixSplitThreshold);
+    }
+
+    /// <summary>
+    /// Backwards-compatible helper that returns the utilities-derived config (no override).
+    /// </summary>
     public static BackupConfig FromUtilities()
     {
-        var testing = Utilities.Testing;
-        // Prefer explicit override if present (CI and local scripts can set this)
-        var envArchiveRoot = Environment.GetEnvironmentVariable("DEDU_ARCHIVE_ROOT");
-        string archiveRoot;
-        if (!string.IsNullOrEmpty(envArchiveRoot))
-            archiveRoot = envArchiveRoot;
-        else if (testing)
-            // Use a workspace-local / tmp directory in testing mode so CI and local runs don't attempt to create paths under /home/kai
-            archiveRoot = Path.Combine(Path.GetTempPath(), "ARCHIVE5");
-        else
-            archiveRoot = "/archive/backup";
-        var verbose = Utilities.VerboseOutput;
-        return new BackupConfig(archiveRoot, 1024L * 1024L * 1024L, testing, verbose);
+        return FromUtilitiesWithOverride(null);
     }
 }

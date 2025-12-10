@@ -20,10 +20,10 @@ public static class HighLevelOsApiFactory
     public static IHighLevelOsApi GetOsApi()
     {
 #if DEDUBA_LINUX
-        return new LinuxHighLevelOsApi();
+        return LinuxHighLevelOsApi.Instance;
 #endif
 #if DEDUBA_WINDOWS
-        return new WindowsHighLevelOsApi();
+        return WindowsHighLevelOsApi.Instance;
 #endif
     }
 }

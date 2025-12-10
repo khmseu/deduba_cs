@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
-using ArchiveStore;
+using ArchiveDataHandler;
 using OsCallsCommon;
 using UtilitiesLibrary;
 
@@ -38,7 +38,7 @@ public class DedubaClass
     /// Defaults to forwarding adapter that calls legacy `Utilities`.
     /// </summary>
     public static UtilitiesLibrary.ILogging Logger { get; set; } =
-        new UtilitiesLibrary.UtilitiesLogger();
+        UtilitiesLibrary.UtilitiesLogger.Instance;
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
@@ -252,19 +252,12 @@ public class DedubaClass
                 // tie % preflist, 'DB_File', undef;    #, "$tmpp.preflist";
 
                 Logger.ConWrite("Getting archive state\n");
-                // Initialize config & archive store
-                _config = BackupConfig.FromUtilities();
-                _config = new BackupConfig(
-                    _archive ?? _config.ArchiveRoot,
-                    _config.ChunkSize,
-                    Utilities.Testing,
-                    Utilities.VerboseOutput,
-                    _config.PrefixSplitThreshold
-                );
+                InitializeBackupConfig();
+                _config = BackupConfig.Instance;
                 _dataPath = _config.DataPath;
-                _archiveStore = new ArchiveStore.ArchiveStore(
+                _archiveStore = new ArchiveDataHandler.ArchiveStore(
                     _config,
-                    new UtilitiesLibrary.UtilitiesLogger()
+                    UtilitiesLibrary.UtilitiesLogger.Instance
                 );
                 _archiveStore.BuildIndex();
 
@@ -331,6 +324,14 @@ public class DedubaClass
         finally
         {
             Utilities.Log?.Close();
+        }
+
+        static void InitializeBackupConfig()
+        {
+            // Initialize the singleton BackupConfig from utilities and optional override,
+            // then grab the instance for local use.
+            BackupConfig.InitializeFromUtilitiesWithOverride(_archive);
+            _config = BackupConfig.Instance;
         }
     }
 

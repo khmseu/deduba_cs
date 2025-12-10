@@ -38,9 +38,8 @@ public interface IBackupConfig
     int PrefixSplitThreshold { get; init; }
 
     /// <summary>
-    /// Create an instance of <see cref="BackupConfig"/> populated from
-    /// utility/environment settings.
+    /// Static singleton accessor for a default <see cref="IBackupConfig"/> implementation.
+    /// Implementations should provide a matching static property returning an `IBackupConfig` singleton.
     /// </summary>
-    /// <returns>A <see cref="BackupConfig"/> instance representing current utilities configuration.</returns>
-    static abstract BackupConfig FromUtilities();
+    static abstract IBackupConfig Instance { get; }
 }

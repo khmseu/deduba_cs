@@ -1,4 +1,4 @@
-using ArchiveStore;
+using ArchiveDataHandler;
 using OsCallsCommon;
 using UtilitiesLibrary;
 
@@ -61,8 +61,7 @@ public class HighLevelOsApiTests : IDisposable
 
         // Set up archive store for tests that need it
         Utilities.Testing = true;
-        var config = BackupConfig.FromUtilities();
-        _archiveStore = new ArchiveStore.ArchiveStore(config);
+        _archiveStore = new ArchiveDataHandler.ArchiveStore(BackupConfig.Instance);
     }
 
     public void Dispose()

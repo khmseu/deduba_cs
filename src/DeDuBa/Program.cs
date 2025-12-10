@@ -17,7 +17,7 @@ internal class Program
     {
         Utilities.Testing = true; // Default to testing mode
         // Ensure the program-level logger is available (defaults already set in DedubaClass)
-        DedubaClass.Logger = new UtilitiesLibrary.UtilitiesLogger();
+        DedubaClass.Logger = UtilitiesLibrary.UtilitiesLogger.Instance;
 
         // Parse command-line options
         var fileArgs = new List<string>();
