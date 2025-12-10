@@ -10,5 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
     <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 </Project>

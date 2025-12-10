@@ -26,5 +26,6 @@
     <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
     <ProjectReference Include="..\OsCallsCommon\OsCallsCommon.csproj" />
     <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 </Project>
