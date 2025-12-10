@@ -1,12 +1,45 @@
-namespace Interfaces
+namespace UtilitiesLibrary;
+
+/// <summary>
+///     Represents configuration settings used by the backup utilities.
+///     Implementations provide immutable configuration values consumed by
+///     backup components.
+/// </summary>
+public interface IBackupConfig
 {
-    public interface IBackupConfig
-    {
-        string ArchiveRoot { get; }
-        string DataPath { get; }
-        int ChunkSize { get; }
-        bool Testing { get; }
-        bool Verbose { get; }
-        long PrefixSplitThreshold { get; }
-    }
+    /// <summary>
+    ///     The root directory where archives are stored.
+    /// </summary>
+    string ArchiveRoot { get; init; }
+
+    /// <summary>
+    ///     The path to the data directory being backed up.
+    /// </summary>
+    string DataPath { get; init; }
+
+    /// <summary>
+    ///     Size of chunks (in bytes) used when splitting large files.
+    /// </summary>
+    long ChunkSize { get; init; }
+
+    /// <summary>
+    ///     Indicates whether the backup system is running in testing mode.
+    /// </summary>
+    bool Testing { get; init; }
+
+    /// <summary>
+    ///     When <c>true</c>, enables verbose logging and diagnostic output.
+    /// </summary>
+    bool Verbose { get; init; }
+
+    /// <summary>
+    ///     Threshold for splitting prefixes; values above this trigger prefix splitting.
+    /// </summary>
+    int PrefixSplitThreshold { get; init; }
+
+    /// <summary>
+    ///     Static singleton accessor for a default <see cref="IBackupConfig" /> implementation.
+    ///     Implementations should provide a matching static property returning an `IBackupConfig` singleton.
+    /// </summary>
+    static abstract IBackupConfig Instance { get; }
 }
