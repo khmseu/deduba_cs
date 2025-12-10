@@ -32,13 +32,6 @@ public class DedubaClass
     private static readonly Dictionary<string, List<object>> Dirtmp = [];
     private static readonly Dictionary<string, long> Bstats = [];
     private static readonly Dictionary<Int128, int> Devices = [];
-
-    /// <summary>
-    /// Module-level injectable logger for DeDuBa runtime messages.
-    /// Defaults to forwarding adapter that calls legacy `Utilities`.
-    /// </summary>
-    public static UtilitiesLibrary.ILogging Logger { get; set; } =
-        UtilitiesLibrary.UtilitiesLogger.Instance;
     private static readonly Dictionary<string, string?> Fs2Ino = [];
     private static long _packsum;
 
@@ -48,6 +41,13 @@ public class DedubaClass
     private static long _statusDirsDone;
     private static long _statusQueueTotal;
     private static long _statusBytesDone;
+
+    /// <summary>
+    ///     Module-level injectable logger for DeDuBa runtime messages.
+    ///     Defaults to forwarding adapter that calls legacy `Utilities`.
+    /// </summary>
+    public static ILogging Logger { get; set; } =
+        UtilitiesLogger.Instance;
 
     // ############################################################################
     // Temporary on-disk hashes for backup data management
@@ -126,7 +126,7 @@ public class DedubaClass
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 _ = new DirectoryInfo(_dataPath)
                 {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
+                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8)
                 };
         }
         catch (Exception ex)
@@ -186,7 +186,7 @@ public class DedubaClass
                     [
                         .. argv.Select(_osApi!.Canonicalizefilename)
                             .Select(node => node["path"]?.ToString())
-                            .Select(path => path != null ? Path.GetFullPath(path) : ""),
+                            .Select(path => path != null ? Path.GetFullPath(path) : "")
                     ];
 
                     // Safety: refuse to backup the archive itself or any path inside the archive/data store.
@@ -255,9 +255,9 @@ public class DedubaClass
                 InitializeBackupConfig();
                 _config = BackupConfig.Instance;
                 _dataPath = _config.DataPath;
-                _archiveStore = new ArchiveDataHandler.ArchiveStore(
+                _archiveStore = new ArchiveStore(
                     _config,
-                    UtilitiesLibrary.UtilitiesLogger.Instance
+                    UtilitiesLogger.Instance
                 );
                 _archiveStore.BuildIndex();
 
@@ -558,7 +558,9 @@ public class DedubaClass
                             $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
                         );
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
                     var old = Fs2Ino.ContainsKey(fsfid);
                     var flags = minimalData?.Flags ?? new HashSet<string>();

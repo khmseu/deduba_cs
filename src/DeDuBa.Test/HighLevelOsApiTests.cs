@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ArchiveDataHandler;
 using OsCallsCommon;
 using UtilitiesLibrary;
@@ -12,12 +13,12 @@ namespace DeDuBa.Test;
 [ResetUtilitiesLog]
 public class HighLevelOsApiTests : IDisposable
 {
-    private readonly string _tmpDir;
-    private readonly string _testFilePath;
-    private readonly string _testDirPath;
-    private readonly string? _testSymlinkPath;
-    private readonly IHighLevelOsApi _osApi;
     private readonly IArchiveStore _archiveStore;
+    private readonly IHighLevelOsApi _osApi;
+    private readonly string _testDirPath;
+    private readonly string _testFilePath;
+    private readonly string? _testSymlinkPath;
+    private readonly string _tmpDir;
 
     public HighLevelOsApiTests()
     {
@@ -40,13 +41,13 @@ public class HighLevelOsApiTests : IDisposable
             }
             else
             {
-                var si = System.Diagnostics.Process.Start(
-                    new System.Diagnostics.ProcessStartInfo(
+                var si = Process.Start(
+                    new ProcessStartInfo(
                         "ln",
                         $"-s {_testFilePath} {_testSymlinkPath}"
                     )
                     {
-                        UseShellExecute = false,
+                        UseShellExecute = false
                     }
                 );
                 si?.WaitForExit();
@@ -61,7 +62,7 @@ public class HighLevelOsApiTests : IDisposable
 
         // Set up archive store for tests that need it
         Utilities.Testing = true;
-        _archiveStore = new ArchiveDataHandler.ArchiveStore(BackupConfig.Instance);
+        _archiveStore = new ArchiveStore(BackupConfig.Instance);
     }
 
     public void Dispose()
@@ -70,7 +71,9 @@ public class HighLevelOsApiTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     [Fact]
@@ -115,10 +118,7 @@ public class HighLevelOsApiTests : IDisposable
     public void CreateMinimalInodeDataFromPath_SymbolicLink_ReturnsLinkMetadata()
     {
         // Skip if symlink wasn't created
-        if (string.IsNullOrEmpty(_testSymlinkPath))
-        {
-            return;
-        }
+        if (string.IsNullOrEmpty(_testSymlinkPath)) return;
 
         // Act
         var inodeData = _osApi.CreateMinimalInodeDataFromPath(_testSymlinkPath);
@@ -182,10 +182,7 @@ public class HighLevelOsApiTests : IDisposable
     public void CompleteInodeDataFromPath_SymbolicLink_AddsLinkTarget()
     {
         // Skip if symlink wasn't created
-        if (string.IsNullOrEmpty(_testSymlinkPath))
-        {
-            return;
-        }
+        if (string.IsNullOrEmpty(_testSymlinkPath)) return;
 
         // Arrange
         var minimalData = _osApi.CreateMinimalInodeDataFromPath(_testSymlinkPath);

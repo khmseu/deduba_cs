@@ -15,24 +15,10 @@ public sealed class ArchiveStore : IArchiveStore
 {
     private static readonly object _instanceLock = new();
     private static IArchiveStore? _instance;
-
-    /// <summary>
-    /// Default singleton instance of an ArchiveStore configured from utilities.
-    /// Constructed lazily using `BackupConfig.FromUtilities()` and the default logger.
-    /// </summary>
-    public static IArchiveStore Instance
-    {
-        get
-        {
-            if (_instance is not null)
-                return _instance;
-            throw new InvalidOperationException("ArchiveStore instance not initialized.");
-        }
-    }
     private readonly ConcurrentDictionary<string, string> _arlist = new();
     private readonly IBackupConfig _config;
-    private readonly ILogging _logger;
     private readonly Action<string> _log;
+    private readonly ILogging _logger;
     private readonly ConcurrentDictionary<string, HashSet<string>> _preflist = new();
     private readonly object _reorgLock = new();
     private readonly ConcurrentDictionary<string, long> _stats = new();
@@ -61,7 +47,22 @@ public sealed class ArchiveStore : IArchiveStore
             _logger.Error(_config.DataPath, nameof(Directory.CreateDirectory), ex);
             throw;
         }
+
         _instance = this;
+    }
+
+    /// <summary>
+    ///     Default singleton instance of an ArchiveStore configured from utilities.
+    ///     Constructed lazily using `BackupConfig.FromUtilities()` and the default logger.
+    /// </summary>
+    public static IArchiveStore Instance
+    {
+        get
+        {
+            if (_instance is not null)
+                return _instance;
+            throw new InvalidOperationException("ArchiveStore instance not initialized.");
+        }
     }
 
     /// <inheritdoc />
@@ -246,7 +247,9 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch { }
+                catch
+                {
+                }
 
                 return hash;
             }
@@ -255,7 +258,9 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch { }
+            catch
+            {
+            }
 
             if (_config.Verbose)
                 _log.Invoke(hash);

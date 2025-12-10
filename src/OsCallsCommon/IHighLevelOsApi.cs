@@ -13,6 +13,13 @@ namespace OsCallsCommon;
 public interface IHighLevelOsApi
 {
     /// <summary>
+    ///     Static singleton accessor for a default platform `IHighLevelOsApi` implementation.
+    ///     Implementations (Linux/Windows) must provide a matching static property returning
+    ///     an `IHighLevelOsApi` singleton.
+    /// </summary>
+    static abstract IHighLevelOsApi Instance { get; }
+
+    /// <summary>
     ///     Creates a minimal InodeData object from a filesystem path containing only
     ///     stat information (no ACLs, xattrs, or content hashes).
     /// </summary>
@@ -56,11 +63,4 @@ public interface IHighLevelOsApi
     /// <returns>A JsonNode containing the canonical path under the "path" key</returns>
     /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
     JsonNode Canonicalizefilename(string path);
-
-    /// <summary>
-    /// Static singleton accessor for a default platform `IHighLevelOsApi` implementation.
-    /// Implementations (Linux/Windows) must provide a matching static property returning
-    /// an `IHighLevelOsApi` singleton.
-    /// </summary>
-    static abstract IHighLevelOsApi Instance { get; }
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using ArchiveDataHandler;
 using ICSharpCode.SharpZipLib.BZip2;
 using UtilitiesLibrary;
 
@@ -9,7 +10,7 @@ namespace DeDuBa.Test;
 public class ArchiveStoreTests : IDisposable
 {
     private readonly IBackupConfig _cfg;
-    private readonly ArchiveDataHandler.ArchiveStore _store;
+    private readonly ArchiveStore _store;
     private readonly string _tmpDir;
 
     public ArchiveStoreTests()
@@ -17,9 +18,9 @@ public class ArchiveStoreTests : IDisposable
         _tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
         _cfg = new BackupConfig(_tmpDir, 1024 * 16, true, false, 10);
-        _store = new ArchiveDataHandler.ArchiveStore(
+        _store = new ArchiveStore(
             _cfg,
-            UtilitiesLibrary.UtilitiesLogger.Instance
+            UtilitiesLogger.Instance
         );
     }
 
@@ -29,7 +30,9 @@ public class ArchiveStoreTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     [Fact]

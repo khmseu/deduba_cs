@@ -260,6 +260,7 @@ static std::string ResolveAccountNameFromRid(uint32_t rid) {
     return std::to_string(rid);
   return result;
 }
+
 /**
  * @brief No-op handler for error returns.
  *
@@ -427,6 +428,7 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
 
   return ts;
 }
+
 /**
  * @brief Resolve a numeric RID (Relative ID) to an account name via LookupAccountSid.
  *
@@ -489,6 +491,7 @@ static const char *sid_use_to_string(SID_NAME_USE use) {
     return "unknown";
   }
 }
+
 /**
  * @brief Handler for windows_GetFileInformationByHandle results - iterates through file metadata
  * fields.

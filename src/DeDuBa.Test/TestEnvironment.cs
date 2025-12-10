@@ -15,7 +15,9 @@ public class TestEnvironment : IDisposable
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
 
         Utilities.Log = null;
         // Ensure BackupConfig singleton is initialized for tests that use BackupConfig.Instance.
@@ -26,7 +28,7 @@ public class TestEnvironment : IDisposable
                 "deduba_test_archive_" + Guid.NewGuid().ToString("N")
             );
             Directory.CreateDirectory(tmpArchive);
-            BackupConfig.SetInstance(new BackupConfig(tmpArchive, 1024 * 16, true, false, 255));
+            BackupConfig.SetInstance(new BackupConfig(tmpArchive, 1024 * 16, true));
         }
         catch
         {
@@ -41,7 +43,9 @@ public class TestEnvironment : IDisposable
         {
             Utilities.Log?.Close();
         }
-        catch { }
+        catch
+        {
+        }
 
         Utilities.Log = null;
     }

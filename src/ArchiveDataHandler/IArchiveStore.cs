@@ -34,6 +34,12 @@ public interface IArchiveStore
     string DataPath { get; }
 
     /// <summary>
+    ///     Static factory property that returns a default singleton instance of an archive store.
+    ///     Implementations must provide a matching static property returning an `IArchiveStore`.
+    /// </summary>
+    static abstract IArchiveStore Instance { get; }
+
+    /// <summary>
     ///     Scans the DATA directory and populates the hash and prefix indexes.
     ///     Should be called once before performing save operations.
     /// </summary>
@@ -63,10 +69,4 @@ public interface IArchiveStore
     /// <param name="progress">Optional callback invoked with bytes processed for progress tracking.</param>
     /// <returns>List of hex-encoded SHA-512 hashes for each chunk.</returns>
     List<string> SaveStream(Stream stream, long size, string tag, Action<long>? progress = null);
-
-    /// <summary>
-    /// Static factory property that returns a default singleton instance of an archive store.
-    /// Implementations must provide a matching static property returning an `IArchiveStore`.
-    /// </summary>
-    static abstract IArchiveStore Instance { get; }
 }

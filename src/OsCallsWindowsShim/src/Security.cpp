@@ -181,10 +181,14 @@ windows_GetNamedSecurityInfoW(const wchar_t *path, bool include_sacl) {
   DWORD                result = GetNamedSecurityInfoW(const_cast<wchar_t *>(path),
                                        SE_FILE_OBJECT,
                                        secInfo,
-                                       nullptr,  // Owner SID
-                                       nullptr,  // Group SID
-                                       nullptr,  // DACL
-                                       nullptr,  // SACL
+                                       nullptr,
+                                       // Owner SID
+                                       nullptr,
+                                       // Group SID
+                                       nullptr,
+                                       // DACL
+                                       nullptr,
+                                       // SACL
                                        &pSD);
 
   if (result != ERROR_SUCCESS) {
