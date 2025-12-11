@@ -155,3 +155,111 @@ Notes
   base semver identical to the last tag.
 - Pick Option A for a clean changelog-driven workflow; pick Option B when
   other systems expect an immediate semantic bump.
+
+## Included: Release Process (merged from `.github/RELEASE.md`)
+
+The following content was merged from `.github/RELEASE.md` to centralize release
+and tagging guidance in this single instructions file. It documents the release
+process, MinVer behaviour, CI interactions, and best practices for creating
+GitHub Releases for DeDuBa. Keep this section synchronized with the original
+release workflow files if those change.
+
+---
+
+# Release Process
+
+This document explains how GitHub releases work for DeDuBa, including automatic version numbering, release notes generation, and the relationship with CHANGELOG.md.
+
+## Overview
+
+DeDuBa uses **automated GitHub releases** triggered by git version tags. The process combines:
+
+- **MinVer** for automatic semantic versioning from git tags
+- **GitHub Actions** for building, testing, and packaging
+- **Automatic release notes** generated from commit messages
+- **Manual CHANGELOG.md** (in `docs/`) for curated release summaries
+
+## How to Create a Release
+
+### 1. Prepare the Release
+
+Update `docs/CHANGELOG.md` with the new version section, then commit the changes.
+
+### 2. Create and Push a Version Tag
+
+Create an annotated tag following semantic versioning, e.g. `git tag -a v0.2.0 -m "Release version 0.2.0"`, then `git push origin v0.2.0`.
+
+### 3. Automatic Build and Release
+
+Once the tag is pushed, GitHub Actions will build, run tests, package binaries and create a GitHub Release with artifacts and notes.
+
+## Versioning System
+
+### Semantic Versioning (SemVer)
+
+Format: `MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]`
+
+### MinVer: Automatic Version Calculation
+
+MinVer derives versions from git tags automatically; it finds the most recent tag, counts commits since that tag, and generates an appropriate version suffix.
+
+## Release Notes
+
+Two sources of release notes are used:
+
+1. Automatic release notes (from commits)
+2. `docs/CHANGELOG.md` (manual, curated)
+
+Best practices: Use Conventional Commits; write clear, descriptive messages.
+
+## Pre-releases
+
+Mark pre-releases with suffixes like `-alpha`, `-beta`, `-rc` and create annotated tags accordingly.
+
+## CI Workflow Details
+
+The release job triggers on `refs/tags/v*` and bundles build artifacts into the GitHub Release.
+
+## Monitoring Releases & Troubleshooting
+
+Use `gh run list`, `gh release list`, and related `gh` commands to inspect runs and releases. If a release needs to be recreated, delete the release and the tag, then recreate it.
+
+## Best Practices (summary)
+
+1. Always update `docs/CHANGELOG.md` before tagging
+2. Use annotated tags (`git tag -a`)
+3. Follow semantic versioning
+4. Write clear commit messages
+5. Test pre-releases before stable
+6. Avoid force-pushing tags
+7. Keep `docs/CHANGELOG.md` format consistent
+
+---
+
+## Included: Commit All Changes Instruction (merged from `.github/instructions/commit_all.instructions.md`)
+
+The following policy text was merged from `.github/instructions/commit_all.instructions.md` to keep repository workflow guidance centralized. It describes the recommended sequence when the user asks to "commit all" changes.
+
+When the user requests to commit changes (or says "commit all", "check in", "checkin", etc.):
+
+1. **Check git status** to identify all modified, added, or deleted files
+2. **Review the diff** for all changed files to understand what was modified
+3. **Verify the build** (if applicable) to ensure changes don't break compilation
+4. **Stage all changes** using `git add`
+5. **Commit with a descriptive message** that:
+  - Follows conventional commit format (e.g., `feat:`, `fix:`, `refactor:`, `style:`, `docs:`, `build:`, `chore:`)
+  - Summarizes the key changes in the first line
+  - Includes bullet points for multiple changed files or significant changes
+  - References file names or key changes for clarity
+
+**Example commit messages:**
+
+- `style: apply CSharpier formatting to test files and utilities`
+- `fix: resolve docs generation task exit 126 and update gitignore`
+- `refactor: apply C# naming conventions to private methods`
+
+**Do not** create separate documentation files unless explicitly requested.
+
+---
+
+End of merged content.
