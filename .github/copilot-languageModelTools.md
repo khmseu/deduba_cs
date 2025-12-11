@@ -1,0 +1,3280 @@
+### toolReferenceName
+
+```text
+ modelDescription
+```
+
+-- publisher/ extension_name@ version
+
+### dbclient-getDatabases
+
+```text
+%mcp.languageModelTools.dbclient-get-databases.modelDescription%
+```
+
+-- cweijan/vscode-postgresql-client2@8.3.4
+
+### dbclient-getTables
+
+```text
+%mcp.languageModelTools.dbclient-get-tables.modelDescription%
+```
+
+-- cweijan/vscode-postgresql-client2@8.3.4
+
+### dbclient-executeQuery
+
+```text
+%mcp.languageModelTools.dbclient-execute-query.modelDescription%
+```
+
+-- cweijan/vscode-postgresql-client2@8.3.4
+
+### dbcode-getConnections
+
+```text
+Retrieve available connections. Returns a list of connections, including the
+name, id, type. The connection id and connection name values are required to
+access the other dbcode tools.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-workspaceConnection
+
+```text
+Default connection: if the user does not specifically mention a connection this
+will provide the default connection if configured. It will return the name and
+id and type of the connection along with the database and schema names if
+applicable if a default connection is specified. This information can then be
+used to execute queries in the default connection for the current workspace.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-getDatabases
+
+```text
+Retrieve all available databases for a specified connection.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-getSchemas
+
+```text
+Retrieve the schema names for a database, if the database supports schemas.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-getTables
+
+```text
+Retrieve tables with their columns, foreign keys, primary keys and index
+information. Use tablePattern to filter by name if required.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-executeQuery
+
+```text
+Executes a read-only query (SELECT) in the specified database and optional
+schema. For data modification (INSERT, UPDATE, DELETE, etc), use
+dbcode-execute-dml. For schema changes (CREATE, DROP, ALTER, etc), use
+dbcode-execute-ddl.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-executeDML
+
+```text
+Executes a DML statement (INSERT, UPDATE, DELETE) in the specified database and
+optional schema. Use this tool when you need to modify data. For read-only
+queries, use dbcode-execute-query. For schema changes, use dbcode-execute-ddl.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### dbcode-executeDDL
+
+```text
+Executes a DDL statement (CREATE, DROP, ALTER, TRUNCATE, etc.) in the specified
+database and optional schema. Use this tool when you need to modify database
+schema. For data modification, use dbcode-execute-dml. For read-only queries,
+use dbcode-execute-query.
+```
+
+-- dbcode/dbcode@1.21.2
+
+### electron-build-tools_chromiumGitLog
+
+```text
+Retrieves the git log for Chromium between two versions
+```
+
+-- dsanders11/vscode-electron-build-tools@0.38.3
+
+### electron-build-tools_chromiumGitShow
+
+```text
+Shows the log message and textual diff for a commit
+```
+
+-- dsanders11/vscode-electron-build-tools@0.38.3
+
+### electron-build-tools_gitLog
+
+```text
+Retrieves the git log for a given filename
+```
+
+-- dsanders11/vscode-electron-build-tools@0.38.3
+
+### electron-build-tools_gitShow
+
+```text
+Shows the log message and textual diff for a commit
+```
+
+-- dsanders11/vscode-electron-build-tools@0.38.3
+
+### codebase
+
+```text
+Run a natural language search for relevant code or documentation comments from
+the user's current workspace. Returns relevant code snippets from the user's
+current workspace if it is large, or the full contents of the workspace if it
+is small.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### symbols
+
+```text
+Search the user's workspace for code symbols using language services. Use this
+tool when the user is looking for a specific symbol in their workspace.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### usages
+
+```text
+Request to list all usages (references, definitions, implementations etc) of a
+function, class, method, variable etc. Use this tool when
+1. Looking for a sample implementation of an interface or class
+2. Checking how a function is used throughout the codebase.
+3. Including and updating all usages when changing a function, method, or
+constructor
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### vscodeAPI
+
+```text
+Get comprehensive VS Code API documentation and references for extension
+development. This tool provides authoritative documentation for VS Code's
+extensive API surface, including proposed APIs, contribution points, and best
+practices. Use this tool for understanding complex VS Code API interactions.
+
+When to use this tool:
+- User asks about specific VS Code APIs, interfaces, or extension capabilities
+- Need documentation for VS Code extension contribution points (commands,
+views, settings, etc.)
+- Questions about proposed APIs and their usage patterns
+- Understanding VS Code extension lifecycle, activation events, and packaging
+- Best practices for VS Code extension development architecture
+- API examples and code patterns for extension features
+- Troubleshooting extension-specific issues or API limitations
+
+When NOT to use this tool:
+- Creating simple standalone files or scripts unrelated to VS Code extensions
+- General programming questions not specific to VS Code extension development
+- Questions about using VS Code as an editor (user-facing features)
+- Non-extension related development tasks
+- File creation or editing that doesn't involve VS Code extension APIs
+
+CRITICAL usage guidelines:
+1. Always include specific API names, interfaces, or concepts in your query
+2. Mention the extension feature you're trying to implement
+3. Include context about proposed vs stable APIs when relevant
+4. Reference specific contribution points when asking about extension manifest
+5. Be specific about the VS Code version or API version when known
+
+Scope: This tool is for EXTENSION DEVELOPMENT ONLY - building tools that extend
+VS Code itself, not for general file creation or non-extension programming
+tasks.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### fileSearch
+
+```text
+Search for files in the workspace by glob pattern. This only returns the paths
+of matching files. Use this tool when you know the exact filename pattern of
+the files you're searching for. Glob patterns match from the root of the
+workspace folder. Examples:
+- **/*.{js,ts} to match all js/ts files in the workspace.
+- src/** to match all files under the top-level src folder.
+- **/foo/**/*.js to match all js files under any foo folder in the workspace.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### textSearch
+
+```text
+Do a fast text search in the workspace. Use this tool when you want to search
+with an exact string or regex. If you are not sure what words will appear in
+the workspace, prefer using regex patterns with alternation (|) or character
+classes to search for multiple potential words at once instead of making
+separate searches. For example, use 'function|method|procedure' to look for all
+of those words at once. Use includePattern to search within files matching a
+specific pattern, or in a specific file, using a relative path. Use
+'includeIgnoredFiles' to include files normally ignored by .gitignore, other
+ignore files, and `files.exclude` and `search.exclude` settings. Warning: using
+this may cause the search to be slower, only set it when you want to search in
+ignored folders like node_modules or build outputs. Use this tool when you want
+to see an overview of a particular file, instead of using read_file many times
+to look for code within a file.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### applyPatch
+
+```text
+Edit text files. Do not use this tool to edit Jupyter notebooks. `apply_patch`
+allows you to execute a diff/patch against a text file, but the format of the
+diff specification is unique to this task, so pay careful attention to these
+instructions. To use the `apply_patch` command, you should pass a message of
+the following structure as "input":
+
+*** Begin Patch
+[YOUR_PATCH]
+*** End Patch
+
+Where [YOUR_PATCH] is the actual content of your patch, specified in the
+following V4A diff format.
+
+*** [ACTION] File: [/absolute/path/to/file] -> ACTION can be one of Add,
+Update, or Delete.
+An example of a message that you might pass as "input" to this function, in
+order to apply a patch, is shown below.
+
+*** Begin Patch
+*** Update File: /Users/someone/pygorithm/searching/binary_search.py
+@@class BaseClass
+@@    def search():
+-        pass
++        raise NotImplementedError()
+
+@@class Subclass
+@@    def search():
+-        pass
++        raise NotImplementedError()
+
+*** End Patch
+Do not use line numbers in this diff format.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### readFile
+
+```text
+Read the contents of a file.
+
+You must specify the line range you're interested in. Line numbers are
+1-indexed. If the file contents returned are insufficient for your task, you
+may call this tool again to retrieve more content. Prefer reading larger ranges
+over doing many small reads.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### listDirectory
+
+```text
+List the contents of a directory. Result will have the name of the child. If
+the name ends in /, it's a folder, otherwise a file
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### problems
+
+```text
+Get any compile or lint errors in a specific file or across all files. If the
+user mentions errors or problems in a file, they may be referring to these. Use
+the tool to see the same errors that the user is seeing. If the user asks you
+to analyze all errors, or does not specify a file, use this tool to gather
+errors for all files. Also use this tool after editing a file to validate the
+change.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### copilot_readProjectStructure
+
+```text
+Get a file tree representation of the workspace.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### changes
+
+```text
+Get git diffs of current file changes in a git repository. Don't forget that
+you can use run_in_terminal to run git commands in a terminal as well.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### testFailure
+
+```text
+Includes test failure information in the prompt.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### updateUserPreferences
+
+```text
+Update the user's preferences file with new information about the user and
+their coding preferences, based on the current chat history.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### newWorkspace
+
+```text
+Get comprehensive setup steps to help the user create complete project
+structures in a VS Code workspace. This tool is designed for full project
+initialization and scaffolding, not for creating individual files.
+
+When to use this tool:
+- User wants to create a new complete project from scratch
+- Setting up entire project frameworks (TypeScript projects, React apps,
+Node.js servers, etc.)
+- Initializing Model Context Protocol (MCP) servers with full structure
+- Creating VS Code extensions with proper scaffolding
+- Setting up Next.js, Vite, or other framework-based projects
+- User asks for "new project", "create a workspace", "set up a [framework]
+project"
+- Need to establish complete development environment with dependencies, config
+files, and folder structure
+
+When NOT to use this tool:
+- Creating single files or small code snippets
+- Adding individual files to existing projects
+- Making modifications to existing codebases
+- User asks to "create a file" or "add a component"
+- Simple code examples or demonstrations
+- Debugging or fixing existing code
+
+This tool provides complete project setup including:
+- Folder structure creation
+- Package.json and dependency management
+- Configuration files (tsconfig, eslint, etc.)
+- Initial boilerplate code
+- Development environment setup
+- Build and run instructions
+
+Use other file creation tools for individual files within existing projects.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### getProjectSetupInfo
+
+```text
+Do not call this tool without first calling the tool to create a workspace.
+This tool provides a project setup information for a Visual Studio Code
+workspace based on a project type and programming language.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### installExtension
+
+```text
+Install an extension in VS Code. Use this tool to install an extension in
+Visual Studio Code as part of a new workspace creation process only.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### runCommand
+
+```text
+Run a command in VS Code. Use this tool to run a command in Visual Studio Code
+as part of a new workspace creation process only.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### createJupyterNotebook
+
+```text
+Generates a new Jupyter Notebook (.ipynb) in VS Code. Jupyter Notebooks are
+interactive documents commonly used for data exploration, analysis,
+visualization, and combining code with narrative text. Prefer creating plain
+Python files or similar unless a user explicitly requests creating a new
+Jupyter Notebook or already has a Jupyter Notebook opened or exists in the
+workspace.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### insertEdit
+
+```text
+Insert new code into an existing file in the workspace. Use this tool once per
+file that needs to be modified, even if there are multiple changes for a file.
+Generate the "explanation" property first.
+The system is very smart and can understand how to apply your edits to the
+files, you just need to provide minimal hints.
+Avoid repeating existing code, instead use comments to represent regions of
+unchanged code. Be as concise as possible. For example:
+// ...existing code...
+{ changed code }
+// ...existing code...
+{ changed code }
+// ...existing code...
+
+Here is an example of how you should use format an edit to an existing Person
+class:
+class Person {
+	// ...existing code...
+	age: number;
+	// ...existing code...
+	getAge() {
+	return this.age;
+	}
+}
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### createFile
+
+```text
+This is a tool for creating a new file in the workspace. The file will be
+created with the specified content. The directory will be created if it does
+not already exist. Never use this tool to edit a file that already exists.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### createDirectory
+
+```text
+Create a new directory structure in the workspace. Will recursively create all
+directories in the path, like mkdir -p. You do not need to use this tool before
+using create_file, that tool will automatically create the needed directories.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### openSimpleBrowser
+
+```text
+Preview a website or open a URL in the editor's Simple Browser. Useful for
+quickly viewing locally hosted websites, demos, or resources without leaving
+the coding environment.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### replaceString
+
+```text
+This is a tool for making edits in an existing file in the workspace. For
+moving or renaming files, use run in terminal tool with the 'mv' command
+instead. For larger edits, split them into smaller edits and call the edit tool
+multiple times to ensure accuracy. Before editing, always ensure you have the
+context to understand the file's contents and context. To edit a file, provide:
+1) filePath (absolute path), 2) oldString (MUST be the exact literal text to
+replace including all whitespace, indentation, newlines, and surrounding code
+etc), and 3) newString (MUST be the exact literal text to replace \`oldString\`
+with (also including all whitespace, indentation, newlines, and surrounding
+code etc.). Ensure the resulting code is correct and idiomatic.). Each use of
+this tool replaces exactly ONE occurrence of oldString.
+
+CRITICAL for \`oldString\`: Must uniquely identify the single instance to
+change. Include at least 3 lines of context BEFORE and AFTER the target text,
+matching whitespace and indentation precisely. If this string matches multiple
+locations, or does not match exactly, the tool will fail. Never use 'Lines
+123-456 omitted' from summarized documents or ...existing code... comments in
+the oldString or newString.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### multiReplaceString
+
+```text
+This tool allows you to apply multiple replace_string_in_file operations in a
+single call, which is more efficient than calling replace_string_in_file
+multiple times. It takes an array of replacement operations and applies them
+sequentially. Each replacement operation has the same parameters as
+replace_string_in_file: filePath, oldString, newString, and explanation. This
+tool is ideal when you need to make multiple edits across different files or
+multiple edits in the same file. The tool will provide a summary of successful
+and failed operations.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### editNotebook
+
+```text
+This is a tool for editing an existing Notebook file in the workspace. Generate
+the "explanation" property first.
+The system is very smart and can understand how to apply your edits to the
+notebooks.
+When updating the content of an existing cell, ensure newCode preserves
+whitespace and indentation exactly and does NOT include any code markers such
+as (...existing code...).
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### runNotebookCell
+
+```text
+This is a tool for running a code cell in a notebook file directly in the
+notebook editor. The output from the execution will be returned. Code cells
+should be run as they are added or edited when working through a problem to
+bring the kernel state up to date and ensure the code executes successfully.
+Code cells are ready to run and don't require any pre-processing. If asked to
+run the first cell in a notebook, you should run the first code cell since
+markdown cells cannot be executed. NOTE: Avoid executing Markdown cells or
+providing Markdown cell IDs, as Markdown cells cannot be  executed.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### getNotebookSummary
+
+```text
+This is a tool returns the list of the Notebook cells along with the id, cell
+types, line ranges, language, execution information and output mime types for
+each cell. This is useful to get Cell Ids when executing a notebook or
+determine what cells have been executed and what order, or what cells have
+outputs. If required to read contents of a cell use this to determine the line
+range of a cells, and then use read_file tool to read a specific line range.
+Requery this tool if the contents of the notebook change.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### readNotebookCellOutput
+
+```text
+This tool will retrieve the output for a notebook cell from its most recent
+execution or restored from disk. The cell may have output even when it has not
+been run in the current kernel session. This tool has a higher token limit for
+output length than the runNotebookCell tool.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### fetch
+
+```text
+Fetches the main content from a web page. This tool is useful for summarizing
+or analyzing the content of a webpage. You should use this tool when you think
+the user is looking for information from a specific webpage.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### findTestFiles
+
+```text
+For a source code file, find the file that contains the tests. For a test file
+find the file that contains the code under test.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### docInfo
+
+```text
+Find information about how to document it a symbol like a class or function.
+This tool is useful for generating documentation comments for code symbols. You
+should use this tool when you think the user is looking for information about
+how to document a specific code symbol.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### searchResults
+
+```text
+The results from the search view
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### githubRepo
+
+```text
+Searches a GitHub repository for relevant source code snippets. Only use this
+tool if the user is very clearly asking for code snippets from a specific
+GitHub repository. Do not use this tool for Github repos that the user has open
+in their workspace.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### copilot_toolReplay
+
+```text
+Replays a tool call from a previous chat session.
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### memory
+
+```text
+Manage persistent memory across conversations. This tool allows you to create,
+view, update, and delete memory files that persist between chat sessions. Use
+this to remember important information about the user, their preferences,
+project context, or anything that should be recalled in future conversations.
+Available commands: view (list/read memories), create (new memory file),
+str_replace (edit content), insert (add content), delete (remove memory),
+rename (change filename).
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### editFiles
+
+```text
+This is a placeholder tool, do not use
+```
+
+-- GitHub/copilot-chat@0.35.0
+
+### copilotCodingAgent
+
+```text
+Completes the provided task using an asynchronous coding agent. Use when the
+user wants copilot continue completing a task in the background or
+asynchronously. IMPORTANT: Use this tool LAST/FINAL when users mention
+'#github-pull-request_copilot-coding-agent' in their query. This indicates they
+want the task/job implemented by the remote coding agent after all other
+analysis, planning, and preparation is complete. Call this tool at the END to
+hand off the fully-scoped task to the asynchronous GitHub Copilot coding agent.
+The agent will create a new branch, implement the changes, and open a pull
+request. Always use this tool as the final step when the hashtag is mentioned,
+after completing any other necessary tools or analysis first.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### issue_fetch
+
+```text
+Get a GitHub issue/PR's details as a JSON object.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### notification_fetch
+
+```text
+Get a GitHub notification's details as a JSON object.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### issue_summarize
+
+```text
+Summarizes a GitHub issue or pull request. A summary is a great way to describe
+an issue or pull request.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### notification_summarize
+
+```text
+Summarizes a GitHub notification. A summary is a great way to describe a
+notification.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### suggest-fix
+
+```text
+Summarize and suggest a fix for a GitHub issue.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### searchSyntax
+
+```text
+Converts natural language to a GitHub search query. Should ALWAYS be called
+before doing a search.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### doSearch
+
+```text
+Execute a GitHub search given a well formed GitHub search query. Call
+github-pull-request_formSearchQuery first to get good search syntax and pass
+the exact result in as the 'query'.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### renderIssues
+
+```text
+Render issue items from an issue search in a markdown table. The markdown table
+will be displayed directly to the user by the tool. No further display should
+be done after this!
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### activePullRequest
+
+```text
+Get comprehensive information about the active GitHub pull request (PR). The
+active PR is the one that is currently checked out. This includes the PR title,
+full description, list of changed files, review comments, PR state, and status
+checks/CI results. For PRs created by Copilot, it also includes the session
+logs which indicate the development process and decisions made by the coding
+agent. When asked about the active or current pull request, do this first! Use
+this tool for any request related to "current changes," "pull request details,"
+"what changed," "PR status," or similar queries even if the user does not
+explicitly mention "pull request." When asked to use this tool, ALWAYS use it.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### openPullRequest
+
+```text
+Get comprehensive information about the GitHub pull request (PR) which is
+currently visible, but not necessarily checked out. This includes the PR title,
+full description, list of changed files, review comments, PR state, and status
+checks/CI results. For PRs created by Copilot, it also includes the session
+logs which indicate the development process and decisions made by the coding
+agent. When asked about the currently open pull request, do this first! Use
+this tool for any request related to "pull request details," "what changed,"
+"PR status," or similar queries even if the user does not explicitly mention
+"pull request." When asked to use this tool, ALWAYS use it.
+```
+
+-- GitHub/vscode-pull-request-github@0.124.0
+
+### get_syntax_docs
+
+```text
+ALWAYS use this tool Before creating, editing, or working with any Mermaid
+diagram. Get the syntax documentation for a specific diagram type.
+
+Available diagram types:
+- `architecture.md`: Cloud/CI/CD Architecture Diagram
+- `block.md`: Block Diagram
+- `c4.md`: C4 Diagram
+- `classDiagram.md`: Class Diagram
+- `entityRelationshipDiagram.md`: Entity Relationship Diagram
+- `flowchart.md`: Flowchart
+- `gantt.md`: Gantt Chart
+- `gitgraph.md`: Git Graph Diagram
+- `kanban.md`: Kanban Diagram
+- `mindmap.md`: Mindmap
+- `packet.md`: Packet Diagram
+- `pie.md`: Pie Chart
+- `quadrantChart.md`: Quadrant Chart
+- `requirementDiagram.md`: Requirement Diagram
+- `sankey.md`: Sankey Diagram
+- `sequenceDiagram.md`: Sequence Diagram
+- `stateDiagram.md`: State Diagram
+- `timeline.md`: Timeline
+- `userJourney.md`: User Journey Diagram
+- `xyChart.md`: XY Chart
+```
+
+-- MermaidChart/vscode-mermaid-chart@2.5.6
+
+### mermaid-diagram-validator
+
+```text
+Validate a Mermaid diagram. ALWAYS use this tool after when creating, editing,
+or working with any Mermaid diagram and before preview. The Mermaid Diagram
+Validator is an ESSENTIAL tool for ensuring the accuracy and correctness of
+Mermaid diagrams. It MUST be used IMMEDIATELY AFTER CREATING, EDITING, or
+WORKING WITH any Mermaid diagram or BEFORE PREVIEWING it. This tool is CRUCIAL
+for checking, verifying, testing, and debugging any Mermaid diagram code for
+syntax errors or formatting issues. It ensures that diagrams are correctly
+formatted and free of errors before they are rendered or visualized. This
+includes diagrams created from any source file, such as TypeScript, Java, or
+any other programming language. By using this tool, you can prevent errors and
+ensure that your diagrams are accurate and reliable. ALWAYS validate your
+diagrams to maintain high-quality visualizations and avoid potential issues
+during rendering.
+```
+
+-- MermaidChart/vscode-mermaid-chart@2.5.6
+
+### mermaid-diagram-preview
+
+```text
+Preview a Mermaid diagram. ALWAYS use this tool after validation when creating,
+editing, or working with any Mermaid diagram. The code paramter of this MUST
+CONTAIN ONLY the Mermaid code block without any surrounding or other content.
+IMPORTANT USAGE PATTERN: For EXISTING Mermaid diagram files, ALWAYS pass the
+documentUri parameter (NOT the code). Only use the code parameter for NEW
+diagrams that don't exist in files yet or when you've extracted ONLY the
+Mermaid code block from markdown. This tool renders and visualizes diagrams
+including flowcharts, sequence diagrams, class diagrams, ER diagrams, and other
+chart types. The diagram code should include any YAML frontmatter blocks (like
+id, title, config) if present.
+```
+
+-- MermaidChart/vscode-mermaid-chart@2.5.6
+
+### create_load_test_script
+
+```text
+Generates a load test script based on Locust or JMeter from a URL endpoint or
+an input file (Postman, Insomnia, or HTTP file). If the user does not provide
+required parameters (such as endpoint_url or input_file_path), the tool will
+interactively prompt the user for the missing information during execution, so
+still you can call this tool to generate script. Use this tool to quickly
+create a Locust script for load testing.
+```
+
+-- ms-azure-load-testing/microsoft-testing@0.1.17
+
+### select_azure_load_testing_resource
+
+```text
+Selects and returns the Azure Load Testing resource ID. If the user does not
+specify a resource, the tool will prompt the user to select one from available
+resources during execution. Use this tool to choose a resource for test
+execution and analysis.
+```
+
+-- ms-azure-load-testing/microsoft-testing@0.1.17
+
+### run_load_test_in_azure
+
+```text
+Run a load test using Azure Load Testing. If a load test configuration file
+exists in the repository, it should be favored over providing a script path or
+manual parameters. If there is no configuration file, then a test script path
+needs to be provided. If there are no test scripts, then use the
+create_load_test_script tool to generate a script.
+```
+
+-- ms-azure-load-testing/microsoft-testing@0.1.17
+
+### select_azure_load_test_run
+
+```text
+Selects a specific test run from an Azure Load Testing resource. If the user
+does not specify a resource or test run, the tool will prompt the user to
+select from available options during execution. Use this tool to choose a test
+run for further analysis.
+```
+
+-- ms-azure-load-testing/microsoft-testing@0.1.17
+
+### get_azure_load_test_run_insights
+
+```text
+Retrieves performance and diagnostic insights from a specific Azure Load
+Testing run using its test run ID and resource ID. If any required parameters
+are missing, the tool will prompt the user to provide them during execution.
+Use this tool to analyze test results.
+```
+
+-- ms-azure-load-testing/microsoft-testing@0.1.17
+
+### get-available-apim-policies
+
+```text
+Retrieve available APIM policies.
+```
+
+-- ms-azuretools/vscode-apimanagement@1.3.0
+
+### azure_get_azure_verified_module
+
+```text
+This tools gets Bicep module code from Azure Verified Modules for a given
+resource type. If you are asked to generate Bicep code, call this function
+multiple times once for each resource type to search for available modules and
+prefer using the module instead of writing raw Bicep code. You must always use
+this tool to discover the Bicep module for every Bicep schema you get and
+always prefer using existing Bicep modules if there is one over writing raw
+Bicep code.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_recommend_custom_modes
+
+```text
+This tool captures user intent about Azure-related topics and recommends custom
+modes to enhance Azure workflows. Always invoke this tool once before doing
+anything related to Azure.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_query_azure_resource_graph
+
+```text
+This tool queries Azure Resource Graph (ARG) for information about resources,
+subscriptions, subscriptionIds or resource groups, that the user has access to
+in Azure including any Azure resource types including Azure Functions, Azure
+App Service, virtual machines, Azure Cache for Redis, virtual networks (VNET),
+etc. This tool should be used to obtain details about the user's resources
+(such as resource ids, status, os type, disk type, SKU, size, etc.),
+subscriptions (such as subscription id, subscription name, etc.) or resource
+groups (such as resource group id, name, etc...). If the user is asking about
+**THEIR RESOURCES** then this tool **IS** appropriate. This tool should not be
+used to generally learn about Azure resources. If the user is asking
+**CONCEPTUAL QUESTIONS** about Azure resources, this tool **IS NOT**
+appropriate.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_get_auth_context
+
+```text
+This tool gets the full Azure authentication context that will be used by Azure
+related tools for the Agent. Use this tool to inform the user when they asked
+for such information or when they express that the authentication context being
+used is incorrect.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_set_auth_context
+
+```text
+This tool modifies the Azure authentication context. Azure authentication
+context is used by the Azure related tools for the Agent. Use this tool when
+the user expresses the intent to update the Azure authentication context to
+use. You may suggest this tool if it can be inferred from the conversation that
+the current Azure authentication context is incorrect
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_get_dotnet_template_tags
+
+```text
+Retrieves the list of tags that can be used to filter the available dotnet
+templates. Call this when the user needs help finding a template for a dotnet
+project, or before generating a `dotnet new` command to create a project. Pick
+the tag that best matches the user's intent, then call
+'azure_dotnet_templates-get_templates_for_tag' to get the templates matching
+that tag. Returns a list of available tags that can be used to filter the
+templates.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azure_get_dotnet_templates_for_tag
+
+```text
+Retrieves the list of dotnet project templates available for `dotnet new`
+commands that match the given tag. Call this when the user needs help finding a
+template for a dotnet project, or before generating a `dotnet new` command to
+create a project. Use the names and descriptions of the templates to decide
+which is the best given the context. Returns a list of available templates,
+including the short name, full name, and a description.
+```
+
+-- ms-azuretools/vscode-azure-github-copilot@1.0.153
+
+### azureActivityLog
+
+```text
+Gets the Azure activity log
+```
+
+-- ms-azuretools/vscode-azureresourcegroups@0.11.7
+
+### al_build
+
+```text
+Builds the current AL project with a single command. The AL compiler checks for
+errors and warnings, ensuring your code is correct and up to date, and then
+generates a deployable .app file. Agents should use this tool to quickly
+validate and package AL projects, streamlining the development workflow and
+reducing manual steps.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_download_symbols
+
+```text
+Automatically downloads all dependent symbols required by the current AL
+project. This ensures your project has access to the latest symbols from
+referenced apps and the platform, enabling accurate IntelliSense, validation,
+and builds. Agents should use this tool to keep dependencies up to date and
+avoid missing symbol errors during development. System symbols are downloaded
+automatically if platform and application exist in the app.json file.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_get_package_dependencies
+
+```text
+Automatically retrieves all dependent apps required by the current AL project
+or a specified package. This ensures your project has access to the latest
+symbols from referenced apps and the platform, enabling accurate IntelliSense,
+validation, and builds. Agents should use this tool to keep dependencies up to
+date and avoid missing symbol errors during development.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_download_source
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Invokes the
+extension command to download AL source code for the workspace from the
+Business Central environment set in your launch.json, returning success or
+failure.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_clear_credentials_cache
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Clears cached
+authentication credentials via the AL extension command.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_insert_event
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Inserts an event
+subscriber or publisher via the AL extension command.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_clear_profile_codelenses
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Clears profile
+code lenses in the current AL workspace.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_initalize_snapshot_debugging
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Initializes a
+snapshot debugging session via the AL extension command.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_finish_snapshot_debugging
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Finishes an active
+snapshot debugging session via the AL extension command.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_go
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Executes the AL:
+Go! command to initialize an AL project. This command is used to start a new AL
+project.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_new_project
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Creates a new AL
+project using the AL: New Project command.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_incremental_publish
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Performs a rapid
+application publish with debugging. By enabling delta compilation, RAD allows
+developers to focus on changes made to application objects, reducing build and
+publish times for large projects. (wrapper around AL: Rapid Application Publish
+with debugging).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_debug_without_publish
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Starts a debug
+session without publishing (wrapper around AL: Debug without publishing).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_build_all
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Builds all AL
+projects in the workspace including the complete dependency tree. This command
+builds not just the active project but all dependent projects as well, ensuring
+the entire solution is compiled together. Use this when you need to build the
+complete workspace or when working with multi-project solutions. The tool
+automatically attempts to download required Business Central system symbols
+before building. Agents should use this for comprehensive workspace builds that
+include all dependencies.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_generate_cpu_profile_file
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Generates a CPU
+profile file for performance analysis.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_generate_manifest
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Generates a
+manifest file for the current AL project.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_generate_permission_set_for_extension_objects
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Generates a
+permission set AL object for current extension objects.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_generate_permission_set_for_extension_objects_as_xml
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Generates a
+permission set XML file for current extension objects.
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_open_event_recorder
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Opens the AL Event
+Recorder UI (wrapper around AL: Open Event Recorder).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_open_page_designer
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Opens the AL Page
+Designer (wrapper around AL: Open Page Designer).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_package
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Packages the AL
+project (wrapper around AL: Package).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_publish
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Publishes the
+built AL package to the target environment (wrapper around AL: Publish).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_publish_without_debug
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Publishes the AL
+package without starting a debug session (wrapper around AL: Publish without
+debugging).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_publish_existing_extension
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Publishes an
+already packaged existing extension and starts debugging (wrapper around AL:
+Publish Existing Extension).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### al_view_snapshots
+
+```text
+Inputs: none. Outputs: { success: boolean, error?: string }. Opens the
+snapshots view (wrapper around AL: Snapshots).
+```
+
+-- ms-dynamics-smb/al@17.0.1869541
+
+### mssql_show_schema
+
+```text
+Open an interactive schema designer for a MSSQL database. This tool takes a
+connection ID as input and opens a graphical view of the database schema,
+including tables and relationships.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_connect
+
+```text
+Connect to an MSSQL database server using a server name, an optional database
+name, and an optional profileId. The server name must be retrieved from
+mssql_list_servers. The profileId should be used ONLY when the user explicitly
+mentions a profile name, profile ID, or wants to connect 'using profile X'.
+Returns a connection ID that is used to interact with the database with other
+mssql tools. If a specific database is given and the connection fails, use
+mssql_list_databases against a connection to the default database to find the
+correct database name. The connection ID is a UUID.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_disconnect
+
+```text
+Disconnect from a server or specific database. Returns a success message.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_servers
+
+```text
+List all available MSSQL servers. Returns a list of server names.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_databases
+
+```text
+List all available databases for a connected MSSQL server. Returns a list of
+database names.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_get_connection_details
+
+```text
+Get connection details for a specific connection ID. Returns connection
+information including server, database, authentication type, and user details.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_change_database
+
+```text
+Change the database for an existing MSSQL connection. Before changing, consider
+using mssql_list_databases to show available database options to the user.
+Disconnects from current database and reconnects to the specified database
+using the same connection credentials.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_tables
+
+```text
+List all tables in a specific database for a connected MSSQL server. Returns a
+list of table names with schema information.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_schemas
+
+```text
+List all schemas in a specific database for a connected MSSQL server. Returns a
+list of schema names.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_views
+
+```text
+List all views in a specific database for a connected MSSQL server. Returns a
+list of view names with schema information.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_list_functions
+
+```text
+List all functions in a specific database for a connected MSSQL server. Returns
+a list of function names with schema information.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### mssql_run_query
+
+```text
+Execute a SQL query against a connected MSSQL database. Returns query results
+including row count, column information, and data rows. Use this tool to run
+SELECT, INSERT, UPDATE, DELETE, or other SQL statements. IMPORTANT: This tool
+will execute ANY SQL statement provided - be extremely careful with write
+operations (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP) as they will modify or
+destroy data. Always verify the query is safe before execution, especially for
+operations without WHERE clauses or that affect system objects.
+```
+
+-- ms-mssql/mssql@1.37.1
+
+### pgsql_listServers
+
+```text
+List all database servers registered with the PGSQL extension. Returns a list
+of objects with the server name, host name, and default database.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_connect
+
+```text
+Connect to a PostgreSQL database server using a server name and optional
+database name. The server name is retrieved from pgsql_listServers. Returns a
+connection ID that is used to interact with the database with other pgsql
+tools. If a specific database is given and the connection fails, use
+$pgsql_list_databases against a connection to the default database to find the
+correct database name. The connection ID is a string formatted as
+'pgsql/{server name}[/{database name}]', where if no database name is present
+it's the default database for the server.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_disconnect
+
+```text
+Disconnect from a PostgreSQL database server using a connection ID.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_open_script
+
+```text
+Open a multiline SQL script in an untitled editor connected to a PostgreSQL
+connection. Prefer pgsql_query and pgsql_modify for single statements; use this
+tool for larger, multi-statement scripts, batch operations, or when the user
+must review and run code manually.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_visualizeSchema
+
+```text
+Open an interactive visualization of the schema for a PostgreSQL database
+connection. Requires a connectionId from pgsql_connect. This tool opens a
+graphical view of the database schema, including tables and relationships.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_query
+
+```text
+Run a formatted SQL query against a database. Requires a connectionId from the
+return value of pgsql_connect. This query must not modify the database at all.
+Can include SELECT, SHOW, EXPLAIN etc. Do not include additional statements,
+e.g. SET search_path, in this query. It must only be a single, spacious, well
+formatted query with line breaks and tabs. The statement will be presented to
+the user, so focus on readability. Returns the results of the query. You MUST
+include a validation query to check the validity of EVERY literal values used
+in the SQL query. Do NOT skip this step.
+Note: Always fetch up-to-date database schema context using the
+pgsql_db_context tool before executing any query to ensure accurate
+recommendations. This tool is strictly read-only and executes a single
+statement only. Use EXPLAIN for performance or optimization analysis and
+include execution plan details. On error, return clear error messages to the
+user.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_modifyDatabase
+
+```text
+Modify the database and/or schema by executing SQL statements including DDL
+(CREATE, ALTER, DROP) and DML (INSERT, UPDATE, DELETE). Useful when designing
+schemas or inserting data. It must only be a single, spacious, well formatted
+query with line breaks and tabs. The statement will be presented to the user,
+so focus on readability. Returns the results of the statement execution, if any.
+Note: Always fetch up-to-date database schema context using the
+pgsql_db_context tool before proposing or executing modifications to avoid
+duplicates or conflicts. Ensure explicit user confirmation. On error, return
+clear and descriptive error messages to the user. NOTE: Use this tool when
+working with pgsql databases INSTEAD of asking the user to run the psql CLI
+tool, unless otherwise explicitly asked to. The connection to psql to pgsql
+databases is not straightforward, and you don't know that the user has psql
+installed.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### database
+
+```text
+Get context about this database by fetching the CREATE scripts for a specific
+type of database object or all types. Use this tool to retrieve detailed
+context about the database objects (e.g. tables, indexes, functions, sequences,
+comments, ownership, default_privileges, fdw, or all) within a given schema or
+across all schemas.
+Note: Always call this tool first to fetch the most up-to-date database schema
+context before executing any queries or modifications. This tool is strictly
+read-only and prevents duplicate or conflicting operations by ensuring you know
+the current state.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_listDatabases
+
+```text
+List all databases on the connected PostgreSQL server. Use this tool to
+discover other databases available on the server, given a connection to any
+database. This is strictly read-only and does not modify any data. Returns a
+list of database names.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_describeCsv
+
+```text
+Describe the structure and contents of a CSV file using Frictionless. Returns a
+YAML description of the CSV file, including fields, types, and metadata. Useful
+for preparing to import CSV data into a database.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_bulkLoadCsv
+
+```text
+Bulk‐load CSV file via COPY into a PostgreSQL table. Supports column mapping,
+optional SQL transforms, truncate-before-insert, and PK-based upsert. Use this
+to bulk-load CSV data into an existing table.
+Example:
+pgsql_bulk_load_csv(
+    connection_id='tools://server/mydb',
+    path='/path/to/file.csv',
+    table='mytable',
+    mapping={'col1': 'col1', 'col2': 'col2'},
+    transforms={'col2': 'src.col2::int'},
+    mode='upsert'
+)
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_getDashboardContext
+
+```text
+Retrieve the dashboard (metrics session) context: active source, time zone,
+per-source metricsConfig (resolution, windowMinutes), and a list of metrics
+(id, label, source, dimensions, subscribed, hasData). Use this FIRST before
+requesting metric data so you only fetch relevant metrics.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_getMetricData
+
+```text
+Fetch batched time-series data for multiple metrics in one call. Supports
+optional per-dimension cap, per-metric dimension filters, and including metrics
+with no data yet. Always call pgsql_get_dashboard_context first to choose
+appropriate metricIds.
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_migration_oracle_app
+
+```text
+%pgsql.migration.oracleApp.modelDescription%
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### pgsql_migration_show_report
+
+```text
+%pgsql.migration.showReport.modelDescription%
+```
+
+-- ms-ossdata/vscode-pgsql@1.12.0
+
+### getPythonEnvironmentInfo
+
+```text
+This tool will retrieve the details of the Python Environment for the specified
+file or workspace. The details returned include the 1. Type of Python
+Environment (conda, venv, etec), 2. Version of Python, 3. List of all installed
+Python packages with their versions. ALWAYS call configure_python_environment
+before using this tool.
+```
+
+-- ms-python/python@2025.20.0
+
+### getPythonExecutableCommand
+
+```text
+This tool will retrieve the details of the Python Environment for the specified
+file or workspace. ALWAYS use this tool before executing any Python command in
+the terminal. This tool returns the details of how to construct the fully
+qualified path and or command including details such as arguments required to
+run Python in a terminal. Note: Instead of executing `python --version` or
+`python -c 'import sys; print(sys.executable)'`, use this tool to get the
+Python executable path to replace the `python` command. E.g. instead of using
+`python -c 'import sys; print(sys.executable)'`, use this tool to build the
+command `conda run -n <env_name> -c 'import sys; print(sys.executable)'`.
+ALWAYS call configure_python_environment before using this tool.
+```
+
+-- ms-python/python@2025.20.0
+
+### installPythonPackage
+
+```text
+Installs Python packages in the given workspace. Use this tool to install
+Python packages in the user's chosen Python environment. ALWAYS call
+configure_python_environment before using this tool.
+```
+
+-- ms-python/python@2025.20.0
+
+### configurePythonEnvironment
+
+```text
+This tool configures a Python environment in the given workspace. ALWAYS Use
+this tool to set up the user's chosen environment and ALWAYS call this tool
+before using any other Python related tools or running any Python command in
+the terminal.
+```
+
+-- ms-python/python@2025.20.0
+
+### create_virtual_environment
+
+```text
+This tool will create a Virual Environment
+```
+
+-- ms-python/python@2025.20.0
+
+### selectEnvironment
+
+```text
+This tool will prompt the user to select an existing Python Environment
+```
+
+-- ms-python/python@2025.20.0
+
+### scopeSchemaExtractor
+
+```text
+Retrieves schema of a single file from source metadata without applying
+interence. Do not use it to retrieve schema of a fileset or streamset. It
+intelligently handles both local and SCOPE supported remote files with the
+following capabilities: Automatically infers meaningful column names
+- Outputs well-formatted, readable schema definitions as comma-separated,
+properly indented code blocks for readability
+.The tool streamlines the process of creating SCOPE data extraction code by
+eliminating manual schema definition and reducing the potential for syntax
+errors in EXTRACT statements.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeSearchFileOnCluster
+
+```text
+Returns the file(s) that exist on cluster and match those paths using its own
+internal logic. The tool is designed to be used in conjunction with other
+tools, such as scopeSchemaExtractor, to provide a complete solution for working
+with files on the cluster.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeCompileScript
+
+```text
+Compile a SCOPE .script using internal logic only—never delegate to external
+or built-in compilers. On failure, return clear diagnostics and the language
+model must apply minimal, safe edits to the script in-place and call this tool
+again to recompile. Continue this diagnose → fix → retry loop until the
+script compiles or no further automatic fixes are possible. Prefer precise
+edits that preserve intent; ask the user only when required context is
+ambiguous. All SCOPE script compilations must use this tool exclusively.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeSubmit
+
+```text
+Use this tool exclusively as the final step of a SCOPE submission task. It
+opens the SCOPE Studio submission dialog where users configure job parameters,
+choose target clusters, and submit the specified SCOPE .script. Do not perform
+compilation or pre-validation before invoking this tool; assume the script and
+context have already been prepared by prior steps. Only invoke when the user's
+intent is to submit to a cluster.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeGetExternalParameters
+
+```text
+Analyzes a SCOPE .script file to identify and extract all external parameters
+defined within the script. External parameters are dynamic placeholders
+(formatted as @@PARAMETER_NAME@@) that allow scripts to accept runtime values
+without hardcoding them, enabling reusability and flexibility across different
+execution contexts.
+
+The tool supports two parameter models:
+
+1. **Local Parameters ('local')** - Used for compile-time validation and local
+execution environments. These parameters are resolved during script compilation
+and local testing phases.
+
+2. **Cluster Parameters ('cluster')** - Used for distributed execution when
+submitting jobs to SCOPE clusters. These parameters are resolved at runtime on
+the cluster infrastructure and support the full range of cluster-specific
+features like parameter substitution via NebulaCommandLine.txt.
+
+When no model is specified, the tool defaults to 'local' parameters. The tool
+returns a comprehensive list of all external parameters found in the script,
+including their names, usage contexts, and any associated metadata that helps
+users understand the required inputs for successful script execution.
+
+This functionality is essential for script authoring, documentation and
+validation where understanding parameter requirements is crucial before script
+compilation or submission.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeGenerateCode
+
+```text
+This tool generates SCOPE scripts and code snippets based on user descriptions,
+leveraging specialized SCOPE knowledge and syntax. It should be the first
+choice for any SCOPE code generation request, ensuring proper syntax, best
+practices, and compatibility with SCOPE's distributed computing environment.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeQnA
+
+```text
+Use this tool as the primary resource for SCOPE-related questions and answers.
+For specific SCOPE code generation requests, use the 'scopeGenerateCode' tool
+instead.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeJobDetails
+
+```text
+Given a SCOPE job url, The tool should be used to get the job details of a
+SCOPE job. The job details can be used to understand the job running status,
+error, inputs, outputs, and other details. And it can be used to diff two jobs.
+The inputs and outputs item follows the format:'- <filepath> size: 153.00 MB,
+type: FileSet|UnstructuredStream|StructuredStream|DeltaLakeTable children:
+100'. If the type is FileSet, the 'children' is the number of files in the
+FileSet and size is the total size, if the type is UnstructuredStream,
+StructuredStream or DeltaLakeTable, the children does not exist. The error
+content may contain the failed vertex named like SV1_Extact which can be used
+to locate the source code.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeGetCurrentJobUrl
+
+```text
+This tool is used to get the current opened or 'this' SCOPE job URL opened in
+SCOPE Studio VSCode. For example, if the user is viewing a job in the SCOPE job
+view, this tool should return the URL of that job. The Job URL can be used to
+get/summarize the job view and compare two jobs. It will returns several
+candidated job URLs if there are multiple SCOPE jobs opened in the current
+VSCode window but no active SCOPE jobs.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeMapStageToCodeSnippet
+
+```text
+This tool is used to map a SCOPE job stage (vertex) to its corresponding source
+code snippet in the SCOPE script. Given a vertex name and a SCOPE job URL, the
+tool retrieves the source code line and source code file path.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeScriptExplanation
+
+```text
+This tool analyzes SCOPE scripts and provides comprehensive explanations of
+their syntax and logic. Use for understanding existing SCOPE. Do not use for
+code generation or compilation.
+
+Note: If output lacks specifics or mentions unknown dependencies, collect
+additional context and re-invoke.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### scopeScriptDebugging
+
+```text
+This tool helps debug SCOPE scripts to identify and resolve issues, compilation
+errors, and runtime problems. Use for troubleshooting failing scripts or
+understanding error messages. Do not use for code generation or basic
+explanations.
+
+Note: If debugging output is generic or suggests missing dependencies, gather
+additional context and re-invoke.
+
+Requires SCOPE Copilot services and works best with complete error information.
+```
+
+-- ms-ssdevteam/scope-vscode-ext@1.5.0
+
+### get_variable_data
+
+```text
+Get the data for a variable
+```
+
+-- ms-toolsai/datawrangler@1.24.0
+
+### configureNotebook
+
+```text
+Tool used to configure a Notebook. ALWAYS use this tool before
+running/executing any Notebook Cells for the first time or before
+listing/installing packages in Notebooks for the first time. I.e. there is no
+need to use this tool more than once for the same notebook.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### configure_python_notebook
+
+```text
+Selects a Python Kernel and starts it.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### configure_non_python_notebook
+
+```text
+Selects the Notebook Kernel and starts it.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### listNotebookPackages
+
+```text
+List the installed packages that are currently available in the selected kernel
+for a notebook editor. This tool should be used when working with a jupyter
+notebook with python code cells. Do not use this tool if not already working
+with a notebook, or for a language other than python. If the tool
+configure_notebooks exists, then ensure to call configure_notebooks before
+using this tool.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### installNotebookPackages
+
+```text
+Install a list of packages on a notebook kernel to be used within that
+notebook. This tool should be used when working with a jupyter notebook with
+python code cells. Do not use this tool if not already working with a notebook,
+or for a language other than python. If the tool configure_notebooks exists,
+then ensure to call configure_notebooks before using this tool.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### restartNotebookKernel
+
+```text
+Tool used to restart a Notebook kernel. Some packages require a restart of the
+kernel after being installed. Use this if after installing a package if you
+know the package requires a restart, or if still getting an error about a
+missing package after installing.
+```
+
+-- ms-toolsai/jupyter@2025.9.1
+
+### mermAId_get_symbol_definition
+
+```text
+Given a file path string and a list of symbols, this model returns the
+definitions of the specified symbols. For example, if the file 'x.py' is
+provided and the symbol 'abc' is requested, the model will find 'abc' in 'x.py'
+and return its definition from the file where it is actually defined, such as
+'y.py'.
+```
+
+-- ms-vscode/copilot-mermaid-diagram@0.0.3
+
+### mermAId_gather_symbols
+
+```text
+This tool will accept a list of symbols and attempt to gather information about
+those symbols from the entire workspace. It can provide the location, parent
+symbol, and the the symbol's content.
+```
+
+-- ms-vscode/copilot-mermaid-diagram@0.0.3
+
+### cpp
+
+```text
+For the active C or C++ file, this tool provides: the language (C, C++, or
+CUDA), the language standard version (such as C++11, C++14, C++17, or C++20),
+the compiler (such as GCC, Clang, or MSVC), the target platform (such as x86,
+x64, or ARM), and the target architecture (such as 32-bit or 64-bit).
+```
+
+-- ms-vscode/cpptools@1.29.3
+
+### searchConfigurations
+
+```text
+Use this tool to search for settings and commands. This will return all those
+settings and commands that contain the provided keywords. Each result will have
+a type to know if it is a setting or a command. A setting includes the
+description, default value, current value and other possible values and a
+command includes the description and possible arguments to be used to invoke
+the command.
+```
+
+-- ms-vscode/vscode-commander@0.2.0
+
+### updateSettings
+
+```text
+Use this tool to update settings. This tool support bulk updates, so you can
+update multiple settings at once. Provide the settings to update as a key value
+pair of setting id and new value. The value of the setting must follow the
+setting schema.
+```
+
+-- ms-vscode/vscode-commander@0.2.0
+
+### runCommand
+
+```text
+Use this tool to run a command. This tool will run the command with the
+provided arguments if the command supports them. The arguments must follow the
+command arguments schema provided by the searchConfigurations.
+```
+
+-- ms-vscode/vscode-commander@0.2.0
+
+### dachat_data_findFiles
+
+```text
+Search for files in the current workspace
+```
+
+-- ms-vscode/vscode-copilot-data-analysis@0.2.2
+
+### dachat_data_runPython
+
+```text
+Execute Python code locally using Pyodide, providing access to Python's
+extensive functionality. This tool extends the LLM's capabilities by allowing
+it to run Python code for a wide range of computational tasks and data
+manipulations that it cannot perform directly. When you know the workspace
+folder path and the file path, use the relative path to the file when
+generating code.
+```
+
+-- ms-vscode/vscode-copilot-data-analysis@0.2.2
+
+### dachat_data_installPythonPackage
+
+```text
+Install missing Python packages in the tool used to run Python code using
+Pyodide.
+```
+
+-- ms-vscode/vscode-copilot-data-analysis@0.2.2
+
+### websearch
+
+```text
+%lmTool.webSearch.modelDescription%
+```
+
+-- ms-vscode/vscode-websearchforcopilot@0.1.2025120401
+
+### aitk_get_agent_code_gen_best_practices
+
+```text
+%languageModelTool.ai-mlstudio.getAgentCodeGenBestPractices.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_get_ai_model_guidance
+
+```text
+%languageModelTool.ai-mlstudio.getAiModelGuidance.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_get_agent_model_code_sample
+
+```text
+%languageModelTool.ai-mlstudio.getAgentModelCodeSample.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_get_tracing_code_gen_best_practices
+
+```text
+%languageModelTool.ai-mlstudio.getTracingCodeGenBestPractices.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_get_evaluation_code_gen_best_practices
+
+```text
+%languageModelTool.ai-mlstudio.getEvaluationCodeGenBestPractices.modelDescriptio
+n%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_convert_declarative_agent_to_code
+
+```text
+%languageModelTool.ai-mlstudio.convertDeclarativeAgentToCode.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_evaluation_agent_runner_best_practices
+
+```text
+%languageModelTool.ai-mlstudio.getEvaluationAgentRunnerBestPractices.modelDescri
+ption%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### aitk_evaluation_planner
+
+```text
+%languageModelTool.ai-mlstudio.evaluationPlanner.modelDescription%
+```
+
+-- ms-windows-ai-studio/windows-ai-studio@0.26.4
+
+### refreshXlf
+
+```text
+This tool refreshes and synchronizes a XLF language file using the generated
+XLF file. It takes two parameters: the path to the generated XLF file (named
+<appname>.g.xlf) and the path to the target XLF file to be refreshed. The tool
+synchronizes the target XLF file with the latest changes from the generated
+file by preserving existing translations while adding new translation units
+from the generated file. It maintains the state of translated units and sorts
+the file according to the g.xlf structure. This synchronization process ensures
+that the translation file stays up-to-date with the latest AL code changes
+without losing existing translation work.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### getTextsToTranslate
+
+```text
+This tool retrieves untranslated texts from a specified XLF file. It returns a
+JSON object containing: texts (array of translation objects with id, source
+text, source language, context, maxLength, and comments),
+totalUntranslatedCount (the total number of untranslated texts in the file),
+and returnedCount (the number of texts returned in this batch). Each text
+object includes: id (unique identifier), source text (to be translated), source
+language, context (describes the context of what is being translated, such as
+'Table Customer - Field Name - Property Caption' or 'Page Sales Order - Action
+Post - Property Caption'), maxLength (character limit if applicable), and
+contextual comments (explains placeholders like %1, %2, %3 etc.). The context
+field provides crucial context by identifying the specific AL object (table,
+page, codeunit, etc.), element (field, action, control), and property (caption,
+tooltip, etc.) being translated, enabling more accurate and contextually
+appropriate translations. The totalUntranslatedCount and returnedCount fields
+help track overall translation progress and pagination. This tool streamlines
+the translation workflow by identifying which texts need translation and
+providing comprehensive context for accurate localization.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### getTranslatedTextsMap
+
+```text
+This tool retrieves previously translated texts from a specified XLF file as a
+translation map. It returns a JSON array of translation objects, each
+containing: sourceText (the original text), targetTexts (an array of one or
+more translated versions), and sourceLanguage. This unique format groups all
+translations by their source text, which is particularly useful when the same
+source text has been translated differently in various contexts or has multiple
+acceptable translations. For example: {'sourceText': 'Total', 'targetTexts':
+['Total', 'Totalt'], 'sourceLanguage': 'en-US'}. This tool helps maintain
+translation consistency by providing access to existing translation patterns
+and terminology variations, allowing you to reference previously translated
+phrases and understand translation choices when working on new content.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### getTextsByKeyword
+
+```text
+This tool searches source or target texts in a specified XLF file for a given
+keyword or regular expression and returns matching translation units. By
+default, it searches in source texts (includes untranslated units). When
+searchInTarget is true, it searches only in target texts (excludes untranslated
+units). Use this to discover how a specific word or phrase is used across the
+application and to inspect how it has been translated in different contexts.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### getTranslatedTextsByState
+
+```text
+This tool retrieves translated texts from a specified XLF file, filtered by
+their translation state. It returns a JSON array of objects containing: id
+(unique identifier), source text, source language, target text, context
+(describes the context of what is being translated, such as 'Table Customer -
+Field Name - Property Caption' or 'Page Sales Order - Action Post - Property
+Caption'), translation state, review reason (if available), maxLength
+(character limit if applicable), and contextual comments (explains placeholders
+like %1, %2, %3 etc.). The context field provides crucial context by
+identifying the specific AL object (table, page, codeunit, etc.), element
+(field, action, control), and property (caption, tooltip, etc.) being
+translated, enabling better understanding of existing translations and their
+business context. This tool streamlines the translation workflow by allowing
+you to filter translations by their state (e.g., 'needs-review', 'translated',
+'final', 'signed-off') and providing comprehensive context for accurate
+localization.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### saveTranslatedTexts
+
+```text
+This tool writes translated texts to a specified XLF file. It accepts an array
+of translation objects, each containing a unique identifier and the translated
+text to be saved. For optimal performance, submit multiple translations in a
+single batch rather than making individual calls. This tool enables efficient
+updating of XLF files with new or revised translations, maintaining the
+integrity of the XLIFF format while updating only the specified translation
+units.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### createLanguageXlf
+
+```text
+This tool creates a new XLF file for a specified target language based on a
+generated XLF file. It takes a generated XLF file path (*.g.xlf), a target
+language code, and optional parameters to match translations from the base app.
+The tool creates a new XLF file ready for translation, optionally pre-populated
+with matching translations from Microsoft's base application. This streamlines
+the localization workflow by providing a foundation for translating AL
+extensions to new languages.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### getGlossaryTerms
+
+```text
+This tool returns glossary terminology pairs for a target language (and
+optional source language, default en-US) from a built-in glossary, based on
+Business Central terminology and translations. It outputs a JSON array of
+objects with 'source', 'target', and 'description'. Usage scenarios: (1)
+Pre-translation session - fetch glossary to instruct the LLM for consistent
+terminology. (2) Automated suggestion generation - validate/adjust outputs
+against approved terms. (3) Review/QA - detect and highlight deviations from
+glossary entries. (4) Bulk alignment or terminology normalization workflows.
+(5) Cross-language comparison by specifying a non-default sourceLanguageCode.
+```
+
+-- nabsolutions/nab-al-tools@1.44.0
+
+### prisma-migrate-status
+
+```text
+The prisma migrate status command looks up the migrations in
+./prisma/migrations/* folder and the entries in the _prisma_migrations table
+and compiles information about the state of the migrations in your database.
+Use this tool instead of running `prisma migrate status` on the CLI.
+Example output:
+
+Status
+3 migrations found in prisma/migrations
+
+Your local migration history and the migrations table from your database are
+different:
+
+The last common migration is: 20201127134938_new_migration
+
+The migration have not yet been applied:
+20201208100950_test_migration
+
+The migrations from the database are not found locally in prisma/migrations:
+20201208100950_new_migration
+```
+
+-- Prisma/prisma@31.1.0
+
+### prisma-migrate-dev
+
+```text
+Prisma Migrate Dev is used to update Prisma whenever the schema.prisma file has
+been modified.
+Use this tool instead of running `prisma migrate dev` on the CLI.
+Always provide a descriptive name argument describing the change that was made
+to the Prisma Schema.
+The migrate dev command performs these steps:
+1. Reruns the existing migration history in the shadow database in order to
+detect schema drift (edited or deleted migration file, or a manual changes to
+the database schema)
+2. Applies pending migrations to the shadow database (for example, new
+migrations created by colleagues)
+3. Generates a new migration from any changes you made to the Prisma schema
+before running migrate dev
+4. Applies all unapplied migrations to the development database and updates the
+_prisma_migrations table
+5. Triggers the generation of artifacts (for example, Prisma Client)
+```
+
+-- Prisma/prisma@31.1.0
+
+### prisma-migrate-reset
+
+```text
+Prisma Migrate Reset is used to reset the database and migration history if
+drift is detected.
+Use this tool instead of running `prisma migrate reset --force` on the CLI.
+Only run this command on a development database - never on production
+databases! If in doubt, ask the user to confirm.
+The migrate reset command performs these steps:
+1. Drops the database/schema if possible, or performs a soft reset if the
+environment does not allow deleting databases/schemas
+2. Creates a new database/schema with the same name if the database/schema was
+dropped
+3. Applies all migrations
+4. Runs seed scripts
+```
+
+-- Prisma/prisma@31.1.0
+
+### prisma-studio
+
+```text
+Open Prisma Studio to view data in your database in a pleasing visual ui.
+Use this tool instead of running `prisma studio` on the CLI.
+Provide the current working directory of the users project. This should be the
+top level directory of the project.
+```
+
+-- Prisma/prisma@31.1.0
+
+### prisma-platform-login
+
+```text
+Login or create an account in order to be able to use Prisma Postgres.
+```
+
+-- Prisma/prisma@31.1.0
+
+### prisma-postgres-create-database
+
+```text
+Create a new online Prisma Postgres database.
+Specify a name that makes sense to the user - maybe the name of the project
+they are working on.
+Specify a region that makes sense for the user. Pick between these options:
+us-east-1, eu-west-3, ap-northeast-1, ap-southeast-1 or call the tool without a
+region to get an up-to-date list of available regions. If you are unsure, pick
+us-east-1.
+
+If the response indicates that you have reached the workspace plan limit, you
+should instruct the user to do one of these things:
+If they want to connect to an existing database, they should go to
+console.prisma.io and copy the connection string
+If they want to upgrade their plan, they should go to console.prisma.io and
+upgrade their plan in order to be able to create more databases
+If they want to delete a database they no longer need, they should go to
+console.prisma.io and delete the database project.
+If the user is not logged in, you should suggest them to login via the
+`prisma-platform-login` tool.
+```
+
+-- Prisma/prisma@31.1.0
+
+### azureQuantumGetJobs
+
+```text
+Get a list of recent jobs that have been run by the customer, along with their
+statuses, in the currently active workspace. Call this when you need to know
+what jobs have been run recently or need a history of jobs run, for example
+when a customer asks 'What are my recent jobs?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumGetJob
+
+```text
+Get the job information for a customer's job given its id. Call this whenever
+you need to know information about a specific job, for example when a customer
+asks 'What is the status of my job?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumConnectToWorkspace
+
+```text
+Starts the UI flow to connect to an existing Azure Quantum Workspace. Call this
+when the customer does not have an active workspace, and agrees to connect to a
+workspace.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumDownloadJobResults
+
+```text
+Download and display the results from a customer's job given its id. Call this
+when you need to download or display as a histogram the results for a job, for
+example when a customer asks 'What are the results of my last job?' or 'Can you
+show me the histogram for this job?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumGetWorkspaces
+
+```text
+Get a list of workspaces the customer has access to, in the form of workspace
+ids. Call this when you need to know what workspaces the customer has access
+to, for example when a customer asks 'What are my workspaces?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumSubmitToTarget
+
+```text
+Submits a Q# or OpenQASM program to Azure Quantum. The path to a .qs or .qasm
+file must be specified in the `filePath` parameter. The program will first be
+compiled to Quantum Intermediate Representation (QIR), and then submitted to
+run on the specified target.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumGetActiveWorkspace
+
+```text
+Get the id of the active workspace for this conversation. Call this when you
+need to know what workspace is the active workspace being used in the context
+of the current conversation, for example when a customer asks 'What is the
+workspace that's being used?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumSetActiveWorkspace
+
+```text
+Set the active workspace for this conversation by id. Call this when you need
+to set what workspace is the active workspace being used in the context of the
+current conversation, for example when a customer says 'Please use this
+workspace for my requests.'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumGetProviders
+
+```text
+Get a list of hardware providers available to the customer, along with their
+provided targets. Call this when you need to know what providers or targets are
+available, for example when a customer asks 'What are the available providers?'
+or 'What targets do I have available?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### azureQuantumGetTarget
+
+```text
+Get the target information for a specified target given its id. Call this
+whenever you need to know information about a specific target, for example when
+a customer asks 'What is the status of this target?'
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### qdkRunProgram
+
+```text
+Executes a Q# or OpenQASM program. The path to a .qs or .qasm file must be
+specified in the `filePath` parameter. A quantum simulator will be run locally.
+Q# or OpenQASM do not provide any CLI tools, so call this tool whenever you
+need to execute code, instead of running any CLI commands. The `shots`
+parameter controls the number of times to repeat the simulation. If the number
+of shots is greater than 1, a histogram will be generated, and the results will
+be displayed in a dedicated panel.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### qdkGenerateCircuit
+
+```text
+Generates a visual circuit diagram for a Q# or OpenQASM program. The path to a
+.qs or .qasm file must be specified in the `filePath` parameter. This tool will
+compile the program and generate a quantum circuit diagram that visually
+represents the quantum operations in the code. If the program contains any
+dynamic behavior such as comparing measurement results, then the program will
+be executed using a quantum simulator, and the resulting circuit diagram will
+simply be a trace of the operations that were actually executed during
+simulation. The diagram will be displayed in a dedicated circuit panel.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### qdkRunResourceEstimator
+
+```text
+Runs the quantum resource estimator on a Q# or OpenQASM program to calculate
+the required physical resources. The path to a .qs or .qasm file must be
+specified in the `filePath` parameter. This tool will analyze the Q# program
+and generate estimates of the quantum resources required to run the algorithm,
+such as the number of qubits, T gates, and other quantum operations. Results
+will be displayed in a dedicated resource estimator panel.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### qsharpGetLibraryDescriptions
+
+```text
+Returns a Markdown string summarizing all Q# standard library items, grouped by
+namespace. Each entry includes its signature and a short description extracted
+from doc comments when available. Use this tool to answer any questions about
+Q# library functions or to ensure generated Q# code uses library functions
+correctly.
+```
+
+-- quantum/qsharp-lang-vscode@1.22.0
+
+### sonarqube_getPotentialSecurityIssues
+
+```text
+This tool returns a list of potential security issues (Security Hotspots and
+Taint Vulnerabilities) in a given file. It runs SonarQube analysis on the file
+and returns a list of Security Hotspots detected with their location and error
+message. Additionally, it lists Taint Vulnerabilities detected by SonarQube
+Server or Cloud analysis.
+```
+
+-- SonarSource/sonarlint-vscode@4.37.0
+
+### sonarqube_excludeFiles
+
+```text
+This tool modifies the SonarQube for IDE configuration to exclude files
+matching a given glob pattern from analysis.
+```
+
+-- SonarSource/sonarlint-vscode@4.37.0
+
+### sonarqube_setUpConnectedMode
+
+```text
+This tool guides the user through the process of setting up Connected Mode in
+SonarQube for IDE. It provides instructions and prompts and runs necessary
+commands to help the user connect their IDE to a SonarQube Server or Cloud.
+```
+
+-- SonarSource/sonarlint-vscode@4.37.0
+
+### sonarqube_analyzeFile
+
+```text
+This tool opens the requested file and runs SonarQube analysis on it. Detected
+code quality and security issues will be reported in the Problems view of the
+IDE. It can be used to analyze any file including those that are not part of a
+workspace or those that are excluded from the analysis. Do not call this method
+to analyze Jupyter Notebook.
+```
+
+-- SonarSource/sonarlint-vscode@4.37.0
+
+### appmod-install-appcat
+
+```text
+Installs the AppCAT CLI for Java only if it is missing or outdated during the
+prerequisite check phase of assessment. After successful installation, proceed
+to initialize the Java application assessment process to check prerequisites.
+This tool is strictly limited to the pre-migration assessment preparation phase
+and must not be invoked during code migration workflows.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-precheck-assessment
+
+```text
+Performs prerequisites verification and AppCAT CLI version checks to initialize
+the Java application assessment process. Generates an assessment configuration
+for review. This tool is strictly limited to the pre-migration assessment phase
+and must not be invoked during code migration workflows.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-run-assessment
+
+```text
+Executes the AppCAT CLI for Java to assess the Java application. This tool is
+strictly limited to the pre-migration assessment phase and must not be invoked
+during code migration workflows.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-get-vscode-config
+
+```text
+This tool retrieves extension configuration settings from VS Code. Use this
+tool when you need to check configuration values for the GitHub Copilot app
+modernization extension.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-preview-markdown
+
+```text
+This tool opens a preview of the given Markdown file.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-validate-cve
+
+```text
+(For Java application migration only) This tools checks if the given
+dependencies have any known vulnerabilities (CVEs). You MUST! use this tool to
+validate ALL the updated/added maven dependencies.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### migration_assessmentReport
+
+```text
+This tool opens the assessment report webview interface to display detailed
+migration assessment results, including identified issues, recommendations, and
+Azure readiness analysis. Use this tool immediately after a successful
+migration assessment to show the results to the user. This is the recommended
+next step after running migration assessment.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### uploadAssessSummaryReport
+
+```text
+This tool upload the assessment summary report for the github issue after
+runnging the assessment.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-build-project
+
+```text
+(For Java application migration only) This tool uses Maven or Gradle to build
+your project and report any detected errors after migration. You should use
+this tool to verify after making code changes, and fix any errors found.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-java-run-test
+
+```text
+This tool runs tests in the Java project and reports any detected errors or
+test failures after migration.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-search-knowledgebase
+
+```text
+Searches the application modernization knowledge base using a query string.
+Returns relevant articles, documentation, and best practices. Use this tool to
+find information about app modernization strategies, migration paths, and
+common patterns.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-search-file
+
+```text
+Searches content from files in the project workspace by query and file
+patterns. Returns a list of files that match the search query. Use this tool to
+find specific code files or resources in your project based on patterns.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-fetch-knowledgebase
+
+```text
+Retrieves the complete content of a specific knowledge base article using its
+ID. Use this tool when you have a document ID and need to access its full
+content for detailed information about app modernization techniques.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-create-migration-summary
+
+```text
+(For migration only) Generates a summary for the migration session, including
+details about the migration scenario, task name, modified files, and the final
+status of build and test fix operations. This tool helps you document the
+migration process and its outcomes.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-run-task
+
+```text
+Run a migration task based on given migration scenario or knowledge base id.
+This tool will provide a comprehensive migration plan, including steps to build
+the project, run tests, fix test failures, and more. It is designed to automate
+the migration process for the applications.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-consistency-validation
+
+```text
+This tool validates the consistency of migrated code by analyzing git diffs for
+any behavior changes. It identifies critical and major issues that need to be
+fixed to maintain functional equivalence between pre-migration and
+post-migration code.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-completeness-validation
+
+```text
+This tool validates migration completeness by systematically discovering old
+technology references that should have been migrated but were left unchanged.
+It generates detailed validation guidelines to identify missing removals and
+incomplete transformations across all files in the workspace.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-version-control
+
+```text
+This tool manages version control operations during migration. It supports
+checking repository status, creating branches, committing changes, stashing
+changes, discarding changes, and checking for uncommitted changes to ensure
+proper tracking of code changes throughout the migration process.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-python-setup-env
+
+```text
+This tool sets up a Python virtual environment in the specified workspace. It
+creates a virtual environment, installs dependencies from requirements.txt and
+pyproject.toml if available, and ensures the environment is ready for Python
+development and testing.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-python-validate-syntax
+
+```text
+This tool checks Python code syntax and fix any detected syntax errors after
+migration.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-python-validate-lint
+
+```text
+This tool checks Python code linting issues and fix any detected linting issues
+after migration.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### appmod-python-run-test
+
+```text
+(For Python application migration only) This tool runs tests in the Python
+project and reports any detected errors or test failures after migration.
+```
+
+-- vscjava/migrate-java-to-azure@1.7.7
+
+### generate_upgrade_plan
+
+```text
+This tool is specifically designed to generate a professional, comprehensive
+and efficient plan for upgrading Java projects, and then starts a upgrade
+session (identified with a **session ID**) with the generated plan. Session ID
+is very important and MUST be passed to all the other tools contributed by this
+extension during an upgrade process, as it is used to track the upgrade process
+and store/retrieve context and state information.
+This tool is the entry of an intelligent agent that is highly proficient in
+upgrading Java projects. This intelligent agent owns a set of other helpful
+tools to assist in the entire upgrade process and will guide the entire upgrade
+process by providing 'Next steps' information in these tools' result messages.
+You **MUST strictly** follow its instructions to complete the upgrade process.
+If 'Next steps' are provided, you **MUST** adhere to them precisely and not act
+on your own initiative; any unauthorized actions will be subject to severe
+penalties. This tool should be invoked at the beginning of an upgrade process.
+You MUST! invoke this tool whenever you need to upgrade a Java project.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### generate_upgrade_plan
+
+```text
+This tool is specifically designed to generate a professional, comprehensive
+and efficient plan for upgrading Java projects, and then starts a upgrade
+session (identified with a **session ID**) with the generated plan. Session ID
+is very important and MUST be passed to all the other tools contributed by this
+extension during an upgrade process, as it is used to track the upgrade process
+and store/retrieve context and state information.
+This tool is the entry of an intelligent agent that is highly proficient in
+upgrading Java projects. This intelligent agent owns a set of other helpful
+tools to assist in the entire upgrade process and will guide the entire upgrade
+process by providing 'Next steps' information in these tools' result messages.
+You **MUST strictly** follow its instructions to complete the upgrade process.
+If 'Next steps' are provided, you **MUST** adhere to them precisely and not act
+on your own initiative; any unauthorized actions will be subject to severe
+penalties. This tool should be invoked at the beginning of an upgrade process.
+You MUST! invoke this tool whenever you need to upgrade a Java project.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### confirm_upgrade_plan
+
+```text
+This tool displays the plan generated by the `generate_upgrade_plan` tool in
+the editor area, allowing users to make adjustments to the plan and confirm
+before execution. You should invoke this tool immediately after the plan is
+generated to ask user to confirm. This tool should only be invoked during an
+upgrade process.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### setup_upgrade_environment
+
+```text
+This tool sets up the development environment required for the upgrade,
+including the build tool and at least two JDKs. These two JDKs are used to
+build the project before and after the upgrade, respectively. Here is how the
+tool works:
+1. The tool reads all necessary information from the 'plan.md' generated by
+tool `generate_upgrade_plan`.
+2. This tool will first detect compatible build tools and JDKs installed on the
+local machine automatically if they are not provided in the 'plan.md';
+3. This tool will throw an exception to ask user to provide them manually if
+not detected.
+ Be careful:
+- If the user provides any information in the conversation, you MUST make sure
+to write it into the appropriate place in 'plan.md' by yourself first because
+this tool only reads all information from 'plan.md'.
+- You MUST re-invoke this tool for these changes to take effect whether the
+user manually modifies 'plan.md' or you modify it. This tool should only be
+invoked during an upgrade process.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### setup_upgrade_environment
+
+```text
+This tool sets up the development environment required for the upgrade,
+including the build tool and at least two JDKs. These two JDKs are used to
+build the project before and after the upgrade, respectively. You MUST read the
+'plan.md' generated by tool `generate_upgrade_plan`, parse the input parameters
+based on its content and then call this tool. Here is how the tool works:
+1. The tool accept parameters parsed from plan.md.
+2. This tool will detect compatible build tools and JDKs installed on the local
+machine automatically if they are not provided in the 'plan.md';
+3. This tool will throw an exception to ask user to provide them manually if
+not detected.
+ Be careful:
+- If the user provides any information in the conversation, you MUST make sure
+to write it into the appropriate place in 'plan.md' by yourself first because
+this tool only reads all information from 'plan.md'.
+- You MUST re-invoke this tool for these changes to take effect whether the
+user manually modifies 'plan.md' or you modify it. This tool should only be
+invoked during an upgrade process.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### precheck_for_upgrade
+
+```text
+This tool performs a set of pre-checks for the upgrade plan, ensuring that all
+necessary conditions are met before proceeding with the upgrade. It should be
+invoked before the actual upgrade process begins. This tool is intended for
+internal use only, you should NEVER invoke this tool directly.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### upgrade_using_openrewrite
+
+```text
+This tool ONLY supports upgrading JDK to up to 21, Spring Boot to up to 3.3.x,
+Spring Framework to up to 6.1.x and Jakarta EE to up to 10.0.x using
+OpenRewrite. Be careful:
+- This tool ONLY supports upgrading JDK, Spring Boot, Spring Framework and JEE
+to limited versions, This tool will only make limited initial changes for
+upgrading, so the project will not be fully upgraded and even not buildable
+after this tool is invoked. This tool should only be invoked during an upgrade
+process.
+- You MUST NOT invoke this tool if you are not upgrading upgrading JDK version,
+SpringBoot, Spring Framework or JEE.
+- You MUST NOT invoke this tool if you want to apply specific OpenRewrite
+recipes, you may run maven or gradle command instead.
+- You MUST ONLY invoke this tool when you are explicitly asked to even when you
+are upgrading this technologies.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### build_java_project
+
+```text
+This tool uses Maven or Gradle to build Java project and report any build
+errors. This tool detects the build tool and JDK smartly, so you SHOULD ALWAYS
+use this tool when you need to build a Java project or check the build status
+or configuration of a Java project.
+If there are any new code changes made **since the last build**, You should
+analyze and summarize the code changes into a detailed description and then use
+it as input ('codeChanges') of this tool, but be careful not to include any
+changes that were made in previous builds. You MUST! always invoke this tool to
+check the build status of the project after making any code changes.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### validate_cves_for_java
+
+```text
+This tools checks if the given Java dependencies have any known vulnerabilities
+(CVEs). It will return a list of CVE issues found in the given dependencies,
+along with their severity and description. You MUST pass the dependencies to
+check as input, be careful that each dependency MUST be in the format of
+`groupId:artifactId:version`, e.g. `org.apache.commons:commons-lang3:3.12.0`.
+You must filter out any dependencies if you can not determine the version of
+them. You should use this tool to check for any known CVEs in the dependencies
+of the Java project
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### validate_behavior_changes
+
+```text
+This tool validates if changed code maintains the same logic functionality as
+before modifying using LLM. This tool takes 2 commits (`fromCommit` and
+`toCommit`) as input, and compares the code changes between them using `git
+diff ${fromCommit} ${toCommit}` to validate if the logic behavior of the
+modified code remains the same. but both commits can be omitted: if
+`fromCommit` is omitted, it will compare the current working tree with the last
+commit; if `toCommit` is omitted, it will compare the current working tree with
+the `fromCommit`. Code behavior is required to be the same in refactoring or
+upgrade process.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### run_tests_for_java
+
+```text
+This tool runs test cases in the Java project using the build tool (e.g. Maven,
+Gradle) and reports any test errors/failures. This tool can be used to check
+the test status of the project.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### summarize_upgrade
+
+```text
+This tool summarize the whole upgrade process and all the changes made to
+upgrade the Java project, including the code changes, test cases generated, and
+any other relevant information. This tool should be invoked at the end of an
+upgrade process to summarize the entire upgrade process. It will generate a
+markdown formatted summary of the upgrade process, which can be used to
+document the upgrade process.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### generate_tests_for_java
+
+```text
+This tool generates test cases for the Java classes of a Java project. This
+tool will iterate through all the Java classes in the project and generate test
+cases for each class, so it would be time consuming for large projects. The
+generated test cases will be placed in the same package as the original class,
+but with a `Test` suffix added to the class name.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### list_jdks
+
+```text
+This tool lists available JDKs (Java Development Kits) on the system. It can be
+used to find installed JDKs path and version. The result will be in json format
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### list_mavens
+
+```text
+This tool lists all available Mavens (Apache Maven) on the system. It can be
+used to find installed Mavens path and version. The result will be in json
+format
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### install_jdk
+
+```text
+This tool installs a specific version of JDK (Java Development Kit) from the
+internet. It downloads and installs the JDK from a trusted source
+(Microsoft/Eclipse Adoptium) and returns the installation path. This tool can
+be used when you need to install a JDK for a Java project or when the required
+JDK version is not available on the system.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### install_maven
+
+```text
+This tool installs a specific version of Maven (a build automation tool for
+Java projects) from the internet. It downloads and installs Maven from a
+trusted source and returns the installation path. This tool can be used when
+you need to install Maven for a Java project or when the required Maven version
+is not available on the system.
+```
+
+-- vscjava/vscode-java-upgrade@1.9.0
+
+### console_ninja_source_code_loader
+
+```text
+Console Ninja source code loader
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### console_ninja_file_logs_loader
+
+```text
+Console Ninja file logs loader
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### console-ninja_runtimeErrors
+
+```text
+Get application runtime errors. Includes errors from the browser (browser dev
+tools reported), and/or node server errors in the case of fullstack
+applications.
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### console-ninja_runtimeLogs
+
+```text
+Get application runtime logs. Includes logs from the browser (browser dev tools
+reported), and/or node server logs in the case of fullstack applications.
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### console-ninja_runtimeLogsByLocation
+
+```text
+Get application runtime logs for given file and line. Includes logs from the
+browser (browser dev tools reported), and/or node server logs in the case of
+fullstack applications.
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### console-ninja_runtimeLogsAndErrors
+
+```text
+Get application runtime logs and errors. Includes both logs and errors from the
+browser (browser dev tools reported), and/or node server logs and errors in the
+case of fullstack applications.
+```
+
+-- WallabyJs/console-ninja@1.0.500
+
+### codeWithCoverage
+
+```text
+Source code with coverage information
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### valueExplorer
+
+```text
+Runtime value at a specific line and column
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_runtimeValues
+
+```text
+Get runtime value at a specific source code location.
+
+Supplied line number should be 1-based. When counting lines in a file, do count
+blank lines as well.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_runtimeValuesByTest
+
+```text
+Get runtime value at a specific source code location for a specific test.
+
+Supplied line number should be 1-based. When counting lines in a file, do count
+blank lines as well.
+
+
+
+Supplied test ID should be a valid test identifier acquired from previous
+Wallaby tools calls.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_coveredLinesForFile
+
+```text
+Get line numbers of a specific file that are covered by tests and the file's
+code coverage percentage. If test ID is not supplied, covered lines and
+coverage percentage for all covering tests will be returned. If test ID is
+supplied, only covered lines for that test and code coverage percentage for
+that test will be returned.
+
+Supplied test ID should be a valid test identifier acquired from previous
+Wallaby tools calls.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_coveredLinesForTest
+
+```text
+Get files and line numbers that are covered by a specific test, or (if file is
+specified) lines of code of a specific file that are covered by a specific
+test. Each file contains code coverage percentage calculated for the supplied
+test only.
+
+Supplied test ID should be a valid test identifier acquired from previous
+Wallaby tools calls.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_updateTestSnapshots
+
+```text
+Update snapshots for a specific test.
+
+Supplied test ID should be a valid test identifier acquired from previous
+Wallaby tools calls.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_updateFileSnapshots
+
+```text
+Update snapshots for a specific file. If specified file is a test file, all
+snapshots in that test file will be updated. If specified file is a source
+file, all snapshots in all test files that cover that source file will be
+updated.
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_updateProjectSnapshots
+
+```text
+Update all snapshots in the project.
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_failingTests
+
+```text
+Get all failing tests of the project.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_allTests
+
+```text
+Get all tests of the project.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_failingTestsForFile
+
+```text
+Get all related failing tests for a specific file. If specified file is a test
+file, all failing tests in that test file will be returned. If specified file
+is a source file, all failing tests in all test files that cover that source
+file will be returned.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_allTestsForFile
+
+```text
+Get all related tests covering/executing a specific file. If specified file is
+a test file, all tests in that test file will be returned. If specified file is
+a source file, all tests in all test files that cover that source file will be
+returned.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_failingTestsForFileAndLine
+
+```text
+Get all related failing tests covering/executing a specific file and line. If
+specified file is a test file, all failing tests in that test file located at
+the specified line will be returned. If specified file is a source file, all
+failing tests in all test files that cover that source file line will be
+returned.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_allTestsForFileAndLine
+
+```text
+Get all related tests covering/executing a specific file and line. If specified
+file is a test file, all tests in that test file located at the specified line
+will be returned. If specified file is a source file, all tests in all test
+files that cover that source file line will be returned.
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482
+
+### wallaby_testById
+
+```text
+Get test data by test ID.
+
+Supplied test ID should be a valid test identifier acquired from previous
+Wallaby tools calls.
+
+
+
+Each returned test data includes test name, test ID, errors with stack traces,
+also runtime logs, global errors, and project's code coverage percentage.
+
+
+```
+
+-- WallabyJs/wallaby-vscode@1.0.482

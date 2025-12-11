@@ -22,5 +22,11 @@
   },
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "trunk.io"
+  },
+  "[csv]": {
+    "editor.defaultFormatter": "trunk.io"
   }
 }

@@ -1,4 +1,49 @@
-# DeDuBa - Deduplicating Backup System
+# DeDuBa - Deduplicating Backup System — Copilot instructions for AI coding agents
+
+Goal: help an AI agent quickly understand, build, test and modify DeDuBa
+with minimal back-and-forth. Keep edits small, focused, and well-tested.
+
+- Architecture (one-paragraph): DeDuBa is a C#/.NET (net8.0) backup
+  application using content-addressable storage (SHA-512 chunks + BZip2)
+  and a three-layer native interop: C# platform wrappers → OsCallsCommon
+  bridge (ValXfer) → native shims (OsCalls\*Shim). Key projects: `DeDuBa`,
+  `OsCallsCommon`, `OsCallsCommonShim`, `OsCallsLinux[Shim]`, `OsCallsWindows[Shim]`,
+  `ArchiveStore` (content-addressable store) and `DeDuBa.Test` (xUnit).
+
+- Essential workflows:
+  - Build full workspace: `dotnet build` (CMake/Make invoked by shim csproj).
+  - Run tests: `dotnet test DeDuBa.Test` or run a single test with `--filter`.
+  - Run app locally: set native path then `dotnet run --project DeDuBa -- <args>`;
+    e.g. `export LD_LIBRARY_PATH="$PWD/OsCallsCommonShim/bin/Debug/net8.0:$PWD/OsCallsLinuxShim/bin/Debug/net8.0"`.
+  - Rebuild native shims: they are produced by CMake in `OsCalls*Shim` (look at CMakeLists).
+
+- Project-specific conventions (do not deviate):
+  - Use the `IHighLevelOsApi` abstraction for OS metadata collection; implement
+    platform behavior in `OsCallsLinux` / `OsCallsWindows` (see `WindowsHighLevelOsApi.cs`).
+  - Error handling: prefer `Utilities.Error(file, op, ex)` to throwing directly.
+  - Commit messages: follow Conventional Commits and avoid literal `\n` sequences in `-m` text.
+
+- Files to read first when changing behavior:
+  - `DeDuBa/Deduba.cs` — main backup logic and `Backup_worker`.
+  - `DeDuBa/ArchiveStore.cs` and `IArchiveStore` — storage semantics and APIs.
+  - `OsCallsCommon/ValXfer.cs` and `OsCallsCommonShim/include/ValXfer.h` — native iterator protocol.
+  - `OsCallsLinux/FileSystem.cs`, `OsCallsWindows/FileSystem.cs` and shim C++ sources under `OsCalls*Shim/src`.
+
+- CI and release notes:
+  - Repo uses GitHub Actions; tags `v*` trigger the release workflow.
+  - When creating a tag or a release, update `docs/CHANGELOG.md` and push tag; CI will build packages and create a release.
+
+- Troubleshooting quick tips:
+  - If you see `DllNotFoundException` or missing entry points: ensure native shim builds and that native DLL/.so are copied to managed output (check CMake outputs and csproj copy tasks).
+  - Windows-specific issues often relate to exports/packing (`ValXfer.h` packing, `.def` or CMake export header), and native -> managed struct alignment.
+  - For test flakiness: reset per-run static state (look at `DedubaClass` reset logic) and prefer deterministic logging (canonical paths).
+
+- When editing code:
+  1. Run `dotnet build` and fix compile issues.
+  2. Run affected unit/integration tests locally (`dotnet test --filter "FullyQualifiedName~YourTest"`).
+  3. If native changes were made, rebuild shims via CMake and ensure the resulting native library is present in test output.
+
+If anything here is unclear or you want more detail (examples of implementing a new OS capability, script templates for running a Windows-native test locally, or exact CMake commands), tell me which area to expand.
 
 ## Architecture Overview
 
@@ -24,55 +69,6 @@ DeDuBa is a deduplicating backup system ported from Perl to C&num;. Uses content
 
 1. **Common bridge** (`OsCallsCommon/ValXfer.cs`):
    - `PlatformGetNextValue` delegate set at runtime by OsCallsLinux/Windows
-
-   ```markdown
-   # DeDuBa — Copilot instructions for AI coding agents
-
-   Goal: help an AI agent quickly understand, build, test and modify DeDuBa
-   with minimal back-and-forth. Keep edits small, focused, and well-tested.
-
-   - Architecture (one-paragraph): DeDuBa is a C#/.NET (net8.0) backup
-     application using content-addressable storage (SHA-512 chunks + BZip2)
-     and a three-layer native interop: C# platform wrappers → OsCallsCommon
-     bridge (ValXfer) → native shims (OsCalls\*Shim). Key projects: `DeDuBa`,
-     `OsCallsCommon`, `OsCallsCommonShim`, `OsCallsLinux[Shim]`, `OsCallsWindows[Shim]`,
-     `ArchiveStore` (content-addressable store) and `DeDuBa.Test` (xUnit).
-
-   - Essential workflows:
-     - Build full workspace: `dotnet build` (CMake/Make invoked by shim csproj).
-     - Run tests: `dotnet test DeDuBa.Test` or run a single test with `--filter`.
-     - Run app locally: set native path then `dotnet run --project DeDuBa -- <args>`;
-       e.g. `export LD_LIBRARY_PATH="$PWD/OsCallsCommonShim/bin/Debug/net8.0:$PWD/OsCallsLinuxShim/bin/Debug/net8.0"`.
-     - Rebuild native shims: they are produced by CMake in `OsCalls*Shim` (look at CMakeLists).
-
-   - Project-specific conventions (do not deviate):
-     - Use the `IHighLevelOsApi` abstraction for OS metadata collection; implement
-       platform behavior in `OsCallsLinux` / `OsCallsWindows` (see `WindowsHighLevelOsApi.cs`).
-     - Error handling: prefer `Utilities.Error(file, op, ex)` to throwing directly.
-     - Commit messages: follow Conventional Commits and avoid literal `\n` sequences in `-m` text.
-
-   - Files to read first when changing behavior:
-     - `DeDuBa/Deduba.cs` — main backup logic and `Backup_worker`.
-     - `DeDuBa/ArchiveStore.cs` and `IArchiveStore` — storage semantics and APIs.
-     - `OsCallsCommon/ValXfer.cs` and `OsCallsCommonShim/include/ValXfer.h` — native iterator protocol.
-     - `OsCallsLinux/FileSystem.cs`, `OsCallsWindows/FileSystem.cs` and shim C++ sources under `OsCalls*Shim/src`.
-
-   - CI and release notes:
-     - Repo uses GitHub Actions; tags `v*` trigger the release workflow.
-     - When creating a tag or a release, update `docs/CHANGELOG.md` and push tag; CI will build packages and create a release.
-
-   - Troubleshooting quick tips:
-     - If you see `DllNotFoundException` or missing entry points: ensure native shim builds and that native DLL/.so are copied to managed output (check CMake outputs and csproj copy tasks).
-     - Windows-specific issues often relate to exports/packing (`ValXfer.h` packing, `.def` or CMake export header), and native -> managed struct alignment.
-     - For test flakiness: reset per-run static state (look at `DedubaClass` reset logic) and prefer deterministic logging (canonical paths).
-
-   - When editing code:
-     1.  Run `dotnet build` and fix compile issues.
-     2.  Run affected unit/integration tests locally (`dotnet test --filter "FullyQualifiedName~YourTest"`).
-     3.  If native changes were made, rebuild shims via CMake and ensure the resulting native library is present in test output.
-
-   If anything here is unclear or you want more detail (examples of implementing a new OS capability, script templates for running a Windows-native test locally, or exact CMake commands), tell me which area to expand.
-   ```
 
 ## Release checklist (quick)
 
