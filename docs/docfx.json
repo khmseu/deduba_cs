@@ -5,7 +5,10 @@
         {
           "src": "..",
           "files": [
+            "src/ArchiveDataHandler/ArchiveDataHandler.csproj",
             "src/DeDuBa/DeDuBa.csproj",
+            "src/DeDuBa.Test/DeDuBa.Test.csproj",
+            "src/Interfaces/Interfaces.csproj",
             "src/OsCallsCommon/OsCallsCommon.csproj",
             "src/OsCallsLinux/OsCallsLinux.csproj",
             "src/OsCallsWindows/OsCallsWindows.csproj",
