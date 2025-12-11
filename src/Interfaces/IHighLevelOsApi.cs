@@ -25,7 +25,7 @@ public interface IHighLevelOsApi
     /// </summary>
     /// <param name="path">Filesystem path to inspect.</param>
     /// <returns>A minimal <see cref="InodeData" /> instance with stat information only.</returns>
-    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    /// <exception cref="T:OsCallsCommon.OsException">Thrown on permission denied, not found, or I/O errors</exception>
     InodeData CreateMinimalInodeDataFromPath(string path);
 
     /// <summary>
@@ -52,7 +52,7 @@ public interface IHighLevelOsApi
     /// </summary>
     /// <param name="path">Directory path to enumerate</param>
     /// <returns>Array of full paths to directory entries, sorted</returns>
-    /// <exception cref="OsException">Thrown if directory cannot be read</exception>
+    /// <exception cref="T:OsCallsCommon.OsException">Thrown if directory cannot be read</exception>
     string[] ListDirectory(string path);
 
     /// <summary>
@@ -61,6 +61,6 @@ public interface IHighLevelOsApi
     /// </summary>
     /// <param name="path">Path to canonicalize</param>
     /// <returns>A JsonNode containing the canonical path under the "path" key</returns>
-    /// <exception cref="OsException">Thrown on permission denied, not found, or I/O errors</exception>
+    /// <exception cref="T:OsCallsCommon.OsException">Thrown on permission denied, not found, or I/O errors</exception>
     JsonNode Canonicalizefilename(string path);
 }
