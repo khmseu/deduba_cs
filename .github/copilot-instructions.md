@@ -22,7 +22,6 @@ with minimal back-and-forth. Keep edits small, focused, and well-tested.
     platform behavior in `OsCallsLinux` / `OsCallsWindows` (see `WindowsHighLevelOsApi.cs`).
   - Error handling: prefer `Utilities.Error(file, op, ex)` to throwing directly.
   - Commit messages: follow Conventional Commits and avoid literal `\n` sequences in `-m` text.
-  - Commit messages: follow Conventional Commits and avoid literal `\n` sequences in `-m` text.
   - Commit-handling guideline for automated agents: when asked to create or update commits in this repository in response to an interactive prompt, follow this exact sequence every time:
     1. Call `#get_changed_files` to list files changed since the last check-in and inspect the diffs.
     2. Analyze the changes and prepare a focused, GitHub-style commit message that describes only those changes.
@@ -166,9 +165,11 @@ release workflow files if those change.
 
 ---
 
-# Release Process
+## Release Process
 
-This document explains how GitHub releases work for DeDuBa, including automatic version numbering, release notes generation, and the relationship with CHANGELOG.md.
+This document explains how GitHub releases work for DeDuBa. It covers
+automatic version numbering, release notes generation, and how releases
+relate to `docs/CHANGELOG.md`.
 
 ## Overview
 
