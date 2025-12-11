@@ -27,7 +27,7 @@ public sealed class ArchiveStore : IArchiveStore
     ///     Initializes a new instance of the <see cref="ArchiveStore" /> class.
     /// </summary>
     /// <param name="config">Configuration settings for the archive.</param>
-    /// <param name="log">Optional logging callback for diagnostic output.</param>
+    /// <param name="logger">Optional logger instance for diagnostic output.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="config" /> is null.</exception>
     public ArchiveStore(IBackupConfig config, ILogging? logger = null)
     {
@@ -247,9 +247,7 @@ public sealed class ArchiveStore : IArchiveStore
                 {
                     PackSum += new FileInfo(outFile).Length;
                 }
-                catch
-                {
-                }
+                catch { }
 
                 return hash;
             }
@@ -258,9 +256,7 @@ public sealed class ArchiveStore : IArchiveStore
             {
                 PackSum += new FileInfo(outFile).Length;
             }
-            catch
-            {
-            }
+            catch { }
 
             if (_config.Verbose)
                 _log.Invoke(hash);

@@ -20,13 +20,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
     <ProjectReference Include="../DeDuBa/DeDuBa.csproj" />
-    <ProjectReference Include="..\ArchiveDataHandler\ArchiveDataHandler.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
   <!-- Conditional platform-specific references -->
