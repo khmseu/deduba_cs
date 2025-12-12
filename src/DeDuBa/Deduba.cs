@@ -173,7 +173,7 @@ public class DedubaClass
             {
                 // @ARGV = map { canonpath realpath $_ } @ARGV;
                 // Initialize high-level OS API early (needed for LStat and path canonicalization calls)
-                _osApi = HighLevelOsApiFactory.GetOsApi();
+                _osApi = HighLevelOsApiFactory.GetOsApi(Logger);
 
                 try
                 {

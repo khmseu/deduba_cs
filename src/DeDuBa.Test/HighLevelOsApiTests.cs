@@ -58,7 +58,7 @@ public class HighLevelOsApiTests : IDisposable
             _testSymlinkPath = null;
         }
 
-        _osApi = HighLevelOsApiFactory.GetOsApi();
+        _osApi = HighLevelOsApiFactory.GetOsApi(UtilitiesLogger.Instance);
 
         // Set up archive store for tests that need it
         Utilities.Testing = true;
