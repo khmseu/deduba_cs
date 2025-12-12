@@ -12,6 +12,5 @@
   <ItemGroup>
     <ProjectReference Include="..\OsCallsCommon\OsCallsCommon.csproj" />
     <ProjectReference Include="..\OsCallsWindowsShim\OsCallsWindowsShim.csproj" />
-    <ProjectReference Include="..\UtilitiesLibrary\UtilitiesLibrary.csproj" />
   </ItemGroup>
 </Project>

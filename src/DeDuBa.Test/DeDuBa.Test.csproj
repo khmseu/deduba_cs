@@ -23,7 +23,6 @@
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../UtilitiesLibrary/UtilitiesLibrary.csproj" />
     <ProjectReference Include="../DeDuBa/DeDuBa.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
