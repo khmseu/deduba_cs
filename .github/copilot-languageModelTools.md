@@ -1997,7 +1997,7 @@ Pyodide.
 %lmTool.webSearch.modelDescription%
 ```
 
--- ms-vscode/vscode-websearchforcopilot@0.1.2025120401
+-- ms-vscode/vscode-websearchforcopilot@0.2.2025121101
 
 ### aitk_get_agent_code_gen_best_practices
 

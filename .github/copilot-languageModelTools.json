@@ -4513,12 +4513,12 @@
     ]
   },
   {
-    "extension_dir": "/home/kai/.vscode/extensions/ms-vscode.vscode-websearchforcopilot-0.1.2025120401",
+    "extension_dir": "/home/kai/.vscode/extensions/ms-vscode.vscode-websearchforcopilot-0.2.2025121101",
     "publisher": "ms-vscode",
     "name": "vscode-websearchforcopilot",
     "displayName": "Web Search for Copilot",
-    "version": "0.1.2025120401",
-    "package_json": "/home/kai/.vscode/extensions/ms-vscode.vscode-websearchforcopilot-0.1.2025120401/package.json",
+    "version": "0.2.2025121101",
+    "package_json": "/home/kai/.vscode/extensions/ms-vscode.vscode-websearchforcopilot-0.2.2025121101/package.json",
     "tools": [
       {
         "name": "vscode-websearchforcopilot_webSearch",
