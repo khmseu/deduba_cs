@@ -24,6 +24,10 @@ public static unsafe partial class ValXfer
 
     static ValXfer()
     {
+        // Ensure a usable logger is present during static initialization so
+        // diagnostic calls (e.g., SetDllImportResolver) don't NRE when Logger is null.
+        Logger ??= UtilitiesLibrary.UtilitiesLogger.Instance;
+
         // Log and track any P/Invoke load attempts originating from this
         // assembly. Returning IntPtr.Zero allows the runtime to continue
         // its default resolution algorithm while still giving us visibility
