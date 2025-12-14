@@ -25,10 +25,7 @@ public class AclTests : IDisposable
         if (OperatingSystem.IsLinux())
             File.SetUnixFileMode(
                 _testFilePath,
-                UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.GroupRead
-                | UnixFileMode.OtherRead
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead
             );
 
         // Create a temporary test directory
@@ -38,12 +35,12 @@ public class AclTests : IDisposable
             File.SetUnixFileMode(
                 _testDirPath,
                 UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.UserExecute
-                | UnixFileMode.GroupRead
-                | UnixFileMode.GroupExecute
-                | UnixFileMode.OtherRead
-                | UnixFileMode.OtherExecute
+                    | UnixFileMode.UserWrite
+                    | UnixFileMode.UserExecute
+                    | UnixFileMode.GroupRead
+                    | UnixFileMode.GroupExecute
+                    | UnixFileMode.OtherRead
+                    | UnixFileMode.OtherExecute
             );
 
         // Set test ACLs using setfacl
@@ -74,7 +71,7 @@ public class AclTests : IDisposable
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
             }
         );
         process?.WaitForExit();
@@ -131,10 +128,7 @@ public class AclTests : IDisposable
         if (OperatingSystem.IsLinux())
             File.SetUnixFileMode(
                 cleanFilePath,
-                UnixFileMode.UserRead
-                | UnixFileMode.UserWrite
-                | UnixFileMode.GroupRead
-                | UnixFileMode.OtherRead
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead
             );
 
         try
@@ -166,7 +160,10 @@ public class AclTests : IDisposable
         // Act & Assert
         // Default ACLs only apply to directories
         // Attempting to get default ACL on a file should throw an error
-        var ex = Assert.Throws<Exception>(() => { Acl.GetFileDefault(_testFilePath); });
+        var ex = Assert.Throws<Exception>(() =>
+        {
+            Acl.GetFileDefault(_testFilePath);
+        });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -180,7 +177,10 @@ public class AclTests : IDisposable
         var nonExistentPath = "/tmp/nonexistent_acl_file_" + Guid.NewGuid() + ".txt";
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => { Acl.GetFileAccess(nonExistentPath); });
+        var ex = Assert.Throws<Exception>(() =>
+        {
+            Acl.GetFileAccess(nonExistentPath);
+        });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -194,7 +194,10 @@ public class AclTests : IDisposable
         var nonExistentPath = "/tmp/nonexistent_acl_dir_" + Guid.NewGuid();
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => { Acl.GetFileDefault(nonExistentPath); });
+        var ex = Assert.Throws<Exception>(() =>
+        {
+            Acl.GetFileDefault(nonExistentPath);
+        });
 
         // Verify the inner exception is Win32Exception
         Assert.NotNull(ex.InnerException);
@@ -239,7 +242,7 @@ public class AclTests : IDisposable
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
                 }
             );
             process?.WaitForExit();

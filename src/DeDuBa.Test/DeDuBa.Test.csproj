@@ -57,11 +57,7 @@
         Condition="!Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so') AND Exists('../OsCallsLinuxShim/bin/$(Configuration)/net8.0/libOsCallsLinuxShim.so')"
       />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(NativeLibsLinux)"
-      DestinationFolder="$(OutputPath)"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(NativeLibsLinux)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
   <!-- Copy native libraries to test output for Windows -->
   <Target
@@ -87,10 +83,6 @@
         Condition="!Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/native/OsCallsWindowsShimNative.dll') AND Exists('../OsCallsWindowsShim/build-win-x64/bin/$(Configuration)/OsCallsWindowsShimNative.dll')"
       />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(NativeLibsWindows)"
-      DestinationFolder="$(OutputPath)"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(NativeLibsWindows)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
 </Project>

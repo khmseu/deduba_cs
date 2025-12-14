@@ -90,10 +90,7 @@ public sealed class InodeData
         var aclInfo = aclCount > 0 ? $"{aclCount} acl hash(es)" : "";
         var xattrCount = Xattr.Count;
         var xattrInfo = xattrCount > 0 ? $"{xattrCount} xattr(s)" : "";
-        var extras = string.Join(
-            " ",
-            new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s))
-        );
+        var extras = string.Join(" ", new[] { aclInfo, xattrInfo }.Where(s => !string.IsNullOrEmpty(s)));
         return $"[mode=0{Convert.ToString(Mode, 8)} nlink={NLink} {UserName}({Uid}):{GroupName}({Gid}) rdev={RDev} size={Size} mtime={MTime} ctime={CTime} {hashInfo} {extras}]";
     }
 }

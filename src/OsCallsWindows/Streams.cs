@@ -42,11 +42,7 @@ public static unsafe partial class Streams
     /// <returns>JsonArray containing stream names and sizes, or error.</returns>
     public static JsonNode WindowsFindFirstStreamW(string path)
     {
-        return ValXfer.ToNode(
-            windows_FindFirstStreamW(path),
-            path,
-            nameof(windows_FindFirstStreamW)
-        );
+        return ValXfer.ToNode(windows_FindFirstStreamW(path), path, nameof(windows_FindFirstStreamW));
     }
 
     /// <summary>
@@ -58,11 +54,7 @@ public static unsafe partial class Streams
     /// <returns>JsonNode with stream content as bytes or string, or error.</returns>
     public static JsonNode WindowsReadFileStream(string path, string streamName)
     {
-        return ValXfer.ToNode(
-            windows_ReadFile_Stream(path, streamName),
-            path,
-            nameof(windows_ReadFile_Stream)
-        );
+        return ValXfer.ToNode(windows_ReadFile_Stream(path, streamName), path, nameof(windows_ReadFile_Stream));
     }
 
     [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]

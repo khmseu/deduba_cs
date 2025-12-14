@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -29,9 +26,7 @@ public static unsafe partial class FileSystem
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
             if (Logger!.IsNativeDebugEnabled())
-                Logger!.ConWrite(
-                    $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeLibraryName}'"
-                );
+                Logger!.ConWrite($"OsCallsLinux.FileSystem resolver registered: searching for '{NativeLibraryName}'");
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
             _ = Resolver(NativeLibraryName, typeof(FileSystem).Assembly, null);
             // Best-effort: try to bind linux_* exports if present and create delegates.
@@ -42,13 +37,9 @@ public static unsafe partial class FileSystem
                 {
                     var handle = NativeLibrary.Load(full);
                     if (NativeLibrary.TryGetExport(handle, "linux_lstat", out var ptr))
-                        _linux_lstat_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(
-                            ptr
-                        );
+                        _linux_lstat_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
                     if (NativeLibrary.TryGetExport(handle, "linux_readlink", out ptr))
-                        _linux_readlink_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(
-                            ptr
-                        );
+                        _linux_readlink_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
                     if (NativeLibrary.TryGetExport(handle, "linux_canonicalize_file_name", out ptr))
                         _linux_cfn_fn = Marshal.GetDelegateForFunctionPointer<ShimFnDelegate>(ptr);
                 }
@@ -69,11 +60,7 @@ public static unsafe partial class FileSystem
     /// </summary>
     public static ILogging? Logger { get; set; }
 
-    private static nint Resolver(
-        string libraryName,
-        Assembly assembly,
-        DllImportSearchPath? searchPath
-    )
+    private static nint Resolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
         if (libraryName != NativeLibraryName)
             return IntPtr.Zero;
@@ -152,9 +139,7 @@ public static unsafe partial class FileSystem
                     var ld = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH") ?? string.Empty;
                     if (!ld.Split(':').Contains(commonDir))
                     {
-                        var newLd = string.IsNullOrWhiteSpace(ld)
-                            ? commonDir
-                            : commonDir + ":" + ld;
+                        var newLd = string.IsNullOrWhiteSpace(ld) ? commonDir : commonDir + ":" + ld;
                         Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", newLd);
                     }
                 }
@@ -180,24 +165,10 @@ public static unsafe partial class FileSystem
         var dir = new DirectoryInfo(baseDir);
         for (var i = 0; i < 8 && dir is not null; i++)
         {
-            var candidateDebug = Path.Combine(
-                dir.FullName,
-                "OsCallsLinuxShim",
-                "bin",
-                "Debug",
-                "net8.0",
-                fileName
-            );
+            var candidateDebug = Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Debug", "net8.0", fileName);
             if (File.Exists(candidateDebug))
                 return candidateDebug;
-            var candidateRelease = Path.Combine(
-                dir.FullName,
-                "OsCallsLinuxShim",
-                "bin",
-                "Release",
-                "net8.0",
-                fileName
-            );
+            var candidateRelease = Path.Combine(dir.FullName, "OsCallsLinuxShim", "bin", "Release", "net8.0", fileName);
             if (File.Exists(candidateRelease))
                 return candidateRelease;
             dir = dir.Parent;

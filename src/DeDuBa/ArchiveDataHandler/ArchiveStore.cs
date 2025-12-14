@@ -73,10 +73,7 @@ public sealed class ArchiveStore : IArchiveStore
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Preflist =>
-        _preflist.ToDictionary(
-            kvp => kvp.Key,
-            kvp => (IReadOnlyCollection<string>)kvp.Value.ToList().AsReadOnly()
-        );
+        _preflist.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<string>)kvp.Value.ToList().AsReadOnly());
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, long> Stats => _stats;
@@ -118,10 +115,7 @@ public sealed class ArchiveStore : IArchiveStore
         }
 
         var prefix = hash;
-        var prefixList = Regex
-            .Split(prefix, "(..)")
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .ToList();
+        var prefixList = Regex.Split(prefix, "(..)").Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
         prefixList.RemoveAt(prefixList.Count - 1);
 
         while (prefixList.Count > 0)
@@ -274,12 +268,7 @@ public sealed class ArchiveStore : IArchiveStore
     }
 
     /// <inheritdoc />
-    public List<string> SaveStream(
-        Stream fileStream,
-        long size,
-        string tag,
-        Action<long>? progress = null
-    )
+    public List<string> SaveStream(Stream fileStream, long size, string tag, Action<long>? progress = null)
     {
         var hashes = new List<string>();
         var total = size;
@@ -329,8 +318,7 @@ public sealed class ArchiveStore : IArchiveStore
             return;
         }
 
-        var rel = Path.GetRelativePath(_config.DataPath, entry)
-            .Replace(Path.DirectorySeparatorChar, '/');
+        var rel = Path.GetRelativePath(_config.DataPath, entry).Replace(Path.DirectorySeparatorChar, '/');
         var prefix = "";
         var file = rel;
         var idx = rel.LastIndexOf('/');

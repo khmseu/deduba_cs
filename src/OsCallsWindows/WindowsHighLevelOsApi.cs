@@ -11,9 +11,7 @@ namespace OsCallsWindows;
 /// </summary>
 public class WindowsHighLevelOsApi : IHighLevelOsApi
 {
-    private static readonly Lazy<WindowsHighLevelOsApi> _instance = new(() =>
-        new WindowsHighLevelOsApi()
-    );
+    private static readonly Lazy<WindowsHighLevelOsApi> _instance = new(() => new WindowsHighLevelOsApi());
 
     /// <summary>
     ///     Default singleton instance for the Windows high-level OS API.
@@ -44,9 +42,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                 if (kvp.Value?.GetValue<bool>() != true)
                     continue;
 
-                var flagName = key.StartsWith("S_TYPEIS")
-                    ? key[8..].ToLowerInvariant()
-                    : key[4..].ToLowerInvariant();
+                var flagName = key.StartsWith("S_TYPEIS") ? key[8..].ToLowerInvariant() : key[4..].ToLowerInvariant();
                 flags.Add(flagName);
             }
 
@@ -65,7 +61,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
             CTime = statObj?["st_ctim"]?.GetValue<double>() ?? 0,
             Acl = [],
             Xattr = [],
-            Hashes = []
+            Hashes = [],
         };
     }
 
@@ -79,11 +75,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     /// <param name="data">Reference to an existing <see cref="InodeData" /> to complete.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Completed <see cref="InodeData" /> instance.</returns>
-    public InodeData CompleteInodeDataFromPath(
-        string path,
-        ref InodeData data,
-        IArchiveStore archiveStore
-    )
+    public InodeData CompleteInodeDataFromPath(string path, ref InodeData data, IArchiveStore archiveStore)
     {
         ArgumentNullException.ThrowIfNull(data);
 
@@ -103,9 +95,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                 {
                     var sdBytes = Encoding.UTF8.GetBytes(sddl);
                     using var ms = new MemoryStream(sdBytes);
-                    var sdHashes = archiveStore
-                        .SaveStream(ms, sdBytes.Length, $"{path} $acl", _ => { })
-                        .ToArray();
+                    var sdHashes = archiveStore.SaveStream(ms, sdBytes.Length, $"{path} $acl", _ => { }).ToArray();
                     data.Acl = sdHashes;
                 }
             }
@@ -130,11 +120,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                 }
                 catch (Exception ex)
                 {
-                    throw new OsException(
-                        $"Failed to read file content {path}",
-                        ErrorKind.IOError,
-                        ex
-                    );
+                    throw new OsException($"Failed to read file content {path}", ErrorKind.IOError, ex);
                 }
         }
         else if (data.Flags.Contains("lnk"))
@@ -145,15 +131,7 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
                 var linkTarget = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
                 var linkBytes = Encoding.UTF8.GetBytes(linkTarget);
                 using var lm = new MemoryStream(linkBytes);
-                hashes =
-                [
-                    .. archiveStore.SaveStream(
-                        lm,
-                        linkBytes.Length,
-                        $"{path} $data readlink",
-                        _ => { }
-                    )
-                ];
+                hashes = [.. archiveStore.SaveStream(lm, linkBytes.Length, $"{path} $data readlink", _ => { })];
             }
             catch (Exception ex)
             {
@@ -176,18 +154,11 @@ public class WindowsHighLevelOsApi : IHighLevelOsApi
     {
         try
         {
-            return
-            [
-                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)
-            ];
+            return [.. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)];
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new OsException(
-                $"Permission denied listing directory {path}",
-                ErrorKind.PermissionDenied,
-                ex
-            );
+            throw new OsException($"Permission denied listing directory {path}", ErrorKind.PermissionDenied, ex);
         }
         catch (DirectoryNotFoundException ex)
         {

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using ArchiveDataHandler;
@@ -15,9 +11,7 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
-    private static readonly System.Lazy<LinuxHighLevelOsApi> _instance = new(() =>
-        new LinuxHighLevelOsApi()
-    );
+    private static readonly Lazy<LinuxHighLevelOsApi> _instance = new(() => new LinuxHighLevelOsApi());
 
     /// <summary>
     ///     Default singleton instance for the Linux high-level OS API.
@@ -34,7 +28,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     public InodeData CreateMinimalInodeDataFromPath(string path)
     {
         var statBuf = FileSystem.LStat(path);
-        var flags = new System.Collections.Generic.HashSet<string>();
+        var flags = new HashSet<string>();
         if (statBuf is JsonObject statObj)
             foreach (var kvp in statObj)
             {
@@ -45,9 +39,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 if (kvp.Value?.GetValue<bool>() != true)
                     continue;
 
-                var flagName = key.StartsWith("S_TYPEIS")
-                    ? key[8..].ToLowerInvariant()
-                    : key[4..].ToLowerInvariant();
+                var flagName = key.StartsWith("S_TYPEIS") ? key[8..].ToLowerInvariant() : key[4..].ToLowerInvariant();
                 flags.Add(flagName);
             }
 
@@ -80,19 +72,13 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     /// <param name="data">Reference to an existing <see cref="InodeData" /> to complete.</param>
     /// <param name="archiveStore">Archive store used to save auxiliary data streams.</param>
     /// <returns>Completed <see cref="InodeData" /> instance.</returns>
-    public InodeData CompleteInodeDataFromPath(
-        string path,
-        ref InodeData data,
-        IArchiveStore archiveStore
-    )
+    public InodeData CompleteInodeDataFromPath(string path, ref InodeData data, IArchiveStore archiveStore)
     {
-        System.ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(data);
 
         // Resolve user/group names based on pre-initialized uid/gid
-        data.UserName =
-            UserGroupDatabase.GetPwUid(data.Uid)["pw_name"]?.ToString() ?? data.Uid.ToString();
-        data.GroupName =
-            UserGroupDatabase.GetGrGid(data.Gid)["gr_name"]?.ToString() ?? data.Gid.ToString();
+        data.UserName = UserGroupDatabase.GetPwUid(data.Uid)["pw_name"]?.ToString() ?? data.Uid.ToString();
+        data.GroupName = UserGroupDatabase.GetGrGid(data.Gid)["gr_name"]?.ToString() ?? data.Gid.ToString();
 
         // Read ACLs
         string[] aclHashes = [];
@@ -106,15 +92,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 {
                     var aclBytes = Encoding.UTF8.GetBytes(aclText);
                     var aclMem = new MemoryStream(aclBytes);
-                    aclHashes =
-                    [
-                        .. archiveStore.SaveStream(
-                            aclMem,
-                            aclBytes.Length,
-                            $"{path} $acl",
-                            _ => { }
-                        ),
-                    ];
+                    aclHashes = [.. archiveStore.SaveStream(aclMem, aclBytes.Length, $"{path} $acl", _ => { })];
                 }
             }
 
@@ -122,10 +100,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             if (data.Flags.Contains("dir"))
             {
                 var aclDefaultResult = Acl.GetFileDefault(path);
-                if (
-                    aclDefaultResult is JsonObject aclDefaultObj
-                    && aclDefaultObj.ContainsKey("acl_text")
-                )
+                if (aclDefaultResult is JsonObject aclDefaultObj && aclDefaultObj.ContainsKey("acl_text"))
                 {
                     var aclDefaultText = aclDefaultObj["acl_text"]?.ToString() ?? "";
                     if (!string.IsNullOrEmpty(aclDefaultText))
@@ -133,12 +108,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         var aclDefaultBytes = Encoding.UTF8.GetBytes(aclDefaultText);
                         var aclDefaultMem = new MemoryStream(aclDefaultBytes);
                         var defaultHashes = archiveStore
-                            .SaveStream(
-                                aclDefaultMem,
-                                aclDefaultBytes.Length,
-                                $"{path} $acl_default",
-                                _ => { }
-                            )
+                            .SaveStream(aclDefaultMem, aclDefaultBytes.Length, $"{path} $acl_default", _ => { })
                             .ToArray();
                         aclHashes = [.. aclHashes, .. defaultHashes];
                     }
@@ -165,21 +135,13 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                     try
                     {
                         var xattrValueResult = Xattr.GetXattr(path, xattrName);
-                        if (
-                            xattrValueResult is JsonObject xattrValueObj
-                            && xattrValueObj.ContainsKey("value")
-                        )
+                        if (xattrValueResult is JsonObject xattrValueObj && xattrValueObj.ContainsKey("value"))
                         {
                             var xattrValue = xattrValueObj["value"]?.ToString() ?? "";
                             var xattrBytes = Encoding.UTF8.GetBytes(xattrValue);
                             var xattrMem = new MemoryStream(xattrBytes);
                             var xattrHashList = archiveStore
-                                .SaveStream(
-                                    xattrMem,
-                                    xattrBytes.Length,
-                                    $"{path} $xattr:{xattrName}",
-                                    _ => { }
-                                )
+                                .SaveStream(xattrMem, xattrBytes.Length, $"{path} $xattr:{xattrName}", _ => { })
                                 .ToArray();
                             xattrHashes[xattrName] = xattrHashList;
                         }
@@ -211,11 +173,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 }
                 catch (Exception ex)
                 {
-                    throw new OsException(
-                        $"Failed to read file content {path}",
-                        ErrorKind.IOError,
-                        ex
-                    );
+                    throw new OsException($"Failed to read file content {path}", ErrorKind.IOError, ex);
                 }
         }
         else if (data.Flags.Contains("lnk"))
@@ -227,15 +185,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                 var linkTarget = linkNode?["path"]?.GetValue<string>() ?? string.Empty;
                 var linkBytes = Encoding.UTF8.GetBytes(linkTarget);
                 var linkMem = new MemoryStream(linkBytes);
-                hashes =
-                [
-                    .. archiveStore.SaveStream(
-                        linkMem,
-                        linkBytes.Length,
-                        $"{path} $data readlink",
-                        _ => { }
-                    ),
-                ];
+                hashes = [.. archiveStore.SaveStream(linkMem, linkBytes.Length, $"{path} $data readlink", _ => { })];
             }
             catch (Exception ex)
             {
@@ -264,20 +214,11 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     {
         try
         {
-            return
-            [
-                .. System
-                    .IO.Directory.GetFileSystemEntries(path)
-                    .OrderBy(e => e, System.StringComparer.Ordinal),
-            ];
+            return [.. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)];
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new OsException(
-                $"Permission denied listing directory {path}",
-                ErrorKind.PermissionDenied,
-                ex
-            );
+            throw new OsException($"Permission denied listing directory {path}", ErrorKind.PermissionDenied, ex);
         }
         catch (DirectoryNotFoundException ex)
         {

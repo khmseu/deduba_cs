@@ -98,32 +98,32 @@
 // Define REPARSE_DATA_BUFFER if not available in MinGW headers
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
 typedef struct _REPARSE_DATA_BUFFER {
-  ULONG  ReparseTag;
-  USHORT ReparseDataLength;
-  USHORT Reserved;
+    ULONG  ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
 
-  union {
-    struct {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      ULONG  Flags;
-      WCHAR  PathBuffer[1];
-    } SymbolicLinkReparseBuffer;
+    union {
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG  Flags;
+            WCHAR  PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
 
-    struct {
-      USHORT SubstituteNameOffset;
-      USHORT SubstituteNameLength;
-      USHORT PrintNameOffset;
-      USHORT PrintNameLength;
-      WCHAR  PathBuffer[1];
-    } MountPointReparseBuffer;
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR  PathBuffer[1];
+        } MountPointReparseBuffer;
 
-    struct {
-      UCHAR DataBuffer[1];
-    } GenericReparseBuffer;
-  };
+        struct {
+            UCHAR DataBuffer[1];
+        } GenericReparseBuffer;
+    };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 #define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
@@ -144,121 +144,121 @@ using namespace OsCalls;
 
 // Convert SID_NAME_USE to a short keyword similar to S_TYPEIS* macros
 static const char *SidNameUseToKeyword(SID_NAME_USE use) {
-  switch (use) {
-  case SidTypeUser:
-    return "user";
-  case SidTypeGroup:
-    return "group";
-  case SidTypeDomain:
-    return "domain";
-  case SidTypeAlias:
-    return "alias";
-  case SidTypeWellKnownGroup:
-    return "wellknown";
-  case SidTypeDeletedAccount:
-    return "deleted";
-  case SidTypeInvalid:
-    return "invalid";
-  case SidTypeUnknown:
-    return "unknown";
-  case SidTypeComputer:
-    return "computer";
-  case SidTypeLabel:
-    return "label";
-  default:
-    return "unknown";
-  }
+    switch (use) {
+    case SidTypeUser:
+        return "user";
+    case SidTypeGroup:
+        return "group";
+    case SidTypeDomain:
+        return "domain";
+    case SidTypeAlias:
+        return "alias";
+    case SidTypeWellKnownGroup:
+        return "wellknown";
+    case SidTypeDeletedAccount:
+        return "deleted";
+    case SidTypeInvalid:
+        return "invalid";
+    case SidTypeUnknown:
+        return "unknown";
+    case SidTypeComputer:
+        return "computer";
+    case SidTypeLabel:
+        return "label";
+    default:
+        return "unknown";
+    }
 }
 
 // Convert wide string (UTF-16) to UTF-8 std::string
 static std::string WideToUtf8(const std::wstring &w) {
-  if (w.empty())
-    return std::string();
-  int size_needed = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), NULL, 0, NULL, NULL);
-  if (size_needed <= 0)
-    return std::string();
-  std::string result(size_needed, 0);
-  WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), &result[0], size_needed, NULL, NULL);
-  return result;
+    if (w.empty())
+        return std::string();
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), NULL, 0, NULL, NULL);
+    if (size_needed <= 0)
+        return std::string();
+    std::string result(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), &result[0], size_needed, NULL, NULL);
+    return result;
 }
 
 // Resolve a PSID to a human-readable string: "<kind>: DOMAIN\\Name" or fallback to SID string
 static std::string ResolveAccountNameFromSid(PSID sid) {
-  if (!sid)
-    return std::string();
+    if (!sid)
+        return std::string();
 
-  DWORD        nameSize = 0;
-  DWORD        domainSize = 0;
-  SID_NAME_USE use = SidTypeUnknown;
+    DWORD        nameSize = 0;
+    DWORD        domainSize = 0;
+    SID_NAME_USE use = SidTypeUnknown;
 
-  // First call to get required buffer sizes
-  LookupAccountSidW(NULL, sid, NULL, &nameSize, NULL, &domainSize, &use);
-  DWORD err = GetLastError();
-  if (err != ERROR_INSUFFICIENT_BUFFER && err != ERROR_NONE_MAPPED) {
+    // First call to get required buffer sizes
+    LookupAccountSidW(NULL, sid, NULL, &nameSize, NULL, &domainSize, &use);
+    DWORD err = GetLastError();
+    if (err != ERROR_INSUFFICIENT_BUFFER && err != ERROR_NONE_MAPPED) {
+        // Fallback: return SID string
+        LPWSTR sidStr = NULL;
+        if (ConvertSidToStringSidW(sid, &sidStr)) {
+            std::wstring ws(sidStr);
+            LocalFree(sidStr);
+            return WideToUtf8(ws);
+        }
+        return std::string();
+    }
+
+    std::wstring name;
+    std::wstring domain;
+    if (nameSize > 0)
+        name.resize(nameSize);
+    if (domainSize > 0)
+        domain.resize(domainSize);
+
+    if (LookupAccountSidW(NULL, sid, name.data(), &nameSize, domain.data(), &domainSize, &use)) {
+        // Trim possible extra nulls from sizes returned
+        name.resize(nameSize);
+        domain.resize(domainSize);
+        // Remove trailing null if present
+        if (!name.empty() && name.back() == L'\0')
+            name.pop_back();
+        if (!domain.empty() && domain.back() == L'\0')
+            domain.pop_back();
+
+        std::string        kind = SidNameUseToKeyword(use);
+        std::string        dn = WideToUtf8(domain);
+        std::string        nn = WideToUtf8(name);
+        std::ostringstream out;
+        out << kind << ": ";
+        if (!dn.empty())
+            out << dn << "\\";
+        out << nn;
+        return out.str();
+    }
+
     // Fallback: return SID string
     LPWSTR sidStr = NULL;
     if (ConvertSidToStringSidW(sid, &sidStr)) {
-      std::wstring ws(sidStr);
-      LocalFree(sidStr);
-      return WideToUtf8(ws);
+        std::wstring ws(sidStr);
+        LocalFree(sidStr);
+        return WideToUtf8(ws);
     }
+
     return std::string();
-  }
-
-  std::wstring name;
-  std::wstring domain;
-  if (nameSize > 0)
-    name.resize(nameSize);
-  if (domainSize > 0)
-    domain.resize(domainSize);
-
-  if (LookupAccountSidW(NULL, sid, name.data(), &nameSize, domain.data(), &domainSize, &use)) {
-    // Trim possible extra nulls from sizes returned
-    name.resize(nameSize);
-    domain.resize(domainSize);
-    // Remove trailing null if present
-    if (!name.empty() && name.back() == L'\0')
-      name.pop_back();
-    if (!domain.empty() && domain.back() == L'\0')
-      domain.pop_back();
-
-    std::string        kind = SidNameUseToKeyword(use);
-    std::string        dn = WideToUtf8(domain);
-    std::string        nn = WideToUtf8(name);
-    std::ostringstream out;
-    out << kind << ": ";
-    if (!dn.empty())
-      out << dn << "\\";
-    out << nn;
-    return out.str();
-  }
-
-  // Fallback: return SID string
-  LPWSTR sidStr = NULL;
-  if (ConvertSidToStringSidW(sid, &sidStr)) {
-    std::wstring ws(sidStr);
-    LocalFree(sidStr);
-    return WideToUtf8(ws);
-  }
-
-  return std::string();
 }
 
 // Simple helper: construct a SID from NT authority + single RID and resolve it.
 // Note: mapping numeric uid/gid to Windows RIDs is not guaranteed; caller should
 // only use this for best-effort resolution.
 static std::string ResolveAccountNameFromRid(uint32_t rid) {
-  SID_IDENTIFIER_AUTHORITY ntAuth = SECURITY_NT_AUTHORITY;
-  PSID                     pSid = NULL;
-  if (!AllocateAndInitializeSid(&ntAuth, 1, rid, 0, 0, 0, 0, 0, 0, 0, &pSid)) {
-    return std::to_string(rid);
-  }
+    SID_IDENTIFIER_AUTHORITY ntAuth = SECURITY_NT_AUTHORITY;
+    PSID                     pSid = NULL;
+    if (!AllocateAndInitializeSid(&ntAuth, 1, rid, 0, 0, 0, 0, 0, 0, 0, &pSid)) {
+        return std::to_string(rid);
+    }
 
-  std::string result = ResolveAccountNameFromSid(pSid);
-  FreeSid(pSid);
-  if (result.empty())
-    return std::to_string(rid);
-  return result;
+    std::string result = ResolveAccountNameFromSid(pSid);
+    FreeSid(pSid);
+    if (result.empty())
+        return std::to_string(rid);
+    return result;
 }
 
 /**
@@ -272,21 +272,21 @@ static std::string ResolveAccountNameFromRid(uint32_t rid) {
  * @return false to indicate no values to iterate.
  */
 static bool handle_error(ValueT *value) {
-  (void)value;  // Unused parameter
-  return false;
+    (void)value;  // Unused parameter
+    return false;
 }
 
 // Helper structure to hold file information
 struct WinFileInfo {
-  DWORD         fileAttributes;
-  LARGE_INTEGER fileSize;
-  FILETIME      creationTime;
-  FILETIME      lastAccessTime;
-  FILETIME      lastWriteTime;
-  LARGE_INTEGER fileIndex;           // File ID (inode equivalent)
-  DWORD         volumeSerialNumber;  // Device equivalent
-  DWORD         numberOfLinks;
-  DWORD         reparseTag;
+    DWORD         fileAttributes;
+    LARGE_INTEGER fileSize;
+    FILETIME      creationTime;
+    FILETIME      lastAccessTime;
+    FILETIME      lastWriteTime;
+    LARGE_INTEGER fileIndex;           // File ID (inode equivalent)
+    DWORD         volumeSerialNumber;  // Device equivalent
+    DWORD         numberOfLinks;
+    DWORD         reparseTag;
 };
 
 /**
@@ -304,13 +304,13 @@ struct WinFileInfo {
  * @return HANDLE   Valid handle on success, INVALID_HANDLE_VALUE on failure.
  */
 static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags, DWORD access = 0) {
-  return CreateFileW(path,
-                     access,
-                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                     nullptr,
-                     OPEN_EXISTING,
-                     FILE_FLAG_BACKUP_SEMANTICS | extraFlags,
-                     nullptr);
+    return CreateFileW(path,
+                       access,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                       nullptr,
+                       OPEN_EXISTING,
+                       FILE_FLAG_BACKUP_SEMANTICS | extraFlags,
+                       nullptr);
 }
 
 /**
@@ -335,38 +335,38 @@ static HANDLE win_open_path(const wchar_t *path, DWORD extraFlags, DWORD access 
  * @return POSIX-like mode bits compatible with st_mode field
  */
 static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
-  DWORD mode = 0;
+    DWORD mode = 0;
 
-  // File type bits (high nibble)
-  if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-    if (reparseTag == IO_REPARSE_TAG_SYMLINK) {
-      mode |= 0120000;  // S_IFLNK
-    } else if (reparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-      mode |= 0120000;  // Junction treated as symlink
+    // File type bits (high nibble)
+    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+        if (reparseTag == IO_REPARSE_TAG_SYMLINK) {
+            mode |= 0120000;  // S_IFLNK
+        } else if (reparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
+            mode |= 0120000;  // Junction treated as symlink
+        } else {
+            mode |= 0100000;  // S_IFREG (other reparse points as regular)
+        }
+    } else if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
+        mode |= 0040000;  // S_IFDIR
     } else {
-      mode |= 0100000;  // S_IFREG (other reparse points as regular)
+        mode |= 0100000;  // S_IFREG
     }
-  } else if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
-    mode |= 0040000;  // S_IFDIR
-  } else {
-    mode |= 0100000;  // S_IFREG
-  }
 
-  // Permission bits (simplified - Windows doesn't have direct equivalents)
-  // Owner: always read, write if not readonly, execute if directory or .exe
-  mode |= 0000400;  // S_IRUSR
-  if (!(attrs & FILE_ATTRIBUTE_READONLY)) {
-    mode |= 0000200;  // S_IWUSR
-  }
-  if ((attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-    mode |= 0000100;  // S_IXUSR for directories
-  }
+    // Permission bits (simplified - Windows doesn't have direct equivalents)
+    // Owner: always read, write if not readonly, execute if directory or .exe
+    mode |= 0000400;  // S_IRUSR
+    if (!(attrs & FILE_ATTRIBUTE_READONLY)) {
+        mode |= 0000200;  // S_IWUSR
+    }
+    if ((attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+        mode |= 0000100;  // S_IXUSR for directories
+    }
 
-  // Group and other: inherit from owner (simplified)
-  mode |= (mode & 0000700) >> 3;  // Group
-  mode |= (mode & 0000700) >> 6;  // Other
+    // Group and other: inherit from owner (simplified)
+    mode |= (mode & 0000700) >> 3;  // Group
+    mode |= (mode & 0000700) >> 6;  // Other
 
-  return mode;
+    return mode;
 }
 
 /**
@@ -392,41 +392,41 @@ static DWORD win_attrs_to_mode(DWORD attrs, DWORD reparseTag) {
  * @return Unix timespec with tv_sec and tv_nsec fields.
  */
 static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
-  // FILETIME is 100-nanosecond intervals since 1601-01-01
-  // Unix epoch is 1970-01-01, difference is 11644473600 seconds
-  ULARGE_INTEGER ull;
-  ull.LowPart = ft.dwLowDateTime;
-  ull.HighPart = ft.dwHighDateTime;
+    // FILETIME is 100-nanosecond intervals since 1601-01-01
+    // Unix epoch is 1970-01-01, difference is 11644473600 seconds
+    ULARGE_INTEGER ull;
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
 
-  // Convert to seconds and nanoseconds
-  const uint64_t EPOCH_DIFF = 11644473600ULL;
-  uint64_t       total_100ns = ull.QuadPart;
-  uint64_t       seconds_since_1601 = total_100ns / 10000000ULL;
+    // Convert to seconds and nanoseconds
+    const uint64_t EPOCH_DIFF = 11644473600ULL;
+    uint64_t       total_100ns = ull.QuadPart;
+    uint64_t       seconds_since_1601 = total_100ns / 10000000ULL;
 
-  // DEBUG: Always output to stderr to verify this code path is executed
-  fprintf(stderr,
-          "[DEBUG filetime_to_timespec] QuadPart=%llu, seconds_since_1601=%llu, EPOCH_DIFF=%llu\n",
-          (unsigned long long)ull.QuadPart,
-          (unsigned long long)seconds_since_1601,
-          (unsigned long long)EPOCH_DIFF);
+    // DEBUG: Always output to stderr to verify this code path is executed
+    fprintf(stderr,
+            "[DEBUG filetime_to_timespec] QuadPart=%llu, seconds_since_1601=%llu, EPOCH_DIFF=%llu\n",
+            (unsigned long long)ull.QuadPart,
+            (unsigned long long)seconds_since_1601,
+            (unsigned long long)EPOCH_DIFF);
 
-  // Handle timestamps before Unix epoch (1970) or zero/invalid timestamps
-  // by clamping to epoch+1 (1 second) as a sentinel value for debugging
-  int64_t seconds;
-  if (seconds_since_1601 < EPOCH_DIFF) {
-    fprintf(stderr, "[DEBUG filetime_to_timespec] CLAMPING to 1 (pre-epoch detected)\n");
-    seconds = 1;  // Clamp to Unix epoch+1 for pre-1970 or invalid timestamps (sentinel for testing)
-  } else {
-    seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
-  }
+    // Handle timestamps before Unix epoch (1970) or zero/invalid timestamps
+    // by clamping to epoch+1 (1 second) as a sentinel value for debugging
+    int64_t seconds;
+    if (seconds_since_1601 < EPOCH_DIFF) {
+        fprintf(stderr, "[DEBUG filetime_to_timespec] CLAMPING to 1 (pre-epoch detected)\n");
+        seconds = 1;  // Clamp to Unix epoch+1 for pre-1970 or invalid timestamps (sentinel for testing)
+    } else {
+        seconds = static_cast<int64_t>(seconds_since_1601 - EPOCH_DIFF);
+    }
 
-  int64_t nanoseconds = static_cast<int64_t>((total_100ns % 10000000ULL) * 100);
+    int64_t nanoseconds = static_cast<int64_t>((total_100ns % 10000000ULL) * 100);
 
-  OsCalls::TimeSpec64 ts;
-  ts.tv_sec = seconds;
-  ts.tv_nsec = nanoseconds;
+    OsCalls::TimeSpec64 ts;
+    ts.tv_sec = seconds;
+    ts.tv_nsec = nanoseconds;
 
-  return ts;
+    return ts;
 }
 
 /**
@@ -443,14 +443,14 @@ static OsCalls::TimeSpec64 filetime_to_timespec(const FILETIME &ft) {
  * @return Textual account name, or numeric string on failure.
  */
 static std::string LookupAccountName(uint32_t rid) {
-  // Only well-known RIDs are reliably available
-  if (rid == 0)
-    return "system";
-  if (rid == 18)
-    return "system";
+    // Only well-known RIDs are reliably available
+    if (rid == 0)
+        return "system";
+    if (rid == 18)
+        return "system";
 
-  // For other RIDs, return numeric ID as fallback
-  return std::to_string(rid);
+    // For other RIDs, return numeric ID as fallback
+    return std::to_string(rid);
 }
 
 /**
@@ -466,30 +466,30 @@ static std::string LookupAccountName(uint32_t rid) {
  * etc).
  */
 static const char *sid_use_to_string(SID_NAME_USE use) {
-  switch (use) {
-  case SidTypeUser:
-    return "user";
-  case SidTypeGroup:
-    return "group";
-  case SidTypeDomain:
-    return "domain";
-  case SidTypeAlias:
-    return "alias";
-  case SidTypeWellKnownGroup:
-    return "wellknowngroup";
-  case SidTypeDeletedAccount:
-    return "deleted";
-  case SidTypeInvalid:
-    return "invalid";
-  case SidTypeUnknown:
-    return "unknown";
-  case SidTypeComputer:
-    return "computer";
-  case SidTypeLabel:
-    return "label";
-  default:
-    return "unknown";
-  }
+    switch (use) {
+    case SidTypeUser:
+        return "user";
+    case SidTypeGroup:
+        return "group";
+    case SidTypeDomain:
+        return "domain";
+    case SidTypeAlias:
+        return "alias";
+    case SidTypeWellKnownGroup:
+        return "wellknowngroup";
+    case SidTypeDeletedAccount:
+        return "deleted";
+    case SidTypeInvalid:
+        return "invalid";
+    case SidTypeUnknown:
+        return "unknown";
+    case SidTypeComputer:
+        return "computer";
+    case SidTypeLabel:
+        return "label";
+    default:
+        return "unknown";
+    }
 }
 
 /**
@@ -505,191 +505,185 @@ static const char *sid_use_to_string(SID_NAME_USE use) {
  * @return true if more fields remain, false when iteration completes.
  */
 static bool handle_GetFileInformationByHandle(ValueT *value) {
-  auto info = reinterpret_cast<WinFileInfo *>(value->Handle.data1);
-  switch (value->Handle.index) {
-  case 0:
-    if (value->Type == TypeT::IsOk) {
-      set_val(Number, "st_dev", info->volumeSerialNumber);
-      return true;
+    auto info = reinterpret_cast<WinFileInfo *>(value->Handle.data1);
+    switch (value->Handle.index) {
+    case 0:
+        if (value->Type == TypeT::IsOk) {
+            set_val(Number, "st_dev", info->volumeSerialNumber);
+            return true;
+        }
+    // Error case - fall through to cleanup
+    default:
+        if (info)
+            delete info;  // Null-safe cleanup
+        return false;
+    case 1:
+        set_val(Number, "st_ino", info->fileIndex.QuadPart);
+        return true;
+    case 2: {
+        DWORD mode = win_attrs_to_mode(info->fileAttributes, info->reparseTag);
+        set_val(Number, "st_mode", mode);
+        return true;
     }
-  // Error case - fall through to cleanup
-  default:
-    if (info)
-      delete info;  // Null-safe cleanup
-    return false;
-  case 1:
-    set_val(Number, "st_ino", info->fileIndex.QuadPart);
-    return true;
-  case 2: {
-    DWORD mode = win_attrs_to_mode(info->fileAttributes, info->reparseTag);
-    set_val(Number, "st_mode", mode);
-    return true;
-  }
-  case 3:
-    set_val(Boolean, "S_ISBLK", false);  // Windows doesn't have block devices
-    return true;
-  case 4:
-    set_val(Boolean, "S_ISCHR",
-            false);  // Windows doesn't expose char devices this way
-    return true;
-  case 5:
-    set_val(Boolean, "S_ISDIR", (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
-    return true;
-  case 6:
-    set_val(Boolean, "S_ISFIFO", false);  // Windows doesn't have FIFOs
-    return true;
-  case 7: {
-    bool is_symlink = (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
-                      (info->reparseTag == IO_REPARSE_TAG_SYMLINK ||
-                       info->reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
-    set_val(Boolean, "S_ISLNK", is_symlink);
-    return true;
-  }
-  case 8: {
-    bool is_regular = !(info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-                      !((info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
-                        (info->reparseTag == IO_REPARSE_TAG_SYMLINK ||
-                         info->reparseTag == IO_REPARSE_TAG_MOUNT_POINT));
-    set_val(Boolean, "S_ISREG", is_regular);
-    return true;
-  }
-  case 9:
-    set_val(Boolean, "S_ISSOCK",
-            false);  // Windows doesn't have Unix sockets as files
-    return true;
-  case 10:
-    set_val(Boolean, "S_TYPEISMQ",
-            false);  // Message queues not exposed as files
-    return true;
-  case 11:
-    set_val(Boolean, "S_TYPEISSEM", false);  // Semaphores not exposed as files
-    return true;
-  case 12:
-    set_val(Boolean, "S_TYPEISSHM",
-            false);  // Shared memory not exposed as files
-    return true;
-  case 13:
-    set_val(Boolean, "S_TYPEISTMO",
-            false);  // Typed memory objects not supported
-    return true;
-  case 14:
-    set_val(Number, "st_nlink", info->numberOfLinks);
-    return true;
-  case 15:
-    set_val(Number, "st_uid", 0);  // Windows doesn't have Unix UIDs
-    return true;
-  case 16:
-    set_val(Number, "st_gid", 0);  // Windows doesn't have Unix GIDs
-    return true;
-  case 17:
-    set_val(Number, "st_rdev", 0);  // Device files not supported
-    return true;
-  case 18:
-    set_val(Number, "st_size", info->fileSize.QuadPart);
-    return true;
-  case 19: {
-    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastAccessTime);
-    set_val(TimeSpec, "st_atim", ts);
-    return true;
-  }
-  case 20: {
-    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastWriteTime);
-    set_val(TimeSpec, "st_mtim", ts);
-    return true;
-  }
-  case 21: {
-    OsCalls::TimeSpec64 ts = filetime_to_timespec(info->creationTime);
-    set_val(TimeSpec, "st_ctim", ts);  // Using creation time as ctime
-    return true;
-  }
-  case 22:
-    set_val(Number, "st_blksize", 4096);  // Default block size
-    return true;
-  case 23: {
-    // Calculate blocks (512-byte units)
-    int64_t blocks = (info->fileSize.QuadPart + 511) / 512;
-    set_val(Number, "st_blocks", blocks);
-    return true;
-  }
-  }
+    case 3:
+        set_val(Boolean, "S_ISBLK", false);  // Windows doesn't have block devices
+        return true;
+    case 4:
+        set_val(Boolean, "S_ISCHR",
+                false);  // Windows doesn't expose char devices this way
+        return true;
+    case 5:
+        set_val(Boolean, "S_ISDIR", (info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+        return true;
+    case 6:
+        set_val(Boolean, "S_ISFIFO", false);  // Windows doesn't have FIFOs
+        return true;
+    case 7: {
+        bool is_symlink =
+            (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
+            (info->reparseTag == IO_REPARSE_TAG_SYMLINK || info->reparseTag == IO_REPARSE_TAG_MOUNT_POINT);
+        set_val(Boolean, "S_ISLNK", is_symlink);
+        return true;
+    }
+    case 8: {
+        bool is_regular =
+            !(info->fileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+            !((info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
+              (info->reparseTag == IO_REPARSE_TAG_SYMLINK || info->reparseTag == IO_REPARSE_TAG_MOUNT_POINT));
+        set_val(Boolean, "S_ISREG", is_regular);
+        return true;
+    }
+    case 9:
+        set_val(Boolean, "S_ISSOCK",
+                false);  // Windows doesn't have Unix sockets as files
+        return true;
+    case 10:
+        set_val(Boolean, "S_TYPEISMQ",
+                false);  // Message queues not exposed as files
+        return true;
+    case 11:
+        set_val(Boolean, "S_TYPEISSEM", false);  // Semaphores not exposed as files
+        return true;
+    case 12:
+        set_val(Boolean, "S_TYPEISSHM",
+                false);  // Shared memory not exposed as files
+        return true;
+    case 13:
+        set_val(Boolean, "S_TYPEISTMO",
+                false);  // Typed memory objects not supported
+        return true;
+    case 14:
+        set_val(Number, "st_nlink", info->numberOfLinks);
+        return true;
+    case 15:
+        set_val(Number, "st_uid", 0);  // Windows doesn't have Unix UIDs
+        return true;
+    case 16:
+        set_val(Number, "st_gid", 0);  // Windows doesn't have Unix GIDs
+        return true;
+    case 17:
+        set_val(Number, "st_rdev", 0);  // Device files not supported
+        return true;
+    case 18:
+        set_val(Number, "st_size", info->fileSize.QuadPart);
+        return true;
+    case 19: {
+        OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastAccessTime);
+        set_val(TimeSpec, "st_atim", ts);
+        return true;
+    }
+    case 20: {
+        OsCalls::TimeSpec64 ts = filetime_to_timespec(info->lastWriteTime);
+        set_val(TimeSpec, "st_mtim", ts);
+        return true;
+    }
+    case 21: {
+        OsCalls::TimeSpec64 ts = filetime_to_timespec(info->creationTime);
+        set_val(TimeSpec, "st_ctim", ts);  // Using creation time as ctime
+        return true;
+    }
+    case 22:
+        set_val(Number, "st_blksize", 4096);  // Default block size
+        return true;
+    case 23: {
+        // Calculate blocks (512-byte units)
+        int64_t blocks = (info->fileSize.QuadPart + 511) / 512;
+        set_val(Number, "st_blocks", blocks);
+        return true;
+    }
+    }
 }
 
 extern "C" DLL_EXPORT ValueT *windows_GetFileInformationByHandle(const wchar_t *path) {
-  auto               info = new WinFileInfo{};
-  auto               v = new ValueT();
-  static const char *errno_name = "errno";
+    auto               info = new WinFileInfo{};
+    auto               v = new ValueT();
+    static const char *errno_name = "errno";
 
-  // Open file/directory without following reparse points
-  HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
+    // Open file/directory without following reparse points
+    HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
 
-  if (hFile == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    // Return error as errno field for consistency with LStat expectations
-    delete info;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;  // Use static literal
-    v->Number = err;
-    return v;
-  }
-
-  // Get basic file information
-  BY_HANDLE_FILE_INFORMATION fileInfo;
-  if (!GetFileInformationByHandle(hFile, &fileInfo)) {
-    DWORD err = GetLastError();
-    CloseHandle(hFile);
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    delete info;
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;  // Use static literal
-    v->Number = err;
-    return v;
-  }
-
-  // Populate our structure
-  info->fileAttributes = fileInfo.dwFileAttributes;
-  info->fileSize.LowPart = fileInfo.nFileSizeLow;
-  info->fileSize.HighPart = fileInfo.nFileSizeHigh;
-  info->creationTime = fileInfo.ftCreationTime;
-  info->lastAccessTime = fileInfo.ftLastAccessTime;
-  info->lastWriteTime = fileInfo.ftLastWriteTime;
-  info->volumeSerialNumber = fileInfo.dwVolumeSerialNumber;
-  info->numberOfLinks = fileInfo.nNumberOfLinks;
-
-  // Combine file index parts to create inode-like value
-  info->fileIndex.LowPart = fileInfo.nFileIndexLow;
-  info->fileIndex.HighPart = fileInfo.nFileIndexHigh;
-
-  // Get reparse tag if this is a reparse point
-  info->reparseTag = 0;
-  if (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-    // Query reparse point to get tag
-    BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-    DWORD bytesReturned;
-    if (DeviceIoControl(hFile,
-                        FSCTL_GET_REPARSE_POINT,
-                        nullptr,
-                        0,
-                        buffer,
-                        sizeof(buffer),
-                        &bytesReturned,
-                        nullptr)) {
-      auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
-      info->reparseTag = reparseData->ReparseTag;
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        // Return error as errno field for consistency with LStat expectations
+        delete info;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;  // Use static literal
+        v->Number = err;
+        return v;
     }
-  }
 
-  CloseHandle(hFile);
+    // Get basic file information
+    BY_HANDLE_FILE_INFORMATION fileInfo;
+    if (!GetFileInformationByHandle(hFile, &fileInfo)) {
+        DWORD err = GetLastError();
+        CloseHandle(hFile);
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        delete info;
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;  // Use static literal
+        v->Number = err;
+        return v;
+    }
 
-  CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
+    // Populate our structure
+    info->fileAttributes = fileInfo.dwFileAttributes;
+    info->fileSize.LowPart = fileInfo.nFileSizeLow;
+    info->fileSize.HighPart = fileInfo.nFileSizeHigh;
+    info->creationTime = fileInfo.ftCreationTime;
+    info->lastAccessTime = fileInfo.ftLastAccessTime;
+    info->lastWriteTime = fileInfo.ftLastWriteTime;
+    info->volumeSerialNumber = fileInfo.dwVolumeSerialNumber;
+    info->numberOfLinks = fileInfo.nNumberOfLinks;
+
+    // Combine file index parts to create inode-like value
+    info->fileIndex.LowPart = fileInfo.nFileIndexLow;
+    info->fileIndex.HighPart = fileInfo.nFileIndexHigh;
+
+    // Get reparse tag if this is a reparse point
+    info->reparseTag = 0;
+    if (info->fileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        // Query reparse point to get tag
+        BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+        DWORD bytesReturned;
+        if (DeviceIoControl(
+                hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer), &bytesReturned, nullptr)) {
+            auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
+            info->reparseTag = reparseData->ReparseTag;
+        }
+    }
+
+    CloseHandle(hFile);
+
+    CreateHandle(v, handle_GetFileInformationByHandle, info, nullptr);
+    v->Type = TypeT::IsOk;
+    return v;
 }
 
 // Legacy compatibility wrapper
 extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
-  return windows_GetFileInformationByHandle(path);
+    return windows_GetFileInformationByHandle(path);
 }
 
 /**
@@ -703,104 +697,93 @@ extern "C" DLL_EXPORT ValueT *win_lstat(const wchar_t *path) {
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_DeviceIoControl_GetReparsePoint(ValueT *value) {
-  auto target = reinterpret_cast<wchar_t *>(value->Handle.data1);
-  switch (value->Handle.index) {
-  case 0:
-    if (value->Type == TypeT::IsOk) {
-      // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0, nullptr, nullptr);
-      if (size > 0) {
-        auto utf8 = new char[size];
-        WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr, nullptr);
-        value->String = utf8;
-        value->Name = "path";
-        value->Type = TypeT::IsString;
-        return true;
-      }
+    auto target = reinterpret_cast<wchar_t *>(value->Handle.data1);
+    switch (value->Handle.index) {
+    case 0:
+        if (value->Type == TypeT::IsOk) {
+            // Convert wide string to UTF-8
+            int size = WideCharToMultiByte(CP_UTF8, 0, target, -1, nullptr, 0, nullptr, nullptr);
+            if (size > 0) {
+                auto utf8 = new char[size];
+                WideCharToMultiByte(CP_UTF8, 0, target, -1, utf8, size, nullptr, nullptr);
+                value->String = utf8;
+                value->Name = "path";
+                value->Type = TypeT::IsString;
+                return true;
+            }
+        }
+    // Error or conversion failed - fall through
+    default:
+        delete[] target;
+        return false;
     }
-  // Error or conversion failed - fall through
-  default:
-    delete[] target;
-    return false;
-  }
 }
 
 extern "C" DLL_EXPORT ValueT *windows_DeviceIoControl_GetReparsePoint(const wchar_t *path) {
-  wchar_t *target = nullptr;
-  auto     v = new ValueT();
+    wchar_t *target = nullptr;
+    auto     v = new ValueT();
 
-  // Open the reparse point
-  HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
+    // Open the reparse point
+    HANDLE hFile = win_open_path(path, FILE_FLAG_OPEN_REPARSE_POINT);
 
-  if (hFile == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    target = new wchar_t[1];
-    target[0] = L'\0';
-    CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
-    v->Number = err;
-    return v;
-  }
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        target = new wchar_t[1];
+        target[0] = L'\0';
+        CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
+        v->Number = err;
+        return v;
+    }
 
-  // Get reparse point data
-  BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-  DWORD bytesReturned;
-  if (!DeviceIoControl(hFile,
-                       FSCTL_GET_REPARSE_POINT,
-                       nullptr,
-                       0,
-                       buffer,
-                       sizeof(buffer),
-                       &bytesReturned,
-                       nullptr)) {
-    DWORD err = GetLastError();
+    // Get reparse point data
+    BYTE  buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+    DWORD bytesReturned;
+    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, buffer, sizeof(buffer), &bytesReturned, nullptr)) {
+        DWORD err = GetLastError();
+        CloseHandle(hFile);
+        target = new wchar_t[1];
+        target[0] = L'\0';
+        CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
+        v->Number = err;
+        return v;
+    }
+
     CloseHandle(hFile);
-    target = new wchar_t[1];
-    target[0] = L'\0';
+
+    auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
+
+    // Extract target path based on reparse tag
+    if (reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
+        USHORT targetLength = reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
+        USHORT targetOffset = reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+        target = new wchar_t[targetLength + 1];
+        wcsncpy_s(
+            target, targetLength + 1, &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset], targetLength);
+        target[targetLength] = L'\0';
+    } else if (reparseData->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
+        USHORT targetLength = reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
+        USHORT targetOffset = reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
+        target = new wchar_t[targetLength + 1];
+        wcsncpy_s(
+            target, targetLength + 1, &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset], targetLength);
+        target[targetLength] = L'\0';
+    } else {
+        // Unsupported reparse point type
+        target = new wchar_t[1];
+        target[0] = L'\0';
+        CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
+        v->Number = ERROR_NOT_SUPPORTED;
+        return v;
+    }
+
     CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
-    v->Number = err;
+    v->Type = TypeT::IsOk;
     return v;
-  }
-
-  CloseHandle(hFile);
-
-  auto reparseData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer);
-
-  // Extract target path based on reparse tag
-  if (reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
-    USHORT targetLength = reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset = reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR);
-    target = new wchar_t[targetLength + 1];
-    wcsncpy_s(target,
-              targetLength + 1,
-              &reparseData->SymbolicLinkReparseBuffer.PathBuffer[targetOffset],
-              targetLength);
-    target[targetLength] = L'\0';
-  } else if (reparseData->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-    USHORT targetLength = reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
-    USHORT targetOffset = reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR);
-    target = new wchar_t[targetLength + 1];
-    wcsncpy_s(target,
-              targetLength + 1,
-              &reparseData->MountPointReparseBuffer.PathBuffer[targetOffset],
-              targetLength);
-    target[targetLength] = L'\0';
-  } else {
-    // Unsupported reparse point type
-    target = new wchar_t[1];
-    target[0] = L'\0';
-    CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
-    v->Number = ERROR_NOT_SUPPORTED;
-    return v;
-  }
-
-  CreateHandle(v, handle_DeviceIoControl_GetReparsePoint, target, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
 }
 
 // Legacy compatibility wrapper
 extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
-  return windows_DeviceIoControl_GetReparsePoint(path);
+    return windows_DeviceIoControl_GetReparsePoint(path);
 }
 
 /**
@@ -815,99 +798,97 @@ extern "C" DLL_EXPORT ValueT *win_readlink(const wchar_t *path) {
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_GetFinalPathNameByHandleW(ValueT *value) {
-  auto               cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
-  static const char *static_name = "path";
-  switch (value->Handle.index) {
-  case 0:
-    if (value->Type == TypeT::IsOk) {
-      // Convert wide string to UTF-8
-      int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr, nullptr);
-      if (size > 0) {
-        auto utf8 = new char[size];
-        WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
-        value->String = utf8;
-        value->Name = static_name;  // Use stable static literal
-        value->Type = TypeT::IsString;
-        return true;
-      }
+    auto               cfn = reinterpret_cast<wchar_t *>(value->Handle.data1);
+    static const char *static_name = "path";
+    switch (value->Handle.index) {
+    case 0:
+        if (value->Type == TypeT::IsOk) {
+            // Convert wide string to UTF-8
+            int size = WideCharToMultiByte(CP_UTF8, 0, cfn, -1, nullptr, 0, nullptr, nullptr);
+            if (size > 0) {
+                auto utf8 = new char[size];
+                WideCharToMultiByte(CP_UTF8, 0, cfn, -1, utf8, size, nullptr, nullptr);
+                value->String = utf8;
+                value->Name = static_name;  // Use stable static literal
+                value->Type = TypeT::IsString;
+                return true;
+            }
+        }
+    // Error or conversion failed - fall through
+    default:
+        delete[] cfn;
+        return false;
     }
-  // Error or conversion failed - fall through
-  default:
-    delete[] cfn;
-    return false;
-  }
 }
 
 extern "C" DLL_EXPORT ValueT *windows_GetFinalPathNameByHandleW(const wchar_t *path) {
-  wchar_t           *canonical = nullptr;
-  auto               v = new ValueT();
-  static const char *errno_name = "errno";
+    wchar_t           *canonical = nullptr;
+    auto               v = new ValueT();
+    static const char *errno_name = "errno";
 
-  // Open the file/directory
-  HANDLE hFile = win_open_path(path, 0);
-  CreateHandle(v, handle_error, nullptr, nullptr);
-
-  if (hFile == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;  // Use static literal
-    v->Number = err;
-    return v;
-  }
-
-  // Get the final path name
-  DWORD bufferSize =
-      GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
-  if (bufferSize == 0) {
+    // Open the file/directory
+    HANDLE hFile = win_open_path(path, 0);
     CreateHandle(v, handle_error, nullptr, nullptr);
-    DWORD err = GetLastError();
-    CloseHandle(hFile);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;  // Use static literal
-    v->Number = err;
-    return v;
-  }
 
-  canonical = new wchar_t[bufferSize];
-  DWORD result = GetFinalPathNameByHandleW(
-      hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
-  CloseHandle(hFile);
-
-  if (result == 0 || result >= bufferSize) {
-    DWORD err = GetLastError();
-    delete[] canonical;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;  // Use static literal
-    v->Number = err;
-    return v;
-  }
-
-  // Strip \\?\ prefix if present
-  wchar_t *finalPath = canonical;
-  if (wcsncmp(canonical, L"\\\\?\\", 4) == 0) {
-    // Skip the \\?\ prefix
-    finalPath = canonical + 4;
-    // If it's a UNC path (\\?\UNC\), convert back to \\server\share format
-    if (wcsncmp(finalPath, L"UNC\\", 4) == 0) {
-      finalPath[0] = L'\\';
-      finalPath = finalPath + 2;  // Skip "UN", keep "C\" which becomes "\\"
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;  // Use static literal
+        v->Number = err;
+        return v;
     }
-  }
 
-  // Create a new buffer with the stripped path
-  size_t len = wcslen(finalPath);
-  auto   strippedPath = new wchar_t[len + 1];
-  wcscpy_s(strippedPath, len + 1, finalPath);
-  delete[] canonical;
+    // Get the final path name
+    DWORD bufferSize = GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+    if (bufferSize == 0) {
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        DWORD err = GetLastError();
+        CloseHandle(hFile);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;  // Use static literal
+        v->Number = err;
+        return v;
+    }
 
-  CreateHandle(v, handle_GetFinalPathNameByHandleW, strippedPath, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
+    canonical = new wchar_t[bufferSize];
+    DWORD result = GetFinalPathNameByHandleW(hFile, canonical, bufferSize, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+    CloseHandle(hFile);
+
+    if (result == 0 || result >= bufferSize) {
+        DWORD err = GetLastError();
+        delete[] canonical;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;  // Use static literal
+        v->Number = err;
+        return v;
+    }
+
+    // Strip \\?\ prefix if present
+    wchar_t *finalPath = canonical;
+    if (wcsncmp(canonical, L"\\\\?\\", 4) == 0) {
+        // Skip the \\?\ prefix
+        finalPath = canonical + 4;
+        // If it's a UNC path (\\?\UNC\), convert back to \\server\share format
+        if (wcsncmp(finalPath, L"UNC\\", 4) == 0) {
+            finalPath[0] = L'\\';
+            finalPath = finalPath + 2;  // Skip "UN", keep "C\" which becomes "\\"
+        }
+    }
+
+    // Create a new buffer with the stripped path
+    size_t len = wcslen(finalPath);
+    auto   strippedPath = new wchar_t[len + 1];
+    wcscpy_s(strippedPath, len + 1, finalPath);
+    delete[] canonical;
+
+    CreateHandle(v, handle_GetFinalPathNameByHandleW, strippedPath, nullptr);
+    v->Type = TypeT::IsOk;
+    return v;
 }
 
 // Legacy compatibility wrapper
 extern "C" DLL_EXPORT ValueT *win_canonicalize_file_name(const wchar_t *path) {
-  return windows_GetFinalPathNameByHandleW(path);
+    return windows_GetFinalPathNameByHandleW(path);
 }
 }  // namespace OsCallsWindows

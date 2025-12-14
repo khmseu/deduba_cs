@@ -16,9 +16,7 @@ public sealed class ResetUtilitiesLogAttribute : BeforeAfterTestAttribute
         {
             Utilities.Log?.Close();
         }
-        catch
-        {
-        }
+        catch { }
 
         Utilities.Log = null;
     }
@@ -29,9 +27,7 @@ public sealed class ResetUtilitiesLogAttribute : BeforeAfterTestAttribute
         {
             Utilities.Log?.Close();
         }
-        catch
-        {
-        }
+        catch { }
 
         Utilities.Log = null;
     }

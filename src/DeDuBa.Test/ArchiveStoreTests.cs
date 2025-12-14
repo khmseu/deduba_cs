@@ -18,10 +18,7 @@ public class ArchiveStoreTests : IDisposable
         _tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tmpDir);
         _cfg = new BackupConfig(_tmpDir, 1024 * 16, true, false, 10);
-        _store = new ArchiveStore(
-            _cfg,
-            UtilitiesLogger.Instance
-        );
+        _store = new ArchiveStore(_cfg, UtilitiesLogger.Instance);
     }
 
     public void Dispose()
@@ -30,9 +27,7 @@ public class ArchiveStoreTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]

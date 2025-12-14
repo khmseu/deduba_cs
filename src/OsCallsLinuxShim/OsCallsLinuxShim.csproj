@@ -37,10 +37,6 @@
     <ItemGroup>
       <SharedLib Include="bin/$(Configuration)/net8.0/native/libOsCallsLinuxShim.so" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(SharedLib)"
-      DestinationFolder="$(OutputPath)"
-      Condition="Exists('%(SharedLib.Identity)')"
-    />
+    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" Condition="Exists('%(SharedLib.Identity)')" />
   </Target>
 </Project>

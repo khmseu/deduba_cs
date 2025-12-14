@@ -38,8 +38,7 @@ public class Utilities
     {
         var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
         var version =
-            asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? "unknown";
+            asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
         return version;
     }
 
@@ -102,14 +101,7 @@ public class Utilities
         [CallerMemberName] string callerMemberName = ""
     )
     {
-        Error(
-            file,
-            op,
-            new Win32Exception("error in Error"),
-            filePath,
-            lineNumber,
-            callerMemberName
-        );
+        Error(file, op, new Win32Exception("error in Error"), filePath, lineNumber, callerMemberName);
     }
 
     /// <summary>
@@ -277,8 +269,7 @@ public class Utilities
         const string clearToEol = "\u001b[K";
 
         var bytesText = HumanizeBytes(bytes);
-        var pctText =
-            double.IsNaN(percent) || double.IsInfinity(percent) ? "-" : percent.ToString("0.0");
+        var pctText = double.IsNaN(percent) || double.IsInfinity(percent) ? "-" : percent.ToString("0.0");
         // Keep the path reasonably short if extremely long
         var path = currentPath ?? string.Empty;
         if (path.Length > 140)

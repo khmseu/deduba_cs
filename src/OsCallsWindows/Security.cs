@@ -50,8 +50,5 @@ public static unsafe partial class Security
 
     [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static partial ValXfer.ValueT* win_get_sd(
-        string path,
-        [MarshalAs(UnmanagedType.Bool)] bool includeSacl
-    );
+    private static partial ValXfer.ValueT* win_get_sd(string path, [MarshalAs(UnmanagedType.Bool)] bool includeSacl);
 }

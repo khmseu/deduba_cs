@@ -13,15 +13,8 @@
       Condition="'$(HasLinuxDefine)' == 'true' AND '$(HasWindowsDefine)' == 'true'"
     />
   </Target>
-  <Target
-    Name="WorkspaceClean"
-    AfterTargets="Clean"
-    Condition="'$(MSBuildProjectName)' == 'DeDuBa'"
-  >
-    <Message
-      Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)"
-      Importance="High"
-    />
+  <Target Name="WorkspaceClean" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'DeDuBa'">
+    <Message Text="WorkspaceClean: removing generated workspace artifacts (build/dist/docs/_site)" Importance="High" />
     <ItemGroup>
       <DirsToRemove Include="$(RepoRoot)build" />
       <DirsToRemove Include="$(RepoRoot)build_native" />

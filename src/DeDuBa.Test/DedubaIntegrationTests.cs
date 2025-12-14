@@ -21,9 +21,7 @@ public class DedubaIntegrationTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]
@@ -37,11 +35,7 @@ public class DedubaIntegrationTests : IDisposable
 
         Assert.True(Directory.Exists(BackupConfig.Instance.DataPath));
 
-        var files = Directory.GetFiles(
-            BackupConfig.Instance.DataPath,
-            "*",
-            SearchOption.AllDirectories
-        );
+        var files = Directory.GetFiles(BackupConfig.Instance.DataPath, "*", SearchOption.AllDirectories);
         Assert.True(files.Length > 0);
     }
 
@@ -94,24 +88,14 @@ public class DedubaIntegrationTests : IDisposable
 
         // Basic: archive should exist and there should be a log file
         Assert.True(Directory.Exists(BackupConfig.Instance.ArchiveRoot));
-        var logs = Directory.GetFiles(
-            BackupConfig.Instance.ArchiveRoot,
-            "log_*",
-            SearchOption.TopDirectoryOnly
-        );
+        var logs = Directory.GetFiles(BackupConfig.Instance.ArchiveRoot, "log_*", SearchOption.TopDirectoryOnly);
         Assert.True(logs.Length > 0);
         var chosenLog = logs.OrderBy(x => x).Last();
         var log = File.ReadAllText(chosenLog);
 
         // Print the list of files in the created archive root for diagnostics
         Console.WriteLine("[DEBUG] ArchiveRoot contents:");
-        foreach (
-            var f in Directory.EnumerateFiles(
-                BackupConfig.Instance.ArchiveRoot,
-                "*",
-                SearchOption.AllDirectories
-            )
-        )
+        foreach (var f in Directory.EnumerateFiles(BackupConfig.Instance.ArchiveRoot, "*", SearchOption.AllDirectories))
             Console.WriteLine("[DEBUG]  " + f);
 
         Console.WriteLine("[DEBUG] Parent directory contents:");
@@ -140,9 +124,7 @@ public class DedubaIntegrationTests : IDisposable
         // Additional diagnostics for flaky test: check basename and relative matches in the log
         var outsideBasename = Path.GetFileName(outsideFile);
         var outsideRel = Path.GetRelativePath(parent, outsideFile);
-        Console.WriteLine(
-            $"[DEBUG] Checking alternate forms: basename={outsideBasename}, rel={outsideRel}"
-        );
+        Console.WriteLine($"[DEBUG] Checking alternate forms: basename={outsideBasename}, rel={outsideRel}");
         Console.WriteLine($"[DEBUG] Contains basename: {log.Contains(outsideBasename)}");
         Console.WriteLine($"[DEBUG] Contains rel (parent): {log.Contains(outsideRel)}");
 

@@ -22,15 +22,8 @@
         Include="bin/$(Configuration)/net8.0/native/libOsCallsCommonShim.so"
         Condition="'$(OS)'!='Windows_NT'"
       />
-      <SharedLib
-        Include="bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll"
-        Condition="'$(OS)'=='Windows_NT'"
-      />
+      <SharedLib Include="bin/$(Configuration)/net8.0/native/OsCallsCommonShim.dll" Condition="'$(OS)'=='Windows_NT'" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(SharedLib)"
-      DestinationFolder="$(OutputPath)"
-      Condition="Exists('%(SharedLib.Identity)')"
-    />
+    <Copy SourceFiles="@(SharedLib)" DestinationFolder="$(OutputPath)" Condition="Exists('%(SharedLib.Identity)')" />
   </Target>
 </Project>

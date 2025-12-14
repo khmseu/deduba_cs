@@ -20,11 +20,7 @@ public interface ILogging
     /// <param name="value">The value to dump.</param>
     /// <param name="name">The name of the value, automatically captured from the argument expression.</param>
     /// <returns>A key-value pair containing the name and value.</returns>
-    KeyValuePair<string, object?> D(
-        object? value,
-        [CallerArgumentExpression(nameof(value))]
-        string name = ""
-    );
+    KeyValuePair<string, object?> D(object? value, [CallerArgumentExpression(nameof(value))] string name = "");
 
     /// <summary>
     ///     Formats multiple key-value pairs into a human-readable string.
@@ -80,14 +76,7 @@ public interface ILogging
     /// <param name="bytes">The total number of bytes processed.</param>
     /// <param name="currentPath">The current path being processed.</param>
     /// <param name="percent">The completion percentage.</param>
-    void Status(
-        long filesDone,
-        long dirsDone,
-        long queued,
-        long bytes,
-        string currentPath,
-        double percent
-    );
+    void Status(long filesDone, long dirsDone, long queued, long bytes, string currentPath, double percent);
 
     /// <summary>
     ///     Logs a warning message with caller information.

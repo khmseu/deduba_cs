@@ -42,10 +42,7 @@ public class HighLevelOsApiTests : IDisposable
             else
             {
                 var si = Process.Start(
-                    new ProcessStartInfo("ln", $"-s {_testFilePath} {_testSymlinkPath}")
-                    {
-                        UseShellExecute = false,
-                    }
+                    new ProcessStartInfo("ln", $"-s {_testFilePath} {_testSymlinkPath}") { UseShellExecute = false }
                 );
                 si?.WaitForExit();
             }
@@ -134,11 +131,7 @@ public class HighLevelOsApiTests : IDisposable
         var minimalData = _osApi.CreateMinimalInodeDataFromPath(_testFilePath);
 
         // Act - complete the inode data
-        var completeData = _osApi.CompleteInodeDataFromPath(
-            _testFilePath,
-            ref minimalData,
-            _archiveStore
-        );
+        var completeData = _osApi.CompleteInodeDataFromPath(_testFilePath, ref minimalData, _archiveStore);
 
         // Assert
         Assert.NotNull(completeData);
@@ -158,11 +151,7 @@ public class HighLevelOsApiTests : IDisposable
         var minimalData = _osApi.CreateMinimalInodeDataFromPath(_testDirPath);
 
         // Act
-        var completeData = _osApi.CompleteInodeDataFromPath(
-            _testDirPath,
-            ref minimalData,
-            _archiveStore
-        );
+        var completeData = _osApi.CompleteInodeDataFromPath(_testDirPath, ref minimalData, _archiveStore);
 
         // Assert
         Assert.NotNull(completeData);
@@ -185,11 +174,7 @@ public class HighLevelOsApiTests : IDisposable
         var minimalData = _osApi.CreateMinimalInodeDataFromPath(_testSymlinkPath);
 
         // Act
-        var completeData = _osApi.CompleteInodeDataFromPath(
-            _testSymlinkPath,
-            ref minimalData,
-            _archiveStore
-        );
+        var completeData = _osApi.CompleteInodeDataFromPath(_testSymlinkPath, ref minimalData, _archiveStore);
 
         // Assert
         Assert.NotNull(completeData);
@@ -221,11 +206,7 @@ public class HighLevelOsApiTests : IDisposable
         Assert.Empty(minimalData.Hashes);
 
         // Act - complete the data
-        var completeData = _osApi.CompleteInodeDataFromPath(
-            _testFilePath,
-            ref minimalData,
-            _archiveStore
-        );
+        var completeData = _osApi.CompleteInodeDataFromPath(_testFilePath, ref minimalData, _archiveStore);
 
         // Assert - complete data has everything
         Assert.NotEqual(0, completeData.Device);

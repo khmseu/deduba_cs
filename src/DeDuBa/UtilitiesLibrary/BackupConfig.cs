@@ -114,10 +114,7 @@ public sealed class BackupConfig : IBackupConfig
             // and replace the current instance when the roots differ. This allows
             // runtime initialization (which may pass an explicit archive path)
             // to override an instance previously created by test fixtures.
-            if (
-                !string.IsNullOrEmpty(overrideArchiveRoot)
-                && _instance.ArchiveRoot != overrideArchiveRoot
-            )
+            if (!string.IsNullOrEmpty(overrideArchiveRoot) && _instance.ArchiveRoot != overrideArchiveRoot)
                 _instance = FromUtilitiesWithOverride(overrideArchiveRoot);
         }
     }
@@ -146,9 +143,7 @@ public sealed class BackupConfig : IBackupConfig
         var chunkSize = 1024L * 1024L * 1024L;
         var prefixSplitThreshold = 255;
 
-        var archiveRoot = !string.IsNullOrEmpty(overrideArchiveRoot)
-            ? overrideArchiveRoot
-            : baseArchiveRoot;
+        var archiveRoot = !string.IsNullOrEmpty(overrideArchiveRoot) ? overrideArchiveRoot : baseArchiveRoot;
 
         return new BackupConfig(archiveRoot, chunkSize, testing, verbose, prefixSplitThreshold);
     }

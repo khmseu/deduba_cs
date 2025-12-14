@@ -53,23 +53,13 @@ internal class Program
         DedubaClass.Logger.ConWrite("");
         DedubaClass.Logger.ConWrite("Options:");
         DedubaClass.Logger.ConWrite("  -v, --verbose      Enable verbose diagnostic output");
-        DedubaClass.Logger.ConWrite(
-            "  -p, --production   Use production archive path (/archive/backup)"
-        );
-        DedubaClass.Logger.ConWrite(
-            "                     Default: test mode (~/projects/Backup/ARCHIVE5)"
-        );
+        DedubaClass.Logger.ConWrite("  -p, --production   Use production archive path (/archive/backup)");
+        DedubaClass.Logger.ConWrite("                     Default: test mode (~/projects/Backup/ARCHIVE5)");
         DedubaClass.Logger.ConWrite("  -h, --help         Show this help message");
         DedubaClass.Logger.ConWrite("");
         DedubaClass.Logger.ConWrite("Examples:");
-        DedubaClass.Logger.ConWrite(
-            "  DeDuBa /tmp                    # Backup /tmp to test archive"
-        );
-        DedubaClass.Logger.ConWrite(
-            "  DeDuBa --verbose /home/user    # Backup with diagnostic output"
-        );
-        DedubaClass.Logger.ConWrite(
-            "  DeDuBa --production /data      # Backup to production archive"
-        );
+        DedubaClass.Logger.ConWrite("  DeDuBa /tmp                    # Backup /tmp to test archive");
+        DedubaClass.Logger.ConWrite("  DeDuBa --verbose /home/user    # Backup with diagnostic output");
+        DedubaClass.Logger.ConWrite("  DeDuBa --production /data      # Backup to production archive");
     }
 }

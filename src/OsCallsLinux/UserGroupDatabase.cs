@@ -22,14 +22,7 @@ public static unsafe partial class UserGroupDatabase
         try
         {
             var baseDir = AppContext.BaseDirectory;
-            var candidateDebug = Path.Combine(
-                baseDir,
-                "OsCallsLinuxShim",
-                "bin",
-                "Debug",
-                "net8.0",
-                NativeLibraryName
-            );
+            var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", NativeLibraryName);
             var candidateRelease = Path.Combine(
                 baseDir,
                 "OsCallsLinuxShim",
@@ -51,9 +44,7 @@ public static unsafe partial class UserGroupDatabase
                     _linux_getgrgid = Marshal.GetDelegateForFunctionPointer<ShimGrGidDelegate>(ptr);
             }
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [LibraryImport(NativeLibraryName)]

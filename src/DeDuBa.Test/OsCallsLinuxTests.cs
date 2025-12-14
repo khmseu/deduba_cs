@@ -73,34 +73,16 @@ public class OsCallsLinuxTests
         var handle = NativeLibrary.Load(lib);
         try
         {
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_lstat", out _),
-                "linux_lstat must exist"
-            );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_readlink", out _),
-                "linux_readlink must exist"
-            );
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_lstat", out _), "linux_lstat must exist");
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_readlink", out _), "linux_readlink must exist");
             Assert.True(
                 NativeLibrary.TryGetExport(handle, "linux_canonicalize_file_name", out _),
                 "linux_canonicalize_file_name must exist"
             );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_llistxattr", out _),
-                "linux_llistxattr must exist"
-            );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_lgetxattr", out _),
-                "linux_lgetxattr must exist"
-            );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_getpwuid", out _),
-                "linux_getpwuid must exist"
-            );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "linux_getgrgid", out _),
-                "linux_getgrgid must exist"
-            );
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_llistxattr", out _), "linux_llistxattr must exist");
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_lgetxattr", out _), "linux_lgetxattr must exist");
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_getpwuid", out _), "linux_getpwuid must exist");
+            Assert.True(NativeLibrary.TryGetExport(handle, "linux_getgrgid", out _), "linux_getgrgid must exist");
             Assert.True(
                 NativeLibrary.TryGetExport(handle, "linux_acl_get_file_access", out _),
                 "linux_acl_get_file_access must exist"
@@ -133,10 +115,7 @@ public class OsCallsLinuxTests
                     NativeLibrary.TryGetExport(handle, "linux_lstat", out var linux_fptr),
                     "linux_lstat export expected"
                 );
-                Assert.True(
-                    NativeLibrary.TryGetExport(handle, "lstat", out var raw_fptr),
-                    "lstat export expected"
-                );
+                Assert.True(NativeLibrary.TryGetExport(handle, "lstat", out var raw_fptr), "lstat export expected");
                 var linux_del = Marshal.GetDelegateForFunctionPointer<ShimFn>(linux_fptr);
                 var raw_del = Marshal.GetDelegateForFunctionPointer<ShimFn>(raw_fptr);
 
@@ -170,28 +149,18 @@ public class OsCallsLinuxTests
                 NativeLibrary.TryGetExport(handle, "linux_getpwuid", out var linux_fptr),
                 "linux_getpwuid export expected"
             );
-            Assert.True(
-                NativeLibrary.TryGetExport(handle, "getpwuid", out var raw_fptr),
-                "getpwuid export expected"
-            );
-            var linux_del = (ShimUidDelegate)
-                Marshal.GetDelegateForFunctionPointer(linux_fptr, typeof(ShimUidDelegate));
-            var raw_del = (ShimUidDelegate)
-                Marshal.GetDelegateForFunctionPointer(raw_fptr, typeof(ShimUidDelegate));
+            Assert.True(NativeLibrary.TryGetExport(handle, "getpwuid", out var raw_fptr), "getpwuid export expected");
+            var linux_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(linux_fptr, typeof(ShimUidDelegate));
+            var raw_del = (ShimUidDelegate)Marshal.GetDelegateForFunctionPointer(raw_fptr, typeof(ShimUidDelegate));
             var uid = (long)Environment.UserName.GetHashCode();
             // Use current user ID from system
             var cuid = (long)Process.GetCurrentProcess().Id; // fallback in case
             // Better: get UID from environment
             try
             {
-                uid = Convert.ToInt32(
-                    Environment.GetEnvironmentVariable("UID")
-                    ?? Environment.UserName
-                );
+                uid = Convert.ToInt32(Environment.GetEnvironmentVariable("UID") ?? Environment.UserName);
             }
-            catch
-            {
-            }
+            catch { }
 
             // Use getpwuid for root (uid 0) as known safe
             var v1 = linux_del(0);
@@ -228,17 +197,10 @@ public class OsCallsLinuxTests
                 File.Create(link).Close();
                 File.Delete(link);
                 // Create symlink to tmp
-                var si = Process.Start(
-                    new ProcessStartInfo("ln", $"-s {tmp} {link}")
-                    {
-                        UseShellExecute = false
-                    }
-                );
+                var si = Process.Start(new ProcessStartInfo("ln", $"-s {tmp} {link}") { UseShellExecute = false });
                 si?.WaitForExit();
             }
-            catch
-            {
-            }
+            catch { }
 
             var rl1 = FileSystem.ReadLink(link); // reading link path (symlink)
             var rl2 = FileSystem.LinuxReadLink(link);

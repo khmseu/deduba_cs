@@ -15,9 +15,9 @@ extern "C" {
  * @return true if more values remain, false if iteration is complete.
  */
 DLL_EXPORT bool GetNextValue(OsCalls::ValueT *value) {
-  auto ret = value->Handle.handler(value);
-  value->Handle.index++;
-  return ret;
+    auto ret = value->Handle.handler(value);
+    value->Handle.index++;
+    return ret;
 };
 
 /**
@@ -31,17 +31,16 @@ DLL_EXPORT bool GetNextValue(OsCalls::ValueT *value) {
  * @param data1 First user data pointer (passed to handler via Handle.data1).
  * @param data2 Second user data pointer (passed to handler via Handle.data2).
  */
-DLL_EXPORT void
-CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, void *data2) {
-  value->Handle.handler = handler;
-  value->Handle.data1 = data1;
-  value->Handle.data2 = data2;
-  value->Handle.index = 0;
-  value->Type = OsCalls::TypeT::IsError;
-  value->Name = "errno";
-  value->Number = 0;
-  value->String = nullptr;
-  value->Complex = nullptr;
-  value->TimeSpec = {0, 0};
+DLL_EXPORT void CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, void *data2) {
+    value->Handle.handler = handler;
+    value->Handle.data1 = data1;
+    value->Handle.data2 = data2;
+    value->Handle.index = 0;
+    value->Type = OsCalls::TypeT::IsError;
+    value->Name = "errno";
+    value->Number = 0;
+    value->String = nullptr;
+    value->Complex = nullptr;
+    value->TimeSpec = {0, 0};
 };
 }  // extern "C"

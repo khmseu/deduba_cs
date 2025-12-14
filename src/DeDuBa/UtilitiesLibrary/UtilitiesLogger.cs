@@ -21,11 +21,7 @@ public sealed class UtilitiesLogger : ILogging
     /// <param name="value">The value to capture.</param>
     /// <param name="name">The name of the value (automatically captured from the expression).</param>
     /// <returns>A key-value pair containing the name and value.</returns>
-    public KeyValuePair<string, object?> D(
-        object? value,
-        [CallerArgumentExpression(nameof(value))]
-        string name = ""
-    )
+    public KeyValuePair<string, object?> D(object? value, [CallerArgumentExpression(nameof(value))] string name = "")
     {
         return Utilities.D(value, name);
     }
@@ -99,14 +95,7 @@ public sealed class UtilitiesLogger : ILogging
     /// <param name="bytes">The number of bytes processed.</param>
     /// <param name="currentPath">The current file or directory path being processed.</param>
     /// <param name="percent">The completion percentage.</param>
-    public void Status(
-        long filesDone,
-        long dirsDone,
-        long queued,
-        long bytes,
-        string currentPath,
-        double percent
-    )
+    public void Status(long filesDone, long dirsDone, long queued, long bytes, string currentPath, double percent)
     {
         Utilities.Status(filesDone, dirsDone, queued, bytes, currentPath, percent);
     }

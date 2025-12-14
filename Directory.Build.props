@@ -12,13 +12,11 @@
     </PackageReference>
   </ItemGroup>
   <!-- Define DEDUBA_LINUX symbol for Linux builds (default/no RID treated as Linux) -->
-  <PropertyGroup
-    Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Unix')">
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Unix')">
     <DefineConstants>$(DefineConstants);DEDUBA_LINUX</DefineConstants>
   </PropertyGroup>
   <!-- Define DEDUBA_WINDOWS symbol for Windows builds -->
-  <PropertyGroup
-    Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Windows_NT')">
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == 'win-arm64' OR '$(RuntimeIdentifier)' == 'win-x86' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)' == 'Windows_NT')">
     <DefineConstants>$(DefineConstants);DEDUBA_WINDOWS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>

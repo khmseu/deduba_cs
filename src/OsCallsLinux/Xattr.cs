@@ -25,12 +25,9 @@ public static unsafe partial class Xattr
             {
                 var handle = NativeLibrary.Load(full);
                 if (NativeLibrary.TryGetExport(handle, "linux_llistxattr", out var p))
-                    _linux_llistxattr =
-                        Marshal.GetDelegateForFunctionPointer<ShimListXattrDelegate>(p);
+                    _linux_llistxattr = Marshal.GetDelegateForFunctionPointer<ShimListXattrDelegate>(p);
                 if (NativeLibrary.TryGetExport(handle, "linux_lgetxattr", out p))
-                    _linux_lgetxattr = Marshal.GetDelegateForFunctionPointer<ShimGetXattrDelegate>(
-                        p
-                    );
+                    _linux_lgetxattr = Marshal.GetDelegateForFunctionPointer<ShimGetXattrDelegate>(p);
             }
         }
         catch
@@ -99,22 +96,8 @@ public static unsafe partial class Xattr
     private static string? FindNative()
     {
         var baseDir = AppContext.BaseDirectory;
-        var candidateDebug = Path.Combine(
-            baseDir,
-            "OsCallsLinuxShim",
-            "bin",
-            "Debug",
-            "net8.0",
-            NativeLibraryName
-        );
-        var candidateRelease = Path.Combine(
-            baseDir,
-            "OsCallsLinuxShim",
-            "bin",
-            "Release",
-            "net8.0",
-            NativeLibraryName
-        );
+        var candidateDebug = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Debug", "net8.0", NativeLibraryName);
+        var candidateRelease = Path.Combine(baseDir, "OsCallsLinuxShim", "bin", "Release", "net8.0", NativeLibraryName);
         if (File.Exists(candidateDebug))
             return candidateDebug;
         if (File.Exists(candidateRelease))

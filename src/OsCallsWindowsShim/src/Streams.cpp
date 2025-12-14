@@ -123,17 +123,17 @@ using namespace OsCalls;
  * @return false Always (no values to iterate).
  */
 static bool handle_error(ValueT *value) {
-  (void)value;  // Suppress unused parameter warning
-  return false;
+    (void)value;  // Suppress unused parameter warning
+    return false;
 }
 
 /**
  * @brief Structure to hold stream information
  */
 struct StreamInfo {
-  std::vector<std::wstring>  names;
-  std::vector<LARGE_INTEGER> sizes;
-  size_t                     currentIndex;
+    std::vector<std::wstring>  names;
+    std::vector<LARGE_INTEGER> sizes;
+    size_t                     currentIndex;
 };
 
 /**
@@ -147,164 +147,156 @@ struct StreamInfo {
  * @return true if more streams remain, false when iteration completes.
  */
 static bool handle_FindFirstStreamW(ValueT *value) {
-  auto streams = reinterpret_cast<StreamInfo *>(value->Handle.data1);
+    auto streams = reinterpret_cast<StreamInfo *>(value->Handle.data1);
 
-  if (value->Handle.index == 0) {
-    if (value->Type != TypeT::IsOk) {
-      // Error case
-      delete streams;
-      // REMOVED: delete value; - managed code owns ValueT lifetime
-      return false;
+    if (value->Handle.index == 0) {
+        if (value->Type != TypeT::IsOk) {
+            // Error case
+            delete streams;
+            // REMOVED: delete value; - managed code owns ValueT lifetime
+            return false;
+        }
+        // Start iteration - return first stream if available
+        if (streams->names.empty()) {
+            delete streams;
+            // REMOVED: delete value; - managed code owns ValueT lifetime
+            return false;
+        }
+        streams->currentIndex = 0;
     }
-    // Start iteration - return first stream if available
-    if (streams->names.empty()) {
-      delete streams;
-      // REMOVED: delete value; - managed code owns ValueT lifetime
-      return false;
+
+    size_t idx = streams->currentIndex;
+
+    if (idx >= streams->names.size()) {
+        // End of iteration
+        delete streams;
+        // REMOVED: delete value; - managed code owns ValueT lifetime
+        return false;
     }
-    streams->currentIndex = 0;
-  }
 
-  size_t idx = streams->currentIndex;
+    // Return stream info as a complex value (object with name and size)
+    // Create a single ValueT for the stream object with its own iterator
+    auto streamObj = new ValueT();
+    memset(streamObj, 0, sizeof(ValueT));
 
-  if (idx >= streams->names.size()) {
-    // End of iteration
-    delete streams;
-    // REMOVED: delete value; - managed code owns ValueT lifetime
-    return false;
-  }
+    // Allocate data to hold name and size
+    struct StreamObjectData {
+        char   *name;
+        int64_t size;
+        int     fieldIndex;
+    };
+    auto data = new StreamObjectData();
 
-  // Return stream info as a complex value (object with name and size)
-  // Create a single ValueT for the stream object with its own iterator
-  auto streamObj = new ValueT();
-  memset(streamObj, 0, sizeof(ValueT));
+    // Convert stream name to UTF-8
+    int nameSize = WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0, nullptr, nullptr);
+    data->name = new char[nameSize];
+    WideCharToMultiByte(CP_UTF8, 0, streams->names[idx].c_str(), -1, data->name, nameSize, nullptr, nullptr);
+    data->size = streams->sizes[idx].QuadPart;
+    data->fieldIndex = 0;
 
-  // Allocate data to hold name and size
-  struct StreamObjectData {
-    char   *name;
-    int64_t size;
-    int     fieldIndex;
-  };
-  auto data = new StreamObjectData();
+    // Create iterator for the stream object fields
+    auto handler = [](ValueT *v) -> bool {
+        auto sod = reinterpret_cast<StreamObjectData *>(v->Handle.data1);
+        switch (v->Handle.index) {
+        case 0:
+            v->Type = TypeT::IsString;
+            v->Name = "name";  // String literal has static storage duration
+            v->String = sod->name;
+            return true;
+        case 1:
+            v->Type = TypeT::IsNumber;
+            v->Name = "size";  // String literal has static storage duration
+            v->Number = sod->size;
+            return true;
+        default:
+            delete[] sod->name;
+            delete sod;
+            // REMOVED: delete v; - managed code owns ValueT lifetime
+            return false;
+        }
+    };
 
-  // Convert stream name to UTF-8
-  int nameSize = WideCharToMultiByte(
-      CP_UTF8, 0, streams->names[idx].c_str(), -1, nullptr, 0, nullptr, nullptr);
-  data->name = new char[nameSize];
-  WideCharToMultiByte(
-      CP_UTF8, 0, streams->names[idx].c_str(), -1, data->name, nameSize, nullptr, nullptr);
-  data->size = streams->sizes[idx].QuadPart;
-  data->fieldIndex = 0;
+    CreateHandle(streamObj, handler, data, nullptr);
+    streamObj->Type = TypeT::IsOk;
 
-  // Create iterator for the stream object fields
-  auto handler = [](ValueT *v) -> bool {
-    auto sod = reinterpret_cast<StreamObjectData *>(v->Handle.data1);
-    switch (v->Handle.index) {
-    case 0:
-      v->Type = TypeT::IsString;
-      v->Name = "name";  // String literal has static storage duration
-      v->String = sod->name;
-      return true;
-    case 1:
-      v->Type = TypeT::IsNumber;
-      v->Name = "size";  // String literal has static storage duration
-      v->Number = sod->size;
-      return true;
-    default:
-      delete[] sod->name;
-      delete sod;
-      // REMOVED: delete v; - managed code owns ValueT lifetime
-      return false;
-    }
-  };
+    value->Type = TypeT::IsComplex;
+    value->Name = "[]";  // Array element
+    value->Complex = streamObj;
 
-  CreateHandle(streamObj, handler, data, nullptr);
-  streamObj->Type = TypeT::IsOk;
-
-  value->Type = TypeT::IsComplex;
-  value->Name = "[]";  // Array element
-  value->Complex = streamObj;
-
-  streams->currentIndex++;
-  return true;
+    streams->currentIndex++;
+    return true;
 }
 
 extern "C" DLL_EXPORT ValueT *windows_FindFirstStreamW(const wchar_t *path) {
-  auto               streams = new StreamInfo{};
-  auto               v = new ValueT();
-  static const char *errno_name = "errno";  // Stable static pointer
+    auto               streams = new StreamInfo{};
+    auto               v = new ValueT();
+    static const char *errno_name = "errno";  // Stable static pointer
 
-  WIN32_FIND_STREAM_DATA findStreamData;
-  HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
+    WIN32_FIND_STREAM_DATA findStreamData;
+    HANDLE                 hFind = FindFirstStreamW(path, FindStreamInfoStandard, &findStreamData, 0);
 
-  fwprintf(stderr, L"FindFirstStreamW called for path: %s\n", path);
-  fwprintf(stderr, L"FindFirstStreamW returned handle: %p\n", hFind);
+    fwprintf(stderr, L"FindFirstStreamW called for path: %s\n", path);
+    fwprintf(stderr, L"FindFirstStreamW returned handle: %p\n", hFind);
 
-  if (hFind == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    fwprintf(stderr, L"FindFirstStreamW failed with error: %lu\n", err);
-    delete streams;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;
-    v->Number = err;
+    if (hFind == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        fwprintf(stderr, L"FindFirstStreamW failed with error: %lu\n", err);
+        delete streams;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;
+        v->Number = err;
+        return v;
+    }
+
+    // Enumerate all streams
+    size_t streamCount = 0;
+    do {
+        std::wstring streamName = findStreamData.cStreamName;
+        fwprintf(stderr, L"Found stream: %s, size: %lld\n", streamName.c_str(), findStreamData.StreamSize.QuadPart);
+
+        // Skip the default ::$DATA stream (or optionally include it with a flag)
+        // For now, include all streams
+        streams->names.push_back(streamName);
+        streams->sizes.push_back(findStreamData.StreamSize);
+        streamCount++;
+    } while (FindNextStreamW(hFind, &findStreamData));
+
+    fwprintf(stderr, L"Total streams enumerated: %zu\n", streamCount);
+
+    DWORD lastErr = GetLastError();
+    FindClose(hFind);
+
+    fwprintf(stderr, L"GetLastError after enumeration: %lu (ERROR_HANDLE_EOF=%lu)\n", lastErr, (DWORD)ERROR_HANDLE_EOF);
+    fwprintf(stderr, L"streams->names.size(): %zu\n", streams->names.size());
+
+    // ERROR_HANDLE_EOF is expected at the end of enumeration
+    if (lastErr != ERROR_HANDLE_EOF && streams->names.empty()) {
+        fwprintf(stderr, L"Returning error: unexpected lastErr with empty streams\n");
+        delete streams;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;
+        v->Number = lastErr;
+        return v;
+    }
+
+    fwprintf(stderr, L"Returning success with %zu streams\n", streams->names.size());
+    CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
+    v->Type = TypeT::IsOk;
     return v;
-  }
-
-  // Enumerate all streams
-  size_t streamCount = 0;
-  do {
-    std::wstring streamName = findStreamData.cStreamName;
-    fwprintf(stderr,
-             L"Found stream: %s, size: %lld\n",
-             streamName.c_str(),
-             findStreamData.StreamSize.QuadPart);
-
-    // Skip the default ::$DATA stream (or optionally include it with a flag)
-    // For now, include all streams
-    streams->names.push_back(streamName);
-    streams->sizes.push_back(findStreamData.StreamSize);
-    streamCount++;
-  } while (FindNextStreamW(hFind, &findStreamData));
-
-  fwprintf(stderr, L"Total streams enumerated: %zu\n", streamCount);
-
-  DWORD lastErr = GetLastError();
-  FindClose(hFind);
-
-  fwprintf(stderr,
-           L"GetLastError after enumeration: %lu (ERROR_HANDLE_EOF=%lu)\n",
-           lastErr,
-           (DWORD)ERROR_HANDLE_EOF);
-  fwprintf(stderr, L"streams->names.size(): %zu\n", streams->names.size());
-
-  // ERROR_HANDLE_EOF is expected at the end of enumeration
-  if (lastErr != ERROR_HANDLE_EOF && streams->names.empty()) {
-    fwprintf(stderr, L"Returning error: unexpected lastErr with empty streams\n");
-    delete streams;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;
-    v->Number = lastErr;
-    return v;
-  }
-
-  fwprintf(stderr, L"Returning success with %zu streams\n", streams->names.size());
-  CreateHandle(v, handle_FindFirstStreamW, streams, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
 }
 
 // Legacy compatibility wrapper
 extern "C" DLL_EXPORT ValueT *win_list_streams(const wchar_t *path) {
-  return windows_FindFirstStreamW(path);
+    return windows_FindFirstStreamW(path);
 }
 
 /**
  * @brief Structure to hold stream data
  */
 struct StreamData {
-  std::vector<BYTE> data;
+    std::vector<BYTE> data;
 };
 
 /**
@@ -317,104 +309,97 @@ struct StreamData {
  * @return true on first call if successful, false to signal completion.
  */
 static bool handle_ReadFile_Stream(ValueT *value) {
-  auto               streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
-  static const char *content_name = "content";  // Stable static pointer
-  switch (value->Handle.index) {
-  case 0:
-    if (value->Type == TypeT::IsOk) {
-      // Return data as string (or could be bytes)
-      // For simplicity, treat as UTF-8 text
-      size_t dataSize = streamData->data.size();
-      auto   str = new char[dataSize + 1];
-      memcpy(str, streamData->data.data(), dataSize);
-      str[dataSize] = '\0';
-      value->String = str;
-      value->Name = content_name;  // Use stable static literal
-      value->Type = TypeT::IsString;
-      return true;
+    auto               streamData = reinterpret_cast<StreamData *>(value->Handle.data1);
+    static const char *content_name = "content";  // Stable static pointer
+    switch (value->Handle.index) {
+    case 0:
+        if (value->Type == TypeT::IsOk) {
+            // Return data as string (or could be bytes)
+            // For simplicity, treat as UTF-8 text
+            size_t dataSize = streamData->data.size();
+            auto   str = new char[dataSize + 1];
+            memcpy(str, streamData->data.data(), dataSize);
+            str[dataSize] = '\0';
+            value->String = str;
+            value->Name = content_name;  // Use stable static literal
+            value->Type = TypeT::IsString;
+            return true;
+        }
+    // Error case - fall through
+    default:
+        delete streamData;
+        // REMOVED: delete value; - managed code owns ValueT lifetime
+        return false;
     }
-  // Error case - fall through
-  default:
-    delete streamData;
-    // REMOVED: delete value; - managed code owns ValueT lifetime
-    return false;
-  }
 }
 
-extern "C" DLL_EXPORT ValueT *
-windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
-  auto               streamData = new StreamData{};
-  auto               v = new ValueT();
-  static const char *errno_name = "errno";  // Stable static pointer
+extern "C" DLL_EXPORT ValueT *windows_ReadFile_Stream(const wchar_t *path, const wchar_t *stream_name) {
+    auto               streamData = new StreamData{};
+    auto               v = new ValueT();
+    static const char *errno_name = "errno";  // Stable static pointer
 
-  // Construct full stream path: path:streamname:\c DATA
-  std::wstring fullPath = path;
-  fullPath += L":";
-  fullPath += stream_name;
-  if (wcsstr(stream_name, L":$DATA") == nullptr) {
-    fullPath += L":$DATA";
-  }
+    // Construct full stream path: path:streamname:\c DATA
+    std::wstring fullPath = path;
+    fullPath += L":";
+    fullPath += stream_name;
+    if (wcsstr(stream_name, L":$DATA") == nullptr) {
+        fullPath += L":$DATA";
+    }
 
-  // Open the stream
-  HANDLE hFile = CreateFileW(fullPath.c_str(),
-                             GENERIC_READ,
-                             FILE_SHARE_READ,
-                             nullptr,
-                             OPEN_EXISTING,
-                             FILE_ATTRIBUTE_NORMAL,
-                             nullptr);
+    // Open the stream
+    HANDLE hFile = CreateFileW(
+        fullPath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-  if (hFile == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    delete streamData;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;
-    v->Number = err;
-    return v;
-  }
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        delete streamData;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;
+        v->Number = err;
+        return v;
+    }
 
-  // Get file size
-  LARGE_INTEGER fileSize;
-  if (!GetFileSizeEx(hFile, &fileSize)) {
-    DWORD err = GetLastError();
+    // Get file size
+    LARGE_INTEGER fileSize;
+    if (!GetFileSizeEx(hFile, &fileSize)) {
+        DWORD err = GetLastError();
+        CloseHandle(hFile);
+        delete streamData;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;
+        v->Number = err;
+        return v;
+    }
+
+    // Read stream content (limit to reasonable size)
+    const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024;  // 10 MB limit
+    DWORD       bytesToRead = static_cast<DWORD>(std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
+
+    streamData->data.resize(bytesToRead);
+    DWORD bytesRead = 0;
+    if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
+        DWORD err = GetLastError();
+        CloseHandle(hFile);
+        delete streamData;
+        CreateHandle(v, handle_error, nullptr, nullptr);
+        v->Type = TypeT::IsError;
+        v->Name = errno_name;
+        v->Number = err;
+        return v;
+    }
+
     CloseHandle(hFile);
-    delete streamData;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;
-    v->Number = err;
+    streamData->data.resize(bytesRead);  // Adjust to actual bytes read
+
+    CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
+    v->Type = TypeT::IsOk;
     return v;
-  }
-
-  // Read stream content (limit to reasonable size)
-  const DWORD MAX_STREAM_SIZE = 10 * 1024 * 1024;  // 10 MB limit
-  DWORD       bytesToRead =
-      static_cast<DWORD>(std::min(static_cast<LONGLONG>(MAX_STREAM_SIZE), fileSize.QuadPart));
-
-  streamData->data.resize(bytesToRead);
-  DWORD bytesRead = 0;
-  if (!ReadFile(hFile, streamData->data.data(), bytesToRead, &bytesRead, nullptr)) {
-    DWORD err = GetLastError();
-    CloseHandle(hFile);
-    delete streamData;
-    CreateHandle(v, handle_error, nullptr, nullptr);
-    v->Type = TypeT::IsError;
-    v->Name = errno_name;
-    v->Number = err;
-    return v;
-  }
-
-  CloseHandle(hFile);
-  streamData->data.resize(bytesRead);  // Adjust to actual bytes read
-
-  CreateHandle(v, handle_ReadFile_Stream, streamData, nullptr);
-  v->Type = TypeT::IsOk;
-  return v;
 }
 
 // Legacy compatibility wrapper
 extern "C" DLL_EXPORT ValueT *win_read_stream(const wchar_t *path, const wchar_t *stream_name) {
-  return windows_ReadFile_Stream(path, stream_name);
+    return windows_ReadFile_Stream(path, stream_name);
 }
 }  // namespace OsCallsWindows

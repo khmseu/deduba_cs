@@ -30,8 +30,8 @@ struct ValueT;
  * we define our own struct with explicit int64_t fields.
  */
 struct TimeSpec64 {
-  int64_t tv_sec;
-  int64_t tv_nsec;
+    int64_t tv_sec;
+    int64_t tv_nsec;
 };
 
 /**
@@ -51,10 +51,10 @@ typedef bool HandlerT(ValueT *value);
  * @brief Iterator state passed between native calls for streaming values.
  */
 struct HandleT {
-  HandlerT *handler;
-  void     *data1;
-  void     *data2;
-  int64_t   index;
+    HandlerT *handler;
+    void     *data1;
+    void     *data2;
+    int64_t   index;
 };
 
 // Define the TType enum
@@ -62,13 +62,13 @@ struct HandleT {
  * @brief Discriminator for the currently exposed value type.
  */
 enum class TypeT {
-  IsOk = 0,
-  IsError,
-  IsNumber,
-  IsString,
-  IsComplex,
-  IsTimeSpec,
-  IsBoolean,
+    IsOk = 0,
+    IsError,
+    IsNumber,
+    IsString,
+    IsComplex,
+    IsTimeSpec,
+    IsBoolean,
 };
 
 // Define the TValue struct
@@ -76,14 +76,14 @@ enum class TypeT {
  * @brief Native representation of a value in the iteration stream.
  */
 struct ValueT {
-  HandleT     Handle;
-  const char *Name;
-  TypeT       Type;
-  TimeSpec64  TimeSpec;
-  int64_t     Number;
-  const char *String;
-  ValueT     *Complex;
-  bool        Boolean;
+    HandleT     Handle;
+    const char *Name;
+    TypeT       Type;
+    TimeSpec64  TimeSpec;
+    int64_t     Number;
+    const char *String;
+    ValueT     *Complex;
+    bool        Boolean;
 };
 
 /**
@@ -99,12 +99,12 @@ struct ValueT {
  *
  * Example: set_val(Number, "st_ino", inode_value);
  */
-#define set_val(typ, name, val)                                                                    \
-  do {                                                                                             \
-    value->Type = TypeT::Is##typ;                                                                  \
-    value->Name = name;                                                                            \
-    value->typ = val;                                                                              \
-  } while (0)
+#define set_val(typ, name, val)                                                                                        \
+    do {                                                                                                               \
+        value->Type = TypeT::Is##typ;                                                                                  \
+        value->Name = name;                                                                                            \
+        value->typ = val;                                                                                              \
+    } while (0)
 
 /**
  * @name Cursor operations
@@ -117,8 +117,7 @@ extern "C" {
 /** Advance the cursor and populate the current ValueT fields. */
 DLL_EXPORT bool GetNextValue(OsCalls::ValueT *value);
 /** Initialize a cursor with a handler and user data pointers. */
-DLL_EXPORT void
-CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, void *data2);
+DLL_EXPORT void CreateHandle(OsCalls::ValueT *value, OsCalls::HandlerT *handler, void *data1, void *data2);
 }
 
 namespace OsCalls {

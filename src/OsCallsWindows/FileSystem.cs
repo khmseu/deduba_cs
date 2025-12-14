@@ -21,10 +21,8 @@ public static unsafe partial class FileSystem
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
-            if (Logger.IsNativeDebugEnabled())
-                Logger.ConWrite(
-                    $"OsCallsWindows.FileSystem resolver registered: searching for '{NativeLibraryName}'"
-                );
+            if (Logger!.IsNativeDebugEnabled())
+                Logger!.ConWrite($"OsCallsWindows.FileSystem resolver registered: searching for '{NativeLibraryName}'");
             // Preload to improve deterministic behavior in CI where PATH changes later.
             _ = Resolver(NativeLibraryName, typeof(FileSystem).Assembly, null);
         }
@@ -101,11 +99,7 @@ public static unsafe partial class FileSystem
     /// <returns>A JsonObject containing file attributes (size, timestamps, attributes, file ID, etc.).</returns>
     public static JsonNode WindowsGetFileInformationByHandle(string path)
     {
-        return ToNode(
-            windows_GetFileInformationByHandle(path),
-            path,
-            nameof(windows_GetFileInformationByHandle)
-        );
+        return ToNode(windows_GetFileInformationByHandle(path), path, nameof(windows_GetFileInformationByHandle));
     }
 
     /// <summary>
@@ -131,50 +125,40 @@ public static unsafe partial class FileSystem
     /// <returns>A JsonNode with a <c>path</c> field set to the canonical path.</returns>
     public static JsonNode WindowsGetFinalPathNameByHandleW(string path)
     {
-        return ToNode(
-            windows_GetFinalPathNameByHandleW(path),
-            path,
-            nameof(windows_GetFinalPathNameByHandleW)
-        );
+        return ToNode(windows_GetFinalPathNameByHandleW(path), path, nameof(windows_GetFinalPathNameByHandleW));
     }
 
-    private static IntPtr Resolver(
-        string libraryName,
-        Assembly assembly,
-        DllImportSearchPath? searchPath
-    )
+    private static IntPtr Resolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
         if (!string.Equals(libraryName, NativeLibraryName, StringComparison.OrdinalIgnoreCase))
             return IntPtr.Zero;
         try
         {
-            if (Logger.IsNativeDebugEnabled())
-                Logger.ConWrite(
+            if (Logger!.IsNativeDebugEnabled())
+                Logger!.ConWrite(
                     $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
                 );
             var full = FindNativeLibraryPath(NativeLibraryName);
             if (full is not null)
             {
-                if (Logger.IsNativeDebugEnabled())
-                    Logger.ConWrite($"Resolver: Found native path {full}");
+                if (Logger!.IsNativeDebugEnabled())
+                    Logger!.ConWrite($"Resolver: Found native path {full}");
                 try
                 {
                     return NativeLibrary.Load(full);
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsNativeDebugEnabled())
-                        Logger.ConWrite(
-                            $"Resolver: NativeLibrary.Load failed for {full}: {e.Message}"
-                        );
+                    if (Logger!.IsNativeDebugEnabled())
+                        Logger!.ConWrite($"Resolver: NativeLibrary.Load failed for {full}: {e.Message}");
                     return IntPtr.Zero;
                 }
             }
         }
         catch (Exception e)
         {
-            if (Logger.IsNativeDebugEnabled())
-                Logger.ConWrite($"Resolver error: {e.Message}");
+            if (Logger!.IsNativeDebugEnabled())
+                Logger!.ConWrite($"Resolver error: {e.Message}");
         }
 
         return IntPtr.Zero;

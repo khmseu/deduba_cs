@@ -52,9 +52,7 @@
     <CMakeGeneratorExtraArgs>-DCMAKE_TOOLCHAIN_FILE=$(CMakeToolchainFile)</CMakeGeneratorExtraArgs>
   </PropertyGroup>
   <PropertyGroup>
-    <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''"
-      >-G "$(CMakeGenerator)"</CMakeGeneratorFlag
-    >
+    <CMakeGeneratorFlag Condition="'$(CMakeGenerator)' != ''">-G "$(CMakeGenerator)"</CMakeGeneratorFlag>
   </PropertyGroup>
   <!-- MSBuild platform args for cmake build on Windows to ensure x64 -->
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -110,10 +108,7 @@
     DependsOnTargets="ConfigureNative"
     BeforeTargets="Build"
   >
-    <Message
-      Text="Building native OsCallsWindowsShim via CMake in $(NativeBuildDir)"
-      Importance="High"
-    />
+    <Message Text="Building native OsCallsWindowsShim via CMake in $(NativeBuildDir)" Importance="High" />
     <!-- Build with optional tool flags: use -j for ninja, /m for MSBuild generator (when explicitly set).
          On Windows, pass /p:Platform=x64 to MSBuild via double-dash to ensure MSVC defines _M_X64. -->
     <Exec Command="cmake --build &quot;$(NativeBuildDir)&quot; --config $(Configuration) $(CMakeBuildFlags) $(CMakeBuildPlatformArgs)" />

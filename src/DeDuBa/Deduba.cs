@@ -102,12 +102,8 @@ public class DedubaClass
         if (!string.IsNullOrEmpty(envArchiveRoot))
             _archive = envArchiveRoot;
         else
-            _archive = Utilities.Testing
-                ? Path.Combine(Path.GetTempPath(), "ARCHIVE5")
-                : "/archive/backup";
-        Logger.ConWrite(
-            $"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})"
-        );
+            _archive = Utilities.Testing ? Path.Combine(Path.GetTempPath(), "ARCHIVE5") : "/archive/backup";
+        Logger.ConWrite($"Archive path: {_archive} (mode: {(Utilities.Testing ? "testing" : "production")})");
         _dataPath = Path.Combine(_archive, "DATA");
         // _tmpp = Path.Combine(_archive, $"tmp.{Process.GetCurrentProcess().Id}");
         try
@@ -123,10 +119,7 @@ public class DedubaClass
         try
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-                _ = new DirectoryInfo(_dataPath)
-                {
-                    UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8),
-                };
+                _ = new DirectoryInfo(_dataPath) { UnixFileMode = (UnixFileMode)Convert.ToInt32("0711", 8) };
         }
         catch (Exception ex)
         {
@@ -198,11 +191,7 @@ public class DedubaClass
                             {
                                 var msg =
                                     $"Refusing to back up '{root}' because it is within the archive path '{_archive}'.";
-                                Utilities.Error(
-                                    root,
-                                    nameof(Backup),
-                                    new InvalidOperationException(msg)
-                                );
+                                Utilities.Error(root, nameof(Backup), new InvalidOperationException(msg));
                                 throw new InvalidOperationException(msg);
                             }
                         }
@@ -228,11 +217,7 @@ public class DedubaClass
                     }
                     catch (Exception ex)
                     {
-                        Utilities.Error(
-                            root,
-                            nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath),
-                            ex
-                        );
+                        Utilities.Error(root, nameof(IHighLevelOsApi.CreateMinimalInodeDataFromPath), ex);
                         throw;
                     }
 
@@ -262,21 +247,14 @@ public class DedubaClass
                     Logger.ConWrite("Before backup:\n");
                     foreach (var kvp in _archiveStore!.Arlist)
                         Logger.ConWrite(
-                            Logger.Dumper(
-                                new KeyValuePair<string, object?>($"Arlist['{kvp.Key}']", kvp.Value)
-                            )
+                            Logger.Dumper(new KeyValuePair<string, object?>($"Arlist['{kvp.Key}']", kvp.Value))
                         );
 
                     // Iterate over preflist
                     // Iterate over preflist
                     foreach (var kvp in _archiveStore!.Preflist)
                         Logger.ConWrite(
-                            Logger.Dumper(
-                                new KeyValuePair<string, object?>(
-                                    $"Preflist['{kvp.Key}']",
-                                    kvp.Value
-                                )
-                            )
+                            Logger.Dumper(new KeyValuePair<string, object?>($"Preflist['{kvp.Key}']", kvp.Value))
                         );
                 }
 
@@ -419,9 +397,7 @@ public class DedubaClass
     {
         ArgumentNullException.ThrowIfNull(name);
         if (name.Length > 0 && Utilities.VerboseOutput)
-            Logger.ConWrite(
-                $"{name}: {Logger.Dumper(Logger.D(v?.GetType().FullName), Logger.D(v))}"
-            );
+            Logger.ConWrite($"{name}: {Logger.Dumper(Logger.D(v?.GetType().FullName), Logger.D(v))}");
         if (v is InodeData inode)
             return JsonSerializer.Serialize(inode, typeof(InodeData));
         return JsonSerializer.Serialize(v);
@@ -451,10 +427,7 @@ public class DedubaClass
                 _statusBytesDone += bytes;
                 var processed = Math.Max(0, (int)(size - bytes));
                 var percent = size > 0 ? processed * 100.0 / size : 100.0;
-                var queuedRemaining = Math.Max(
-                    0,
-                    _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
-                );
+                var queuedRemaining = Math.Max(0, _statusQueueTotal - (_statusFilesDone + _statusDirsDone));
                 Logger.Status(
                     _statusFilesDone,
                     _statusDirsDone,
@@ -497,9 +470,7 @@ public class DedubaClass
                 if (!string.IsNullOrEmpty(_archive) && IsPathWithinArchive(entry))
                 {
                     if (Utilities.VerboseOutput)
-                        Logger.ConWrite(
-                            $"Skipping archive/internal path during traversal: {entry}"
-                        );
+                        Logger.ConWrite($"Skipping archive/internal path during traversal: {entry}");
                     continue;
                 }
 
@@ -517,8 +488,7 @@ public class DedubaClass
                 try
                 {
                     minimalData =
-                        _osApi!.CreateMinimalInodeDataFromPath(entry)
-                        ?? throw new Win32Exception("null inodeData");
+                        _osApi!.CreateMinimalInodeDataFromPath(entry) ?? throw new Win32Exception("null inodeData");
                 }
                 catch (Exception ex)
                 {
@@ -550,9 +520,7 @@ public class DedubaClass
                     // Debug: record whether we've already seen this fsfid in this run
                     try
                     {
-                        Utilities.Log?.Write(
-                            $"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n"
-                        );
+                        Utilities.Log?.Write($"[DBG-FSFID] fsfid={fsfid} present={Fs2Ino.ContainsKey(fsfid)}\n");
                     }
                     catch { }
 
@@ -609,11 +577,7 @@ public class DedubaClass
                             }
 
                             inodeData = minimalData;
-                            inodeData = _osApi!.CompleteInodeDataFromPath(
-                                entry,
-                                ref inodeData,
-                                _archiveStore!
-                            );
+                            inodeData = _osApi!.CompleteInodeDataFromPath(entry, ref inodeData, _archiveStore!);
                             flags = inodeData.Flags;
                             fileSize = inodeData.Size;
                         }
@@ -632,10 +596,7 @@ public class DedubaClass
                         // because it's built up as children are processed
                         if (flags.Contains("dir"))
                         {
-                            var dataIsdir = Sdpack(
-                                Dirtmp.TryGetValue(entry, out var value) ? value : [],
-                                "dir"
-                            );
+                            var dataIsdir = Sdpack(Dirtmp.TryGetValue(entry, out var value) ? value : [], "dir");
                             Dirtmp.Remove(entry);
                             var size = dataIsdir.Length;
                             MemoryStream dirMem;
@@ -681,10 +642,7 @@ public class DedubaClass
                         var ino = Sdpack(hashes, "fileid");
                         Fs2Ino[fsfid] = ino;
                         TimeSpan? needed = DateTime.Now.Subtract(start);
-                        var speed =
-                            needed.Value.TotalSeconds > 0
-                                ? (double?)_ds / needed.Value.TotalSeconds
-                                : null;
+                        var speed = needed.Value.TotalSeconds > 0 ? (double?)_ds / needed.Value.TotalSeconds : null;
                         report = $"[{inodeData.Size:d} -> {_packsum:d}: {needed:c}s]";
                     }
 
@@ -748,10 +706,7 @@ public class DedubaClass
                         _statusDirsDone++;
                     else
                         _statusFilesDone++;
-                    var queuedRemaining = Math.Max(
-                        0,
-                        _statusQueueTotal - (_statusFilesDone + _statusDirsDone)
-                    );
+                    var queuedRemaining = Math.Max(0, _statusQueueTotal - (_statusFilesDone + _statusDirsDone));
                     // Percent for completed item is 100; for directory we don't compute size percent
                     var sizeFinal = fileSize;
                     var percentDone = sizeFinal > 0 && !flags.Contains("dir") ? 100.0 : double.NaN;
