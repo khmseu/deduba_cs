@@ -42,12 +42,9 @@ public class HighLevelOsApiTests : IDisposable
             else
             {
                 var si = Process.Start(
-                    new ProcessStartInfo(
-                        "ln",
-                        $"-s {_testFilePath} {_testSymlinkPath}"
-                    )
+                    new ProcessStartInfo("ln", $"-s {_testFilePath} {_testSymlinkPath}")
                     {
-                        UseShellExecute = false
+                        UseShellExecute = false,
                     }
                 );
                 si?.WaitForExit();
@@ -71,9 +68,7 @@ public class HighLevelOsApiTests : IDisposable
         {
             Directory.Delete(_tmpDir, true);
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     [Fact]
@@ -118,7 +113,8 @@ public class HighLevelOsApiTests : IDisposable
     public void CreateMinimalInodeDataFromPath_SymbolicLink_ReturnsLinkMetadata()
     {
         // Skip if symlink wasn't created
-        if (string.IsNullOrEmpty(_testSymlinkPath)) return;
+        if (string.IsNullOrEmpty(_testSymlinkPath))
+            return;
 
         // Act
         var inodeData = _osApi.CreateMinimalInodeDataFromPath(_testSymlinkPath);
@@ -182,7 +178,8 @@ public class HighLevelOsApiTests : IDisposable
     public void CompleteInodeDataFromPath_SymbolicLink_AddsLinkTarget()
     {
         // Skip if symlink wasn't created
-        if (string.IsNullOrEmpty(_testSymlinkPath)) return;
+        if (string.IsNullOrEmpty(_testSymlinkPath))
+            return;
 
         // Arrange
         var minimalData = _osApi.CreateMinimalInodeDataFromPath(_testSymlinkPath);

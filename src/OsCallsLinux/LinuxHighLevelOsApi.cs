@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using ArchiveDataHandler;
@@ -11,7 +15,7 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApi : IHighLevelOsApi
 {
-    private static readonly Lazy<LinuxHighLevelOsApi> _instance = new(() =>
+    private static readonly System.Lazy<LinuxHighLevelOsApi> _instance = new(() =>
         new LinuxHighLevelOsApi()
     );
 
@@ -30,7 +34,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
     public InodeData CreateMinimalInodeDataFromPath(string path)
     {
         var statBuf = FileSystem.LStat(path);
-        var flags = new HashSet<string>();
+        var flags = new System.Collections.Generic.HashSet<string>();
         if (statBuf is JsonObject statObj)
             foreach (var kvp in statObj)
             {
@@ -62,7 +66,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
             CTime = statBuf["st_ctim"]?.GetValue<double>() ?? 0,
             Acl = [],
             Xattr = [],
-            Hashes = []
+            Hashes = [],
         };
     }
 
@@ -82,7 +86,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         IArchiveStore archiveStore
     )
     {
-        ArgumentNullException.ThrowIfNull(data);
+        System.ArgumentNullException.ThrowIfNull(data);
 
         // Resolve user/group names based on pre-initialized uid/gid
         data.UserName =
@@ -109,7 +113,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                             aclBytes.Length,
                             $"{path} $acl",
                             _ => { }
-                        )
+                        ),
                     ];
                 }
             }
@@ -230,7 +234,7 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
                         linkBytes.Length,
                         $"{path} $data readlink",
                         _ => { }
-                    )
+                    ),
                 ];
             }
             catch (Exception ex)
@@ -262,7 +266,9 @@ public class LinuxHighLevelOsApi : IHighLevelOsApi
         {
             return
             [
-                .. Directory.GetFileSystemEntries(path).OrderBy(e => e, StringComparer.Ordinal)
+                .. System
+                    .IO.Directory.GetFileSystemEntries(path)
+                    .OrderBy(e => e, System.StringComparer.Ordinal),
             ];
         }
         catch (UnauthorizedAccessException ex)

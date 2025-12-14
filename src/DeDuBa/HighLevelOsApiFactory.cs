@@ -17,7 +17,7 @@ public static class HighLevelOsApiFactory
     ///     Get singleton instance of platform-specific IHighLevelOsApi implementation.
     /// </summary>
     /// <returns>Platform-specific IHighLevelOsApi instance.</returns>
-        public static IHighLevelOsApi GetOsApi(UtilitiesLibrary.ILogging logger)
+    public static IHighLevelOsApi GetOsApi(UtilitiesLibrary.ILogging logger)
     {
 #if DEDUBA_LINUX
         return LinuxHighLevelOsApi.Instance;

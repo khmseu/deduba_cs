@@ -10,7 +10,7 @@
             "src/Interfaces/Interfaces.csproj",
             "src/OsCallsCommon/OsCallsCommon.csproj",
             "src/OsCallsLinux/OsCallsLinux.csproj",
-            "src/OsCallsWindows/OsCallsWindows.csproj",
+            "src/OsCallsWindows/OsCallsWindows.csproj"
           ]
         }
       ],
@@ -23,33 +23,21 @@
   "build": {
     "content": [
       {
-        "files": [
-          "index.md"
-        ]
+        "files": ["index.md"]
       },
       {
-        "files": [
-          "api/**.yml",
-          "api/index.md"
-        ]
+        "files": ["api/**.yml", "api/index.md"]
       },
       {
-        "files": [
-          "articles/**.md",
-          "toc.yml"
-        ]
+        "files": ["articles/**.md", "toc.yml"]
       }
     ],
     "resource": [
       {
-        "files": [
-          "images/**"
-        ]
+        "files": ["images/**"]
       },
       {
-        "files": [
-          "doxygen/**"
-        ]
+        "files": ["doxygen/**"]
       }
     ],
     "dest": "_site"

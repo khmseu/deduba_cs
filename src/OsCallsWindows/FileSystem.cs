@@ -37,8 +37,7 @@ public static unsafe partial class FileSystem
     /// <summary>
     ///     Instance logger for this module. Replaceable for tests; defaults to adapter.
     /// </summary>
-    public static ILogging Logger { get; set; } =
-        UtilitiesLogger.Instance;
+    public static ILogging? Logger { get; set; }
 
     [LibraryImport(NativeLibraryName, StringMarshalling = StringMarshalling.Utf16)]
     [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]

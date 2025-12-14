@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -25,8 +28,8 @@ public static unsafe partial class FileSystem
         try
         {
             NativeLibrary.SetDllImportResolver(typeof(FileSystem).Assembly, Resolver);
-            if (Logger.IsNativeDebugEnabled())
-                Logger.ConWrite(
+            if (Logger!.IsNativeDebugEnabled())
+                Logger!.ConWrite(
                     $"OsCallsLinux.FileSystem resolver registered: searching for '{NativeLibraryName}'"
                 );
             // Proactively load native library so first P/Invoke succeeds even if environment vars were set too late.
@@ -64,10 +67,9 @@ public static unsafe partial class FileSystem
     /// <summary>
     ///     Instance logger for this module. Replaceable for tests; defaults to adapter.
     /// </summary>
-    public static ILogging Logger { get; set; } =
-        UtilitiesLogger.Instance;
+    public static ILogging? Logger { get; set; }
 
-    private static IntPtr Resolver(
+    private static nint Resolver(
         string libraryName,
         Assembly assembly,
         DllImportSearchPath? searchPath
@@ -77,8 +79,8 @@ public static unsafe partial class FileSystem
             return IntPtr.Zero;
         try
         {
-            if (Logger.IsNativeDebugEnabled())
-                Logger.ConWrite(
+            if (Logger!.IsNativeDebugEnabled())
+                Logger!.ConWrite(
                     $"Resolver: loading {libraryName} for assembly {assembly?.GetName()?.Name} searchPath={searchPath}"
                 );
         }
