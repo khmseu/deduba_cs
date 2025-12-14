@@ -10,20 +10,19 @@
 #  - Braces attached to signatures
 #  - Strict alignment of declarations for readability
 ---
-
 # Core formatting style
 BasedOnStyle: LLVM
 
-# Indentation settings
-IndentWidth: 2
-TabWidth: 2
+# Indentation settings (aligned with C# settings)
+IndentWidth: 4
+TabWidth: 4
 UseTab: Never
 IndentCaseLabels: false
 IndentGotoLabels: false
 IndentAccessModifiers: false
 
-# Line length and column settings
-ColumnLimit: 100
+# Line length and column settings (aligned with C# printWidth)
+ColumnLimit: 120
 ContinuationIndentWidth: 4
 
 # Brace and statement formatting
@@ -64,7 +63,7 @@ CompactNamespaces: false
 
 # Comment handling
 ReflowComments: true
-CommentPragmas: '^ IWYU pragma:'
+CommentPragmas: "^ IWYU pragma:"
 
 # Include sorting
 IncludeBlocks: Preserve
@@ -86,7 +85,6 @@ BinPackParameters: false
 BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
-
 # Notes on version compatibility
 # Standard and Language were removed to support older clang-format versions
 # (some CI environments may not have the latest version). The repo targets

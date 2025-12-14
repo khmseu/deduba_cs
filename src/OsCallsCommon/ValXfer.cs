@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,14 +19,10 @@ public static unsafe partial class ValXfer
     ///     Instance logger for this module. Callers may replace this with a test
     ///     double or alternate implementation. Defaults to forwarding adapter.
     /// </summary>
-    public static ILogging? Logger { get; set; }
+    public static ILogging Logger { get; set; } = new ValXferTrivialLogger();
 
     static ValXfer()
     {
-        // Ensure a usable logger is present during static initialization so
-        // diagnostic calls (e.g., SetDllImportResolver) don't NRE when Logger is null.
-        Logger ??= UtilitiesLibrary.UtilitiesLogger.Instance;
-
         // Log and track any P/Invoke load attempts originating from this
         // assembly. Returning IntPtr.Zero allows the runtime to continue
         // its default resolution algorithm while still giving us visibility
@@ -45,11 +40,87 @@ public static unsafe partial class ValXfer
         }
     }
 
-    private static nint DllImportLoggingResolver(
-        string libraryName,
-        Assembly assembly,
-        DllImportSearchPath? searchPath
-    )
+    // Minimal, file-local logger implementation used as a safe default during
+    // static initialization. Kept inside this file to avoid cross-dependencies
+    // and to make sure ValXfer can log safely during type initialization.
+    internal sealed class ValXferTrivialLogger : ILogging
+    {
+        public static ILogging Instance => throw new NotImplementedException();
+
+        public KeyValuePair<string, object?> D(
+            object? value,
+            [CallerArgumentExpression(nameof(value))] string name = ""
+        )
+        {
+            return D(value, name);
+        }
+
+        public string Dumper(params KeyValuePair<string, object?>[] values)
+        {
+            return Dumper(values);
+        }
+
+        public void ConWrite(
+            string msg,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0,
+            [CallerMemberName] string callerMemberName = ""
+        )
+        {
+            Console.WriteLine(
+                $"{lineNumber} {DateTime.Now} <{Path.GetFileName(filePath)}:{lineNumber} {callerMemberName}> {msg}"
+            );
+        }
+
+        public void Error(
+            string file,
+            string op,
+            Exception? ex = null,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0,
+            [CallerMemberName] string callerMemberName = ""
+        )
+        {
+            var message = ex == null ? "" : $": {ex.Message}";
+            Console.WriteLine($"ERROR: {file}: {op}{message}");
+            if (ex != null)
+                Console.WriteLine(ex);
+        }
+
+        public bool IsNativeDebugEnabled()
+        {
+            return IsNativeDebugEnabled();
+        }
+
+        public void Status(long filesDone, long dirsDone, long queued, long bytes, string currentPath, double percent)
+        {
+            Console.WriteLine(
+                $"Status: {filesDone} files {dirsDone} dirs | {queued} queued | {HumanizeBytes(bytes)} | {percent:0.0}% {currentPath}"
+            );
+        }
+
+        public void Warn(
+            string msg,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0,
+            [CallerMemberName] string callerMemberName = ""
+        )
+        {
+            Console.WriteLine($"WARN: {msg}");
+        }
+
+        public string GetVersion()
+        {
+            return GetVersion();
+        }
+
+        public string HumanizeBytes(long bytes)
+        {
+            return HumanizeBytes(bytes);
+        }
+    }
+
+    private static nint DllImportLoggingResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
         try
         {
@@ -157,10 +228,7 @@ public static unsafe partial class ValXfer
                         array.Add(ToNode(value->Complex, file, $"{op}[{value->Handle.index}]"));
                         break;
                     case TypeT.IsTimeSpec:
-                        array.Add(
-                            value->TimeSpec.TvSec
-                                + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000)
-                        );
+                        array.Add(value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000));
                         break;
                     case TypeT.IsBoolean:
                         array.Add(value->Boolean);
@@ -194,9 +262,7 @@ public static unsafe partial class ValXfer
                     obj[name] = ToNode(value->Complex, file, $"{op}.{name}");
                     break;
                 case TypeT.IsTimeSpec:
-                    obj[name] =
-                        value->TimeSpec.TvSec
-                        + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000);
+                    obj[name] = value->TimeSpec.TvSec + value->TimeSpec.TvNsec / (double)(1000 * 1000 * 1000);
                     break;
                 case TypeT.IsBoolean:
                     obj[name] = value->Boolean;
@@ -211,10 +277,7 @@ public static unsafe partial class ValXfer
             more = GetNextValue(value);
             name =
                 Marshal.PtrToStringUTF8(value->Name)
-                ?? throw new ArgumentNullException(
-                    nameof(value),
-                    $"{op} Feld {nameof(ValueT.Name)}"
-                );
+                ?? throw new ArgumentNullException(nameof(value), $"{op} Feld {nameof(ValueT.Name)}");
         }
 
         return obj;

@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using ArchiveDataHandler;
 using OsCallsCommon;
+using UtilitiesLibrary;
 
 namespace OsCallsLinux;
 
@@ -10,27 +11,40 @@ namespace OsCallsLinux;
 /// </summary>
 public class LinuxHighLevelOsApiAdapter : IHighLevelOsApi
 {
-    public static IHighLevelOsApi Instance => LinuxHighLevelOsApi.Instance;
-
     private readonly IHighLevelOsApi _inner = LinuxHighLevelOsApi.Instance;
 
-    public LinuxHighLevelOsApiAdapter(UtilitiesLibrary.ILogging logger)
+    /// <inheritdoc />
+    public LinuxHighLevelOsApiAdapter(ILogging logger)
     {
         // Forward logging to native wrappers so P/Invoke resolver and native errors are visible
         FileSystem.Logger = logger;
         ValXfer.Logger = logger;
     }
 
-    public InodeData CreateMinimalInodeDataFromPath(string path) =>
-        _inner.CreateMinimalInodeDataFromPath(path);
+    /// <inheritdoc />
+    public static IHighLevelOsApi Instance => LinuxHighLevelOsApi.Instance;
 
-    public InodeData CompleteInodeDataFromPath(
-        string path,
-        ref InodeData data,
-        IArchiveStore archiveStore
-    ) => _inner.CompleteInodeDataFromPath(path, ref data, archiveStore);
+    /// <inheritdoc />
+    public InodeData CreateMinimalInodeDataFromPath(string path)
+    {
+        return _inner.CreateMinimalInodeDataFromPath(path);
+    }
 
-    public string[] ListDirectory(string path) => _inner.ListDirectory(path);
+    /// <inheritdoc />
+    public InodeData CompleteInodeDataFromPath(string path, ref InodeData data, IArchiveStore archiveStore)
+    {
+        return _inner.CompleteInodeDataFromPath(path, ref data, archiveStore);
+    }
 
-    public JsonNode Canonicalizefilename(string path) => _inner.Canonicalizefilename(path);
+    /// <inheritdoc />
+    public string[] ListDirectory(string path)
+    {
+        return _inner.ListDirectory(path);
+    }
+
+    /// <inheritdoc />
+    public JsonNode Canonicalizefilename(string path)
+    {
+        return _inner.Canonicalizefilename(path);
+    }
 }
